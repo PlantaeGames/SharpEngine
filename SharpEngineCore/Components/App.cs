@@ -1,34 +1,49 @@
-﻿namespace SharpEngineCore.Components;
+﻿using SharpEngineCore.Graphics;
 
-internal class App
+namespace SharpEngineCore.Components;
+
+internal sealed class App
 {
-    private const string NAME = "Sharp Engine";
-
     private class AppContext : ApplicationContext
     {
+        private const string WINDOW_NAME = "Sharp Engine";
+
+        private Logger _logger;
+
         public AppContext()
         {
+            _logger = new Logger();
+
             Application.ApplicationExit += OnExit;
+            Application.Idle += OnIdle;
 
-            var window = new Form();
-            window.Text = NAME;
+            CreateWindow();
+        }
 
-            window.FormClosed += OnWindowClosed;
+        private void OnIdle(object? sender, EventArgs e)
+        {
+            // we r ready to work here.
+            _logger.LogMessage("Tick.");
+        }
 
-            window.Show();
+        private void CreateWindow()
+        {
+            var mainWindow = new MainWindow(WINDOW_NAME, new Point(0,0), new Size(800, 600));
+            mainWindow.FormClosed += OnWindowClosed;
+
+            _logger.LogMessage("Main Window Created.");
+            mainWindow.Show();
         }
 
         private void OnWindowClosed(object? sender, FormClosedEventArgs e)
         {
-
-            Console.WriteLine("LOG: Window Closed.");
-
+            _logger.LogMessage("Main Window Closed.");
             ExitThread();
         }
 
         private void OnExit(object? sender, EventArgs e)
         {
-            Console.WriteLine("LOG: Application Exited.");
+            _logger.LogMessage("Application Exiting...");
         }
     }
 
