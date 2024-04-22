@@ -21,7 +21,8 @@ public class SharpException : Exception
 
     public virtual void Show()
     {
-        MessageBox.Show($"{this}", ERROR_LABEL, MessageBoxButtons.OK, MessageBoxIcon.Error);
+       //TODO: Add Windowing System MessageBox here. or native.
+       // MessageBox.Show($"{this}", ERROR_LABEL, MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
 
     public override string ToString()
