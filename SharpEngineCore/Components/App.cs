@@ -1,17 +1,11 @@
 ﻿using TerraFX.Interop.Windows;
 
-using SharpEngineCore.Graphics;
-
 namespace SharpEngineCore.Components;
 
 internal sealed class App
 {
-    private Logger _logger;
-
     public App()
-    { 
-        _logger = new Logger();
-    }
+    { }
 
     public int Run()
     {
@@ -43,9 +37,9 @@ internal sealed class App
 
                 if (stop)
                     break;
-                // other code here.
 
-                _logger.LogMessage("Tick.");
+                // other code here.
+                window.Tick();
             }
         }
         catch

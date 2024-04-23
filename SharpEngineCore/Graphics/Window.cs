@@ -233,7 +233,7 @@ public class Window
                         (HWND)null, (HMENU)null, (HINSTANCE)Process.GetCurrentProcess().Handle, (void*)GCHandle.ToIntPtr(_pThis));
                 }
             }
-            if (hWnd == (HWND)0)
+            if (hWnd == (HWND)null)
             {
                 // error here.
                 throw SharpException.GetLastWin32Exception(new SharpException("Window Creation Error"));
