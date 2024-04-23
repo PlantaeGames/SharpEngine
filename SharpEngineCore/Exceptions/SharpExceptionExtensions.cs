@@ -14,7 +14,7 @@ internal static class SharpExceptionExtensions
     /// <returns></returns>
     public static IEnumerable<Exception> GetExceptions(this SharpException exception)
     {
-        Debug.Assert(exception != null);
+        Debug.Assert(exception != null, "Exception can't be null, here.");
 
         var e = exception as Exception;
         do
