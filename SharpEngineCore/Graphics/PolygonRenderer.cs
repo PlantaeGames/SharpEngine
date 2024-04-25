@@ -1,4 +1,6 @@
-﻿namespace SharpEngineCore.Graphics;
+﻿using TerraFX.Interop.WinRT;
+
+namespace SharpEngineCore.Graphics;
 
 public sealed class PolygonRenderer : Renderer
 {
@@ -7,33 +9,4 @@ public sealed class PolygonRenderer : Renderer
     {
 
     }
-}
-
-public abstract class Renderer
-{
-    private 
-
-    public Renderer()
-    {
-
-    }
-}
-
-internal interface IGraphicsDevice
-{
-
-}
-
-internal interface IGraphicsDeviceContext
-{
-
-}
-
-internal sealed class D3D11Device : IGraphicsDevice
-{ 
-}
-
-internal sealed class D3D11DeviceContext : IGraphicsDeviceContext
-{
-
 }

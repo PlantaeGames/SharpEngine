@@ -230,10 +230,10 @@ public class Window
                     hWnd = CreateWindowExW(0u,
                         pClassName, pWindowName, WS.WS_OVERLAPPEDWINDOW,
                         location.X, location.Y, newSize.right - newSize.left, newSize.bottom - newSize.top,
-                        (HWND)null, (HMENU)null, (HINSTANCE)Process.GetCurrentProcess().Handle, (void*)GCHandle.ToIntPtr(_pThis));
+                        (HWND)IntPtr.Zero, (HMENU)IntPtr.Zero, (HINSTANCE)Process.GetCurrentProcess().Handle, (void*)GCHandle.ToIntPtr(_pThis));
                 }
             }
-            if (hWnd == (HWND)null)
+            if (hWnd == (HWND)IntPtr.Zero)
             {
                 // error here.
                 throw SharpException.GetLastWin32Exception(new SharpException("Window Creation Error"));
