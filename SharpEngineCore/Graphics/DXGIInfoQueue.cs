@@ -11,26 +11,23 @@ namespace SharpEngineCore.Graphics;
 
 internal sealed class DXGIInfoQueue
 {
-    public static DXGIInfoQueue Instance 
-    { 
-        get
-        {
-            if(Instance == null)
-            {
-                Instance = new DXGIInfoQueue();
-            }
-
-            return Instance;
-        }
-        private set
-        { }
-    }
+    private static DXGIInfoQueue? _instance;
 
     private ComPtr<IDXGIInfoQueue> _pInfoQueue;
     private ulong _messageCount = 0u;
 
     private bool _disposed = false;
+    private static object _instanceLock = new();
 
+    public static DXGIInfoQueue GetInstance()
+    {
+        lock (_instanceLock)
+        {
+            _instance ??= new DXGIInfoQueue();
+
+            return _instance;
+        }
+    }
     public void Set()
     {
         _messageCount = GetStoredMessageCount();
