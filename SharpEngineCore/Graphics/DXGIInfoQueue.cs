@@ -16,7 +16,6 @@ internal sealed class DXGIInfoQueue
     private ComPtr<IDXGIInfoQueue> _pInfoQueue;
     private ulong _messageCount = 0u;
 
-    private bool _disposed = false;
     private static object _instanceLock = new();
 
     public static DXGIInfoQueue GetInstance()

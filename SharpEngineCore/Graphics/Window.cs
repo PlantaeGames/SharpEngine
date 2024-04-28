@@ -148,11 +148,6 @@ public class Window
 
             result.availability = PeekMessageW(&result.msg, HWnd, 0u, 0u, PM.PM_REMOVE);
 
-            if(result.msg.message == WM.WM_QUIT)
-            {
-                return result;
-            }
-
             TranslateMessage(&result.msg);
             DispatchMessageW(&result.msg);
 

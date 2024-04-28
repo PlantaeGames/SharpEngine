@@ -2,7 +2,7 @@
 
 internal sealed class Logger
 {
-    private const ConsoleColor MESSAGE_COLOR = ConsoleColor.Cyan;
+    private const ConsoleColor MESSAGE_COLOR = ConsoleColor.DarkYellow;
     private const ConsoleColor ERROR_COLOR = ConsoleColor.Red;
 
     public Logger()

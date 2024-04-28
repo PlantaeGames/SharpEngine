@@ -1,4 +1,8 @@
-﻿using TerraFX.Interop.Windows;
+﻿using System.Text;
+
+using TerraFX.Interop.Windows;
+
+using SharpEngineCore.Graphics;
 
 namespace SharpEngineCore.Components;
 
@@ -39,7 +43,7 @@ internal sealed class App
                     break;
 
                 // other code here.
-                window.Tick();
+                window.Update();
             }
         }
         catch

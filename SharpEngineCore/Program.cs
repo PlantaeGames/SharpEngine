@@ -18,7 +18,7 @@ internal sealed class Program
         }
         catch (Exception e)
         {
-            var exception = new SharpException("Something unexpected happened", e);
+            var exception = new SharpException($"Something unexpected happened\n\n[Stack Trace]\n{e.StackTrace}", e);
             exception.Show();
         }
 
