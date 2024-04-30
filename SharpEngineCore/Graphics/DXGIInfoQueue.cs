@@ -49,7 +49,7 @@ internal sealed class DXGIInfoQueue
         unsafe string[] NativeGetMessage()
         {
             var messages = new List<string>(10);
-            messages.Add("[ DXGI INFO QUEUE MESSAGES ]\n");
+            messages.Add("[ DXGI INFO QUEUE MESSAGES ]\n\n");
 
             var messageCount = GetStoredMessageCount();
             var uuid = DXGI.DXGI_DEBUG_ALL;
@@ -105,13 +105,13 @@ internal sealed class DXGIInfoQueue
 
                     for (var x = 0; x < (int)messageSize; x++)
                     {
-                        char target = (char)*(((DXGI_INFO_QUEUE_MESSAGE*)pMessage)->pDescription
+                        byte target = (byte)*(((DXGI_INFO_QUEUE_MESSAGE*)pMessage)->pDescription
                             + (x * sizeof(sbyte)));
 
-                        if ((byte)target == 0)
+                        if (target == 0)
                             break;
 
-                        sb.Append(target);
+                        sb.Append(Convert.ToChar(target));
                     }
 
                     Marshal.FreeHGlobal(pMessage);
@@ -175,6 +175,8 @@ internal sealed class DXGIInfoQueue
                     // error here
                     throw SharpException.GetLastWin32Exception(new SharpException($"Error in loading {libName}"));
                 }
+
+                _debugLibHandle = handle;
 
                 var bytes = Encoding.UTF8.GetBytes("DXGIGetDebugInterface");
                 var sbytes = new sbyte[bytes.Length];

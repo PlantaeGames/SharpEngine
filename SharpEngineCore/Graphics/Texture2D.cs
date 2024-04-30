@@ -30,6 +30,6 @@ internal sealed class Texture2D : Texture
     public Texture2D(ComPtr<ID3D11Texture2D> pTexture2D, TextureInfo info)
         : base(info)
     { 
-        _pTexture = pTexture2D;      
+        _pTexture = pTexture2D;
     }
 }

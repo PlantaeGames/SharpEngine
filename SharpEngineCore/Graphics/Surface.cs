@@ -42,7 +42,7 @@ public sealed class Surface : IDisposable
             int count = Size.Width * Size.Height;
             try
             {
-                _pColors = Marshal.AllocHGlobal(count);
+                _pColors = Marshal.AllocHGlobal(count * sizeof(Fragment));
             }
             catch(Exception e)
             {
@@ -50,7 +50,7 @@ public sealed class Surface : IDisposable
             }
 
             // zero out memory
-            Clear();
+            Clear(new Fragment(255, 255, 255, 255));
         }
     }
 
@@ -67,7 +67,7 @@ public sealed class Surface : IDisposable
         {
             for (var i = 0; i < (Size.Width * Size.Height); i++)
             {
-                *((Fragment*)_pColors + (i * sizeof(Fragment))) = color;
+                *((Fragment*)_pColors + i) = color;
             }
         }
     }
@@ -81,8 +81,7 @@ public sealed class Surface : IDisposable
 
         unsafe void NativeSetColor()
         {
-            var offset = point.Y * Size.Width * sizeof(Fragment) +
-                         (point.X * sizeof(Fragment));
+            var offset = point.Y * Size.Width + point.X;
 
             *((Fragment*)_pColors + offset) = color;
         }
@@ -96,6 +95,8 @@ public sealed class Surface : IDisposable
         // release here
         if (_pColors != IntPtr.Zero)
             Marshal.FreeHGlobal(_pColors);
+
+        _disposed = true;
     }
 
     ~Surface()

@@ -60,6 +60,15 @@ internal sealed class MainWindow : Window
         _logger.LogHeader("Render Target View Creation:-");
         var renderTarget = device.CreateRenderTargetView(swapchain.GetBackTexture());
         _logger.LogMessage("Render Target View Created on Swapchain BackBuffer.");
+
+        _logger.BreakLine();
+
+        // creating test texture 2d
+        _logger.LogHeader("Test Texture2D Creation:-");
+        using var surface = new Surface(new Size(8196, 8196));
+        var texture = device.CreateTexture2D(surface,
+            new TextureInfo());
+        _logger.LogMessage("Test Texture Created.");
     }
 
     protected override LRESULT WndProc(HWND hWND, uint msg, WPARAM wParam, LPARAM lParam)
