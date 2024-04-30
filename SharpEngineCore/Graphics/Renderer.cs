@@ -2,7 +2,7 @@
 
 public abstract class Renderer
 {
-    public Renderer()
+    protected Renderer()
     {
 
     }

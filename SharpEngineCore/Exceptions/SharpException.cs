@@ -1,10 +1,10 @@
 ﻿using System.Text;
+using System.Runtime.CompilerServices;
 
 using TerraFX.Interop.Windows;
 using Win32 = TerraFX.Interop.Windows.Windows;
 
-using SharpEngineCore.Components;
-using System.Runtime.CompilerServices;
+using SharpEngineCore.Utilities;
 
 namespace SharpEngineCore.Exceptions;
 

@@ -11,6 +11,54 @@ internal sealed class Device
 
     private D3D_FEATURE_LEVEL _featureLevel;
 
+    public Texture2D CreateTexture2D(Surface surface, TextureInfo info)
+    {
+        return new Texture2D(NativeCreateTexture2D(), info);
+
+        unsafe ComPtr<ID3D11Texture2D> NativeCreateTexture2D()
+        {
+            var desc = new D3D11_TEXTURE2D_DESC();
+            desc.Width = (uint)surface.Size.Width;
+            desc.Height = (uint)surface.Size.Height;
+            desc.MipLevels = 1u;
+            desc.ArraySize = 1u;
+            desc.SampleDesc = new DXGI_SAMPLE_DESC
+            {
+                Quality = 0u,
+                Count = 1u
+            };
+            desc.MiscFlags = 0u;
+            desc.Format = info.UsuageInfo.Format;
+            desc.Usage = info.UsuageInfo.Usage;
+            desc.BindFlags = info.UsuageInfo.BindFlags;
+            desc.CPUAccessFlags = info.UsuageInfo.CPUAccessFlags;
+
+            var initialData = new D3D11_SUBRESOURCE_DATA();
+            initialData.pSysMem = surface.GetNativePointer().ToPointer();
+            initialData.SysMemPitch = surface.GetSliceSize();
+
+            fixed (ID3D11Device** ppDevice = _pDevice)
+            {
+                var pTexture2D = new ComPtr<ID3D11Texture2D>();
+                fixed (ID3D11Texture2D** ppTexture2D = pTexture2D)
+                {
+                    GraphicsException.SetInfoQueue();
+                    var result = (*ppDevice)->CreateTexture2D(&desc, 
+                        &initialData, ppTexture2D);
+
+                    if(result.FAILED)
+                    {
+                        // error here
+                        throw GraphicsException.GetLastGraphicsException(
+                            new GraphicsException($"Failed to create texture 2d\nError Code: {result}"));
+                    }
+                }
+
+                return pTexture2D;
+            }
+        }
+    }
+
     public ComPtr<ID3D11Device> GetNativePtr() => _pDevice;
 
     public ImmediateDeviceContext GetContext() => (ImmediateDeviceContext) _context;

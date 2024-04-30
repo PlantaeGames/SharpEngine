@@ -7,7 +7,7 @@ internal abstract class DeviceContext
 {
     protected readonly ComPtr<ID3D11DeviceContext> _pContext;
 
-    public DeviceContext(ComPtr<ID3D11DeviceContext> pDeviceContext)
+    protected DeviceContext(ComPtr<ID3D11DeviceContext> pDeviceContext)
     {
         _pContext = pDeviceContext;
     }

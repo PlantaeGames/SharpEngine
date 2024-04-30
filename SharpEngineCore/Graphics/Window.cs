@@ -138,6 +138,31 @@ public class Window
 
     public HWND HWnd { get; private set; }
 
+    public Size GetSize()
+    {
+        var size = NativeGetSize();
+        return new Size(size.width, size.height);
+
+        unsafe (int width, int height) NativeGetSize()
+        {
+            (int width, int height) size = (0, 0);
+
+            var rect = new RECT();
+            var result = GetClientRect(HWnd, &rect);
+            if (result == false)
+            {
+                // error here.
+                throw SharpException.GetLastWin32Exception(
+                    new SharpException("Failed to get window size."));
+            }
+
+            size.width = rect.right - rect.left;
+            size.height = rect.bottom - rect.top;
+
+            return size;
+        }
+    }
+
     public (bool availability, MSG msg) PeekAndDispatchMessage()
     {
         return NativePeekAndDispatch();

@@ -2,6 +2,7 @@
 
 using SharpEngineCore.Graphics;
 using System.Text;
+using SharpEngineCore.Utilities;
 
 namespace SharpEngineCore.Components;
 

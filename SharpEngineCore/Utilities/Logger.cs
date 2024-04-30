@@ -1,4 +1,4 @@
-﻿namespace SharpEngineCore.Components;
+﻿namespace SharpEngineCore.Utilities;
 
 internal sealed class Logger
 {
@@ -13,7 +13,7 @@ internal sealed class Logger
 
     public void LogMessage(string message)
     {
-       Log($"LOG: {message}", MESSAGE_COLOR);
+        Log($"LOG: {message}", MESSAGE_COLOR);
     }
 
     public void LogError(string message)
@@ -31,7 +31,7 @@ internal sealed class Logger
         Log($"ERROR: {message}", HEADER_COLOR);
     }
 
-    private void Log(string message, ConsoleColor  color)
+    private void Log(string message, ConsoleColor color)
     {
         var previousColor = Console.ForegroundColor;
         Console.ForegroundColor = color;

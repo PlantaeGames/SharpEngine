@@ -73,7 +73,16 @@ internal sealed class DXGIInfoQueue
                     }
 
                     // getting message
-                    var pMessage = Marshal.AllocHGlobal((int)messageSize);
+                    nint pMessage = 0;
+                    try
+                    {
+                        pMessage = Marshal.AllocHGlobal((int)messageSize);
+                    }
+                    catch(Exception e)
+                    {
+                        throw new SharpException("Failed to obtain message from DXGI Info Queue", e);
+                    }
+
                     for (var x = 0; x < (int)messageSize; x++)
                     {
                         *((byte*)pMessage + (x * sizeof(byte))) = 0;

@@ -14,7 +14,7 @@ internal sealed class DXGIFactory
 
     public Swapchain CreateSwapchain(Window window, Device device)
     {
-        return new Swapchain(NativeCreateSwapchain());
+        return new Swapchain(NativeCreateSwapchain(), window);
 
         unsafe ComPtr<IDXGISwapChain> NativeCreateSwapchain()
         {
