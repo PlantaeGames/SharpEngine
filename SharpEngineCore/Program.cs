@@ -13,7 +13,7 @@ internal sealed class Program
         {
             returnCode = new App().Run();
         }
-        catch(GraphicsSharpException e)
+        catch(GraphicsException e)
         {
             e.Show();
         }

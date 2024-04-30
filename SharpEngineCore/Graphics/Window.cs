@@ -13,8 +13,8 @@ public class Window
     [UnmanagedCallersOnly]
     public static LRESULT WndProcStub(HWND hWnd, uint msg, WPARAM wParam, LPARAM lPraram)
     {
-        var window = (Window?)GCHandle.FromIntPtr(GetWindowLongPtrW(hWnd, GWLP.GWLP_USERDATA)).Target;
-        LRESULT result = window?.WndProc(hWnd, msg, wParam, lPraram) ?? 0;
+        var window = (Window)GCHandle.FromIntPtr(GetWindowLongPtrW(hWnd, GWLP.GWLP_USERDATA)).Target;
+        LRESULT result = window.WndProc(hWnd, msg, wParam, lPraram);
 
         return result;
     }
@@ -29,7 +29,7 @@ public class Window
                 var pCreateInfo = (CREATESTRUCTW*) lParam;
 
                 var windowHandle = GCHandle.FromIntPtr((IntPtr)pCreateInfo->lpCreateParams);
-                var window = (Window?)windowHandle.Target;
+                var window = (Window)windowHandle.Target;
 
                 delegate* unmanaged<HWND, uint, WPARAM, LPARAM, LRESULT> lpFnWndProc = &WndProcStub;
 
@@ -51,7 +51,7 @@ public class Window
 
         public string Name { get; private set; }
 
-        private static Class? _instance = null;
+        private static Class _instance = null;
         private static object _instanceLock = new ();
 
         private bool _disposed = false;

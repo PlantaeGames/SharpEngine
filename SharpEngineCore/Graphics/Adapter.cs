@@ -1,8 +1,6 @@
 ﻿using TerraFX.Interop.DirectX;
 using TerraFX.Interop.Windows;
 
-using SharpEngineCore.Exceptions;
-
 namespace SharpEngineCore.Graphics;
 
 internal sealed class Adapter
@@ -26,14 +24,14 @@ internal sealed class Adapter
             {
                 DXGI_ADAPTER_DESC description = new DXGI_ADAPTER_DESC();
 
-                GraphicsSharpException.SetInfoQueue();
+                GraphicsException.SetInfoQueue();
                 var result = (*ppAdatper)->GetDesc(&description);
 
                 if (result.FAILED)
                 {
                     // error here
-                    throw GraphicsSharpException.GetLastGraphicsException(
-                        new GraphicsSharpException($"Failed to get adapter description.\nError Code: {result}"));
+                    throw GraphicsException.GetLastGraphicsException(
+                        new GraphicsException($"Failed to get adapter description.\nError Code: {result}"));
                 }
 
                 return description;

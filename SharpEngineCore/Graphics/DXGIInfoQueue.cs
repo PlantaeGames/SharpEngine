@@ -6,13 +6,16 @@ using TerraFX.Interop.DirectX;
 using static TerraFX.Interop.Windows.Windows;
 
 using SharpEngineCore.Exceptions;
-using SharpEngineCore.Utilities;
 
 namespace SharpEngineCore.Graphics;
 
+/// <summary>
+/// Wraps the COM IDXGIInfoQueue.
+/// Provides methods to obtains messages from DXGIQueue.
+/// </summary>
 internal sealed class DXGIInfoQueue
 {
-    private static DXGIInfoQueue? _instance;
+    private static DXGIInfoQueue _instance;
 
     private ComPtr<IDXGIInfoQueue> _pInfoQueue;
     private ulong _messageCount = 0u;
@@ -35,6 +38,10 @@ internal sealed class DXGIInfoQueue
         _messageCount = GetStoredMessageCount();
     }
 
+    /// <summary>
+    /// Obtains any new messages sent to info queue.
+    /// </summary>
+    /// <returns>Messages.</returns>
     public string[] GetMessages()
     {
         var result = NativeGetMessage();
@@ -141,9 +148,6 @@ internal sealed class DXGIInfoQueue
 
     private DXGIInfoQueue()
     {
-        _pInfoQueue = new();
-        _debugLibHandle = new ();
-
         Initialize();
     }
 

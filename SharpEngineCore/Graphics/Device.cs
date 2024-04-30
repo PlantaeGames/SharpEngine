@@ -2,25 +2,22 @@
 using static TerraFX.Interop.DirectX.DirectX;
 using TerraFX.Interop.Windows;
 
-using SharpEngineCore.Exceptions;
-using SharpEngineCore.Utilities;
-
 namespace SharpEngineCore.Graphics;
 
 internal sealed class Device
 {
     private ComPtr<ID3D11Device> _pDevice;
-    private ComPtr<ID3D11DeviceContext> _pImContext;
+    private DeviceContext _context;
 
     private D3D_FEATURE_LEVEL _featureLevel;
 
+    public ComPtr<ID3D11Device> GetNativePtr() => _pDevice;
+
+    public ImmediateDeviceContext GetContext() => (ImmediateDeviceContext) _context;
     public D3D_FEATURE_LEVEL GetFeatureLevel() => _featureLevel;
 
     public Device(Adapter adapter, bool isEnumalted = false)
     {
-        _pDevice = new();
-        _pImContext = new();
-
         Create(adapter, isEnumalted);
     }
 
@@ -32,7 +29,8 @@ internal sealed class Device
         {
             fixed(ID3D11Device** ppDevice = _pDevice)
             {
-                fixed(ID3D11DeviceContext** ppDeviceContext = _pImContext)
+                var pImContext = new ComPtr<ID3D11DeviceContext>();
+                fixed(ID3D11DeviceContext** ppDeviceContext = pImContext)
                 {
                     fixed (IDXGIAdapter** ppAdapter = adaper.GetNativePtr())
                     {
@@ -45,7 +43,7 @@ internal sealed class Device
                         flags |= (uint)D3D11_CREATE_DEVICE_FLAG.D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-                        GraphicsSharpException.SetInfoQueue();
+                        GraphicsException.SetInfoQueue();
                         var result = D3D11CreateDevice(*ppAdapter, driverType,
                             (HMODULE)IntPtr.Zero, flags, (D3D_FEATURE_LEVEL*)IntPtr.Zero, 0u, 
                             D3D11.D3D11_SDK_VERSION, ppDevice, &featureLevel, ppDeviceContext);
@@ -53,13 +51,15 @@ internal sealed class Device
                         if (result.FAILED)
                         {
                             // error here.
-                            throw GraphicsSharpException.GetLastGraphicsException(
-                                new GraphicsSharpException($"Failed to create device\nError Code: {result}"));
+                            throw GraphicsException.GetLastGraphicsException(
+                                new GraphicsException($"Failed to create device\nError Code: {result}"));
                         }
 
                         _featureLevel = featureLevel;
                     }
                 }
+
+                _context = new ImmediateDeviceContext(pImContext);
             }
         }
     }

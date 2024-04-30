@@ -1,18 +1,77 @@
 ﻿using TerraFX.Interop.DirectX;
 using TerraFX.Interop.Windows;
 
-using SharpEngineCore.Exceptions;
-
 namespace SharpEngineCore.Graphics;
 
 internal sealed class DXGIFactory
 {
     private ComPtr<IDXGIFactory> _pFactory;
 
-    private static DXGIFactory? _instance;
+    private static DXGIFactory _instance;
     private static object _instanceLock = new();
 
     private const uint MAX_ENUMERATE_DEVICE_COUNT = 12u;
+
+    public Swapchain CreateSwapchain(Window window, Device device)
+    {
+        return new Swapchain(NativeCreateSwapchain());
+
+        unsafe ComPtr<IDXGISwapChain> NativeCreateSwapchain()
+        {
+            var desc = new DXGI_SWAP_CHAIN_DESC();
+
+            desc.BufferDesc = new DXGI_MODE_DESC();
+            desc.BufferDesc.Width = 0u;
+            desc.BufferDesc.Height = 0u;
+            desc.BufferDesc.RefreshRate = new DXGI_RATIONAL
+            {
+                Denominator = 0u,
+                Numerator = 0u
+            };
+            desc.BufferDesc.Format = DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM;
+            desc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER.DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+            desc.BufferDesc.Scaling = DXGI_MODE_SCALING.DXGI_MODE_SCALING_UNSPECIFIED;
+
+            desc.BufferCount = 1u;
+            desc.BufferUsage = DXGI.DXGI_USAGE_RENDER_TARGET_OUTPUT;
+
+            desc.OutputWindow = window.HWnd;
+            desc.Windowed = true;
+
+            desc.Flags = 0u;
+
+            desc.SwapEffect = DXGI_SWAP_EFFECT.DXGI_SWAP_EFFECT_DISCARD;
+
+            desc.SampleDesc = new DXGI_SAMPLE_DESC
+            {
+                Quality = 0u,
+                Count = 1u
+            };
+
+            var pSwapchain = new ComPtr<IDXGISwapChain>();
+            fixed(IDXGISwapChain** ppSwapchain = pSwapchain)
+            {
+                fixed(IDXGIFactory** ppFactory = _pFactory)
+                {
+                    fixed(ID3D11Device** ppDevice = device.GetNativePtr())
+                    {
+                        GraphicsException.SetInfoQueue();
+                        var result = (*ppFactory)->CreateSwapChain((IUnknown*)(*ppDevice),
+                            &desc, ppSwapchain);
+
+                        if(result.FAILED)
+                        {
+                            // error here.
+                            throw GraphicsException.GetLastGraphicsException(
+                                new GraphicsException($"Failed to create swapchain\nError Code: {result}"));
+                        }
+                    }
+                }
+            }
+
+            return pSwapchain;
+        }
+    }
 
     public Adapter[] GetAdpters()
     {
@@ -48,14 +107,14 @@ internal sealed class DXGIFactory
                 {
                     fixed (IDXGIAdapter** ppAdapter = pAdapters[i])
                     {
-                        GraphicsSharpException.SetInfoQueue();
+                        GraphicsException.SetInfoQueue();
                         var result = (*ppFactory)->EnumAdapters(foundList[i], ppAdapter);
 
                         if (result.FAILED)
                         {
                             // error here.
-                            throw GraphicsSharpException.GetLastGraphicsException
-                                (new GraphicsSharpException($"Failed to get adapter.\nError Code: {result}"));
+                            throw GraphicsException.GetLastGraphicsException
+                                (new GraphicsException($"Failed to get adapter.\nError Code: {result}"));
                         }
                     }
                 }
@@ -77,7 +136,6 @@ internal sealed class DXGIFactory
 
     private DXGIFactory()
     {
-        _pFactory = new();
         Initialize();
     }
 
@@ -91,14 +149,14 @@ internal sealed class DXGIFactory
             {
                 var uuid = typeof(IDXGIFactory).GUID;
 
-                GraphicsSharpException.SetInfoQueue();
+                GraphicsException.SetInfoQueue();
                 var result = DirectX.CreateDXGIFactory(&uuid, (void**)ppFactory);
 
                 if(result.FAILED)
                 {
                     // error here.
-                    throw GraphicsSharpException.GetLastGraphicsException(
-                        new GraphicsSharpException($"Failed to create DXGI Factory.\nError Code: {result}"));
+                    throw GraphicsException.GetLastGraphicsException(
+                        new GraphicsException($"Failed to create DXGI Factory.\nError Code: {result}"));
                 }
             }
         }
