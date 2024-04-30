@@ -4,12 +4,51 @@ using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
 
+/// <summary>
+/// Represents the virtual Graphics card provided by the driver.
+/// Used for allocation of resources on gpu.
+/// </summary>
 internal sealed class Device
 {
     private ComPtr<ID3D11Device> _pDevice;
     private DeviceContext _context;
 
     private D3D_FEATURE_LEVEL _featureLevel;
+
+    public RenderTargetView CreateRenderTargetView(IViewable viewable)
+    {
+        return new RenderTargetView(NativeCreateView());
+
+        unsafe ComPtr<ID3D11RenderTargetView> NativeCreateView()
+        {
+            //var desc = new D3D11_RENDER_TARGET_VIEW_DESC();
+            // TODO: Currently its just working without the description, just like in GrainEngine.
+
+            fixed(ID3D11Device** ppDevice = _pDevice)
+            {
+                var pRenderTargetView = new ComPtr<ID3D11RenderTargetView>();
+                fixed (ID3D11RenderTargetView** ppRenderTargetView = pRenderTargetView)
+                {
+                    fixed (ID3D11Resource** ppResource = viewable.GetNativeResourcePtr())
+                    {
+                        GraphicsException.SetInfoQueue();
+                        var result = (*ppDevice)->CreateRenderTargetView(
+                            *ppResource, (D3D11_RENDER_TARGET_VIEW_DESC*)IntPtr.Zero, ppRenderTargetView);
+
+                        if (result.FAILED)
+                        {
+                            // error here.
+                            throw GraphicsException.GetLastGraphicsException(
+                                new GraphicsException(
+                                    $"Failed to create render target view\nError Code: {result}"));
+                        }
+                    }
+                }
+
+                return pRenderTargetView;
+            }
+        }
+    }
 
     public Texture2D CreateTexture2D(Surface surface, TextureInfo info)
     {

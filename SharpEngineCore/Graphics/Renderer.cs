@@ -1,9 +1,11 @@
 ﻿namespace SharpEngineCore.Graphics;
 
-public abstract class Renderer
+internal abstract class Renderer
 {
-    protected Renderer()
-    {
+    protected Device _device;
 
+    protected Renderer(Device device)
+    {
+        _device = device;
     }
 }

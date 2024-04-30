@@ -1,11 +1,9 @@
-﻿using TerraFX.Interop.WinRT;
+﻿namespace SharpEngineCore.Graphics;
 
-namespace SharpEngineCore.Graphics;
-
-public sealed class PolygonRenderer : Renderer
+internal sealed class PolygonRenderer : Renderer
 {
-    public PolygonRenderer() :
-        base()
+    public PolygonRenderer(Device device) :
+        base(device)
     {
 
     }

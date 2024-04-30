@@ -18,7 +18,7 @@ internal sealed class Logger
 
     public void LogError(string message)
     {
-        Log($"ERROR: {message}", ERROR_COLOR);
+        Log($"Header: {message}", ERROR_COLOR);
     }
 
     public void BreakLine()

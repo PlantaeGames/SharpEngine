@@ -1,7 +1,8 @@
-﻿using TerraFX.Interop.Windows;
+﻿using System.Text;
+
+using TerraFX.Interop.Windows;
 
 using SharpEngineCore.Graphics;
-using System.Text;
 using SharpEngineCore.Utilities;
 
 namespace SharpEngineCore.Components;
@@ -52,6 +53,13 @@ internal sealed class MainWindow : Window
         var swapchain = DXGIFactory.GetInstance().CreateSwapchain(this, device);
         swapchain.Present();
         _logger.LogMessage("Swapchain Created on Device: 0");
+
+        _logger.BreakLine();
+
+        // creating render target
+        _logger.LogHeader("Render Target View Creation:-");
+        var renderTarget = device.CreateRenderTargetView(swapchain.GetBackTexture());
+        _logger.LogMessage("Render Target View Created on Swapchain BackBuffer.");
     }
 
     protected override LRESULT WndProc(HWND hWND, uint msg, WPARAM wParam, LPARAM lParam)

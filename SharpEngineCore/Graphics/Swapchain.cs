@@ -1,4 +1,6 @@
-﻿using TerraFX.Interop.DirectX;
+﻿using System.Diagnostics;
+
+using TerraFX.Interop.DirectX;
 using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
@@ -7,25 +9,28 @@ internal sealed class Swapchain
 {
     private ComPtr<IDXGISwapChain> _pSwapchain;
     private Window _window;
-    private Texture _backTexture;
+    private Texture2D _backTexture;
 
     private readonly (float r, float g, float b, float a) CLEAR_COLOR = (0f, 0f, 0f, 0f);
 
-    private void GetBackTexture()
-    {
-        NativeGetBackTexture();
+    public Texture2D GetBackTexture() => _backTexture;
 
-        unsafe void NativeGetBackTexture()
+    private void CreateBackTexture()
+    {
+        NativeCreateBackTexture();
+
+        unsafe void NativeCreateBackTexture()
         {
             fixed(IDXGISwapChain** ppSwapchain = _pSwapchain)
             {
-                var uuid = typeof(IDXGIResource).GUID;
+                var result = new HRESULT();
 
-                var pBackTexture = new ComPtr<ID3D11Texture2D>();
-                fixed (ID3D11Texture2D** ppTexture = pBackTexture)
+                var uuid = typeof(IDXGIResource).GUID;
+                var pBackTextureResource = new ComPtr<ID3D11Resource>();
+                fixed (ID3D11Resource** ppResource = pBackTextureResource)
                 {
                     GraphicsException.SetInfoQueue();
-                    var result = (*ppSwapchain)->GetBuffer(0u, &uuid, (void**)ppTexture);
+                    result = (*ppSwapchain)->GetBuffer(0u, &uuid, (void**)ppResource);
 
                     if(result.FAILED)
                     {
@@ -35,13 +40,19 @@ internal sealed class Swapchain
                     }
                 }
 
+                var pBackTexture = new ComPtr<ID3D11Texture2D>();
+                result = pBackTextureResource.As(&pBackTexture);
+
+                Debug.Assert(result.FAILED == false,
+                    "Failed to query ID311Texture2D from ID3D11Resource.");
+
                 _backTexture = new Texture2D(pBackTexture,
                     new TextureInfo() { Size = _window.GetSize() });
             }
         }
     }
 
-    public void Present()
+    public void Present(uint syncInterval = 1u)
     {
         NativePresent();
 
@@ -50,7 +61,7 @@ internal sealed class Swapchain
             fixed(IDXGISwapChain** ppSwapchain = _pSwapchain)
             {
                 GraphicsException.SetInfoQueue();
-                var result = (*ppSwapchain)->Present(1u, 0u);
+                var result = (*ppSwapchain)->Present(syncInterval, 0u);
 
                 if(result.FAILED)
                 {
@@ -65,5 +76,7 @@ internal sealed class Swapchain
     {
         _pSwapchain = pSwapchain;
         _window = window;
+
+        CreateBackTexture();
     }
 }

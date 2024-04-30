@@ -1,4 +1,7 @@
-﻿namespace SharpEngineCore.Graphics;
+﻿using TerraFX.Interop.DirectX;
+using TerraFX.Interop.Windows;
+
+namespace SharpEngineCore.Graphics;
 
 internal abstract class Resource
 {
@@ -13,15 +16,13 @@ internal abstract class ResourceView
     { }
 }
 
-internal sealed class TextureView : ResourceView
+internal sealed class RenderTargetView : ResourceView
 {
-    public TextureView() :
+    private ComPtr<ID3D11RenderTargetView> _pView;
+
+    public RenderTargetView(ComPtr<ID3D11RenderTargetView> pView) :
         base()
-    { }
-}
-
-
-internal interface IViewable
-{
-
+    {
+        _pView = pView;
+    }
 }
