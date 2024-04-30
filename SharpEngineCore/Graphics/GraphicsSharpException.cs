@@ -1,6 +1,7 @@
-﻿using SharpEngineCore.Exceptions;
+﻿using System.Runtime.CompilerServices;
+
+using SharpEngineCore.Exceptions;
 using SharpEngineCore.Utilities;
-using System.Runtime.CompilerServices;
 
 namespace SharpEngineCore.Graphics;
 

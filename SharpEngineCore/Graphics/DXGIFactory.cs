@@ -35,7 +35,7 @@ internal sealed class DXGIFactory
                 for (var i = 0u; i < MAX_ENUMERATE_DEVICE_COUNT; i++)
                 {
                     IDXGIAdapter* pTemp = (IDXGIAdapter*)IntPtr.Zero;
-                    if(Errors.CheckHResult((*ppFactory)->EnumAdapters(i, &pTemp)))
+                    if((*ppFactory)->EnumAdapters(i, &pTemp).SUCCEEDED)
                         foundList.Add(i);
                 }
 
@@ -51,7 +51,7 @@ internal sealed class DXGIFactory
                         GraphicsSharpException.SetInfoQueue();
                         var result = (*ppFactory)->EnumAdapters(foundList[i], ppAdapter);
 
-                        if (Errors.CheckHResult(result) == false)
+                        if (result.FAILED)
                         {
                             // error here.
                             throw GraphicsSharpException.GetLastGraphicsException
@@ -77,6 +77,7 @@ internal sealed class DXGIFactory
 
     private DXGIFactory()
     {
+        _pFactory = new();
         Initialize();
     }
 
@@ -93,7 +94,7 @@ internal sealed class DXGIFactory
                 GraphicsSharpException.SetInfoQueue();
                 var result = DirectX.CreateDXGIFactory(&uuid, (void**)ppFactory);
 
-                if(Errors.CheckHResult(result) == false)
+                if(result.FAILED)
                 {
                     // error here.
                     throw GraphicsSharpException.GetLastGraphicsException(

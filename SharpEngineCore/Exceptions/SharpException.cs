@@ -1,8 +1,10 @@
-﻿using System.Runtime.CompilerServices;
-using System.Text;
+﻿using System.Text;
 
 using TerraFX.Interop.Windows;
 using Win32 = TerraFX.Interop.Windows.Windows;
+
+using SharpEngineCore.Components;
+using System.Runtime.CompilerServices;
 
 namespace SharpEngineCore.Exceptions;
 
@@ -35,7 +37,23 @@ public class SharpException : Exception
 
     public virtual void Show()
     {
-       MessageBox.Show($"{this}", ERROR_LABEL, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        NativeShow();
+
+        unsafe void NativeShow()
+        {
+            var message = this.ToString();
+            var caption = "Error";
+
+            fixed(char* pMessage = message)
+            {
+                fixed(char* pCaption = caption)
+                {
+                    Win32.MessageBoxExW((HWND)IntPtr.Zero, pMessage, pCaption, MB.MB_OK, 0);
+                }
+            }
+        }
+
+        new Logger().LogError(this.ToString());
     }
 
     public static SharpException GetLastWin32Exception(SharpException e)

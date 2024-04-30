@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SharpEngineCore": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

@@ -9,6 +9,8 @@ internal sealed class Adapter
 {
     private readonly ComPtr<IDXGIAdapter> _pAdapter;
 
+    public ComPtr<IDXGIAdapter> GetNativePtr() => _pAdapter;
+
     public Adapter(ComPtr<IDXGIAdapter> pAdapter)
     {
         _pAdapter = pAdapter;
@@ -27,7 +29,7 @@ internal sealed class Adapter
                 GraphicsSharpException.SetInfoQueue();
                 var result = (*ppAdatper)->GetDesc(&description);
 
-                if(Errors.CheckHResult(result) == false)
+                if (result.FAILED)
                 {
                     // error here
                     throw GraphicsSharpException.GetLastGraphicsException(

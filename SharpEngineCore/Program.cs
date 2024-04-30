@@ -1,5 +1,6 @@
 ﻿using SharpEngineCore.Components;
 using SharpEngineCore.Exceptions;
+using SharpEngineCore.Graphics;
 
 namespace SharpEngineCore;
 internal sealed class Program
@@ -11,6 +12,10 @@ internal sealed class Program
         try
         {
             returnCode = new App().Run();
+        }
+        catch(GraphicsSharpException e)
+        {
+            e.Show();
         }
         catch (SharpException e)
         {

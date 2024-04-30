@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Runtime.InteropServices;
 
 using TerraFX.Interop.Windows;
 using TerraFX.Interop.DirectX;
@@ -17,6 +18,8 @@ internal sealed class DXGIInfoQueue
     private ulong _messageCount = 0u;
 
     private static object _instanceLock = new();
+
+    private HMODULE _debugLibHandle;
 
     public static DXGIInfoQueue GetInstance()
     {
@@ -38,53 +41,70 @@ internal sealed class DXGIInfoQueue
 
         unsafe string[] NativeGetMessage()
         {
-            var result = new List<string>(10);
-            result.Add("[ DXGI INFO QUEUE MESSAGES ]");
+            var messages = new List<string>(10);
+            messages.Add("[ DXGI INFO QUEUE MESSAGES ]\n");
 
             var messageCount = GetStoredMessageCount();
+            var uuid = DXGI.DXGI_DEBUG_ALL;
 
             fixed (IDXGIInfoQueue** ppInfoQueue = _pInfoQueue)
             {
                 for (var i = _messageCount; i < messageCount; i++)
                 {
-                    HRESULT returnCode = 0;
+                    HRESULT result = 0;
 
+                    // getting message length
                     nuint messageSize = 0u;
-                    returnCode = (*ppInfoQueue)->GetMessage(DXGI.DXGI_DEBUG_ALL, i, 
+                    result = (*ppInfoQueue)->GetMessage(uuid, i, 
                         (DXGI_INFO_QUEUE_MESSAGE*)IntPtr.Zero, &messageSize);
 
-                    if(Errors.CheckHResult(returnCode) == false)
+                    if(result.FAILED)
                     {
                         // error here
                         throw SharpException.GetLastWin32Exception(
                             new SharpException("Unable to retive DXGI Info Queue Message Length."));
                     }
 
-                    DXGI_INFO_QUEUE_MESSAGE message = new DXGI_INFO_QUEUE_MESSAGE();
-
-                    char[] buffer = new char[(int)messageSize];
-                    fixed(char* pBuffer = buffer)
+                    // getting message
+                    var pMessage = Marshal.AllocHGlobal((int)messageSize);
+                    for (var x = 0; x < (int)messageSize; x++)
                     {
-                        returnCode = (*ppInfoQueue)->GetMessage(DXGI.DXGI_DEBUG_ALL, i,
-                            &message, &messageSize);
-
-                        if(Errors.CheckHResult(returnCode) == false)
-                        {
-                            // error here
-                            throw SharpException.GetLastWin32Exception(
-                                new SharpException("Unable to retive DXGI Info Queue Message."));
-                        }
-                        for(var x = 0; x < (int)messageSize; x++)
-                        {
-                            buffer[x] = (char)*(message.pDescription + (x * sizeof(sbyte)));
-                        }
-
-                        result.Add(buffer.ToSingleString());
+                        *((byte*)pMessage + (x * sizeof(byte))) = 0;
                     }
+
+                    result = (*ppInfoQueue)->GetMessage(uuid, i,
+                                (DXGI_INFO_QUEUE_MESSAGE*)pMessage, &messageSize);
+
+                    if (result.FAILED)
+                    {
+                        Marshal.FreeHGlobal(pMessage);
+
+                        // error here
+                        throw SharpException.GetLastWin32Exception(
+                            new SharpException("Unable to retive DXGI Info Queue Message."));
+                    }
+
+                    // coping c string
+                    var sb = new StringBuilder();
+
+                    for (var x = 0; x < (int)messageSize; x++)
+                    {
+                        char target = (char)*(((DXGI_INFO_QUEUE_MESSAGE*)pMessage)->pDescription
+                            + (x * sizeof(sbyte)));
+
+                        if ((byte)target == 0)
+                            break;
+
+                        sb.Append(target);
+                    }
+
+                    Marshal.FreeHGlobal(pMessage);
+
+                    messages.Add($"{sb}\n");
                 }
             }
 
-            return result.ToArray();
+            return messages.ToArray();
         }
 
         return result;
@@ -121,6 +141,9 @@ internal sealed class DXGIInfoQueue
 
     private DXGIInfoQueue()
     {
+        _pInfoQueue = new();
+        _debugLibHandle = new ();
+
         Initialize();
     }
 
@@ -147,7 +170,8 @@ internal sealed class DXGIInfoQueue
 
                 fixed (sbyte* pFunctionName = sbytes)
                 {
-                    var fnPtr = (delegate* unmanaged<Guid, void**, void>)GetProcAddress(handle, pFunctionName);
+                    var fnPtr = (delegate* unmanaged<Guid, void**, void>)
+                        GetProcAddress(handle, pFunctionName);
                     if (fnPtr == null)
                     {
                         // error here
@@ -156,10 +180,22 @@ internal sealed class DXGIInfoQueue
 
                     fixed(IDXGIInfoQueue** ppInfoQueue = _pInfoQueue)
                     {
-                        fnPtr(typeof(IDXGIInfoQueue).GUID, (void**)ppInfoQueue);
+                        var uuid = typeof(IDXGIInfoQueue).GUID;
+                        fnPtr(uuid, (void**)ppInfoQueue);
                     }
                 }
             }
+        }
+    }
+
+    ~DXGIInfoQueue()
+    {
+        NativeFree();
+
+        void NativeFree()
+        {
+            if (_debugLibHandle != 0)
+                FreeLibrary(_debugLibHandle);
         }
     }
 }
