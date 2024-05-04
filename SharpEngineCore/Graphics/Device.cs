@@ -29,7 +29,7 @@ internal sealed class Device
                 var pRenderTargetView = new ComPtr<ID3D11RenderTargetView>();
                 fixed (ID3D11RenderTargetView** ppRenderTargetView = pRenderTargetView)
                 {
-                    fixed (ID3D11Resource** ppResource = viewable.GetNativeResourcePtr())
+                    fixed (ID3D11Resource** ppResource = viewable.GetNativePtrAsResource())
                     {
                         GraphicsException.SetInfoQueue();
                         var result = (*ppDevice)->CreateRenderTargetView(
@@ -50,9 +50,13 @@ internal sealed class Device
         }
     }
 
-    public Texture2D CreateTexture2D(Surface surface, TextureInfo info)
+    public Texture2D CreateTexture2D(Surface surface, ResourceUsageInfo usageInfo)
     {
-        return new Texture2D(NativeCreateTexture2D(), info);
+        return new Texture2D(NativeCreateTexture2D(), new TextureInfo()
+        {
+            Size = surface.Size,
+            UsageInfo = usageInfo
+        });
 
         unsafe ComPtr<ID3D11Texture2D> NativeCreateTexture2D()
         {
@@ -67,10 +71,10 @@ internal sealed class Device
                 Count = 1u
             };
             desc.MiscFlags = 0u;
-            desc.Format = info.UsuageInfo.Format;
-            desc.Usage = info.UsuageInfo.Usage;
-            desc.BindFlags = info.UsuageInfo.BindFlags;
-            desc.CPUAccessFlags = info.UsuageInfo.CPUAccessFlags;
+            desc.Format = usageInfo.Format;
+            desc.Usage = usageInfo.Usage;
+            desc.BindFlags = (uint)usageInfo.BindFlags;
+            desc.CPUAccessFlags = (uint)usageInfo.CPUAccessFlags;
 
             var initialData = new D3D11_SUBRESOURCE_DATA();
             initialData.pSysMem = surface.GetNativePointer().ToPointer();

@@ -1,6 +1,7 @@
 ﻿using System.Text;
 
 using TerraFX.Interop.Windows;
+using TerraFX.Interop.DirectX;
 
 using SharpEngineCore.Graphics;
 using SharpEngineCore.Utilities;
@@ -67,7 +68,14 @@ internal sealed class MainWindow : Window
         _logger.LogHeader("Test Texture2D Creation:-");
         using var surface = new Surface(new Size(8196, 8196));
         var texture = device.CreateTexture2D(surface,
-            new TextureInfo());
+            new ResourceUsageInfo()
+            {
+                Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,
+                Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE,
+                BindFlags = D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE,
+                CPUAccessFlags = 0u
+            });
+
         _logger.LogMessage("Test Texture Created.");
     }
 

@@ -2,13 +2,13 @@
 
 namespace SharpEngineCore.Graphics;
 
-internal struct ResourceUsuageInfo
+internal readonly struct ResourceUsageInfo(D3D11_USAGE usage,
+                          DXGI_FORMAT format,
+                          D3D11_BIND_FLAG bindFlags,
+                          D3D11_CPU_ACCESS_FLAG cpuAccessFlags)
 {
-    public DXGI_FORMAT Format = DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM;
-    public D3D11_USAGE Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE;
-    public uint BindFlags = (uint) D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE;
-    public uint CPUAccessFlags = 0u;
-
-    public ResourceUsuageInfo()
-    { }
+    public readonly D3D11_USAGE Usage { get; init; } = usage;
+    public readonly DXGI_FORMAT Format { get; init; }  = format;
+    public readonly D3D11_BIND_FLAG BindFlags { get; init; } = bindFlags;
+    public readonly D3D11_CPU_ACCESS_FLAG CPUAccessFlags { get; init; } = cpuAccessFlags;
 }

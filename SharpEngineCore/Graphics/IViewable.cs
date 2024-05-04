@@ -5,5 +5,5 @@ namespace SharpEngineCore.Graphics;
 
 internal interface IViewable
 {
-    public ComPtr<ID3D11Resource> GetNativeResourcePtr();
+    public ComPtr<ID3D11Resource> GetNativePtrAsResource();
 }
