@@ -5,15 +5,15 @@ namespace SharpEngineCore.Graphics;
 /// <summary>
 /// Containing Raw Colors in R,G,B,A Format, 4 byte each channel.
 /// </summary>
-[StructLayout(LayoutKind.Sequential, Pack = 0, Size = 4)]
+[StructLayout(LayoutKind.Sequential, Pack = 0, Size = 16)]
 public struct Fragment
 {
-    public byte r = 0;
-    public byte g = 0;
-    public byte b = 0;
-    public byte a = 0;
+    public float r = 0f;
+    public float g = 0f;
+    public float b = 0f;
+    public float a = 0f;
 
-    public Fragment(byte r, byte g, byte b, byte a)
+    public Fragment(float r, float g, float b, float a)
     {
         this.r = r;
         this.g = g;

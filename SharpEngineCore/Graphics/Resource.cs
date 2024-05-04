@@ -42,7 +42,9 @@ internal abstract class ResourceView
 
 internal sealed class RenderTargetView : ResourceView
 {
-    private ComPtr<ID3D11RenderTargetView> _pView;
+    private readonly ComPtr<ID3D11RenderTargetView> _pView;
+
+    public ComPtr<ID3D11RenderTargetView> GetNativePtr() => _pView;
 
     public RenderTargetView(ComPtr<ID3D11RenderTargetView> pView) :
         base()

@@ -50,7 +50,7 @@ public sealed class Surface : IDisposable
             }
 
             // zero out memory
-            Clear(new Fragment(255, 255, 255, 255));
+            Clear(new Fragment(0f, 0f, 0f, 0f));
         }
     }
 

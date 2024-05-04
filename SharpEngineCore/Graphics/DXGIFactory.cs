@@ -53,10 +53,13 @@ internal sealed class DXGIFactory
             {
                 fixed(IDXGIFactory** ppFactory = _pFactory)
                 {
+                    var pUnknown = new ComPtr<IUnknown>();
+                    device.GetNativePtr().As(&pUnknown);
+
                     fixed(ID3D11Device** ppDevice = device.GetNativePtr())
                     {
                         GraphicsException.SetInfoQueue();
-                        var result = (*ppFactory)->CreateSwapChain((IUnknown*)(*ppDevice),
+                        var result = (*ppFactory)->CreateSwapChain(pUnknown.Get(),
                             &desc, ppSwapchain);
 
                         if(result.FAILED)

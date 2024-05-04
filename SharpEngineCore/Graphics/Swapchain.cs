@@ -11,7 +11,8 @@ internal sealed class Swapchain
     private Window _window;
     private Texture2D _backTexture;
 
-    private readonly (float r, float g, float b, float a) CLEAR_COLOR = (0f, 0f, 0f, 0f);
+    // TODO: unused
+    // private readonly (float r, float g, float b, float a) CLEAR_COLOR = (0f, 0f, 0f, 0f);
 
     public Texture2D GetBackTexture() => _backTexture;
 

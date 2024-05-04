@@ -12,8 +12,11 @@ internal sealed class MainWindow : Window
 {
     private Logger _logger;
 
+    private Swapchain _swapchain;
+
     public void Update()
     {
+        _swapchain.Present();
     }
 
     public MainWindow(string name, Point location, Size size) : base(name, location, size)
@@ -25,6 +28,9 @@ internal sealed class MainWindow : Window
 
     private void Initialize()
     {
+        // warm up
+        _ = DXGIInfoQueue.GetInstance();
+
         // quering all adapters
         _logger.LogHeader("Queried Adapters:-");
         var adapters = DXGIFactory.GetInstance().GetAdpters();
@@ -44,6 +50,7 @@ internal sealed class MainWindow : Window
         // creating device on default adapter
         _logger.LogHeader("Device Creation:-");
         var device = new Device(adapters[0]);
+        var context = device.GetContext();
         _logger.LogMessage("Device Created on Adapter: 0");
         _logger.LogMessage($"Obtained Feature Level: {device.GetFeatureLevel()}");
 
@@ -51,22 +58,34 @@ internal sealed class MainWindow : Window
 
         // creating swapchain
         _logger.LogHeader("Swapchain Creation:-");
-        var swapchain = DXGIFactory.GetInstance().CreateSwapchain(this, device);
-        swapchain.Present();
+         _swapchain = DXGIFactory.GetInstance().CreateSwapchain(this, device);
         _logger.LogMessage("Swapchain Created on Device: 0");
 
         _logger.BreakLine();
 
         // creating render target
         _logger.LogHeader("Render Target View Creation:-");
-        var renderTarget = device.CreateRenderTargetView(swapchain.GetBackTexture());
+        var renderTarget = device.CreateRenderTargetView(_swapchain.GetBackTexture());
         _logger.LogMessage("Render Target View Created on Swapchain BackBuffer.");
 
         _logger.BreakLine();
 
+        // clearing render target view
+        _logger.LogHeader("Clearing Render Target View:-");
+        context.ClearRenderTargetView(renderTarget, new Fragment
+        {
+            r = 0f,
+            g = 0f,
+            b = 1f,
+            a = 1f
+        });
+        _logger.LogMessage("Render Target View Cleared.");
+        
+        _logger.BreakLine();
+
         // creating test texture 2d
         _logger.LogHeader("Test Texture2D Creation:-");
-        using var surface = new Surface(new Size(8196, 8196));
+        using var surface = new Surface(new Size(256, 256));
         var texture = device.CreateTexture2D(surface,
             new ResourceUsageInfo()
             {

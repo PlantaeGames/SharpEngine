@@ -7,6 +7,14 @@ namespace SharpEngineCore.Graphics;
 
 public class GraphicsException : SharpException
 {
+
+#nullable enable
+    public static bool CheckIfAny()
+    {
+        return DXGIInfoQueue.GetInstance().IsMessageAvailable();
+    }
+#nullable disable
+
     public static void SetInfoQueue()
     {
         DXGIInfoQueue.GetInstance().Set();
