@@ -12,11 +12,28 @@ internal sealed class MainWindow : Window
 {
     private Logger _logger;
 
+    private Device _device;
+    private DeviceContext _context;
     private Swapchain _swapchain;
+    private RenderTargetView _view;
+
+    private float _count = 0f;
 
     public void Update()
     {
+        var value = Math.Abs(MathF.Sin(_count));
+
+        _context.ClearRenderTargetView(_view, new Fragment
+        {
+            r = 0f,
+            g = 0f,
+            b = value,
+            a = 1f
+        });
+
         _swapchain.Present();
+
+        _count += 0.016f;
     }
 
     public MainWindow(string name, Point location, Size size) : base(name, location, size)
@@ -49,30 +66,30 @@ internal sealed class MainWindow : Window
 
         // creating device on default adapter
         _logger.LogHeader("Device Creation:-");
-        var device = new Device(adapters[0]);
-        var context = device.GetContext();
+        _device = new Device(adapters[0]);
+        _context = _device.GetContext();
         _logger.LogMessage("Device Created on Adapter: 0");
-        _logger.LogMessage($"Obtained Feature Level: {device.GetFeatureLevel()}");
+        _logger.LogMessage($"Obtained Feature Level: {_device.GetFeatureLevel()}");
 
         _logger.BreakLine();
 
         // creating swapchain
         _logger.LogHeader("Swapchain Creation:-");
-         _swapchain = DXGIFactory.GetInstance().CreateSwapchain(this, device);
+         _swapchain = DXGIFactory.GetInstance().CreateSwapchain(this, _device);
         _logger.LogMessage("Swapchain Created on Device: 0");
 
         _logger.BreakLine();
 
         // creating render target
         _logger.LogHeader("Render Target View Creation:-");
-        var renderTarget = device.CreateRenderTargetView(_swapchain.GetBackTexture());
+        _view = _device.CreateRenderTargetView(_swapchain.GetBackTexture());
         _logger.LogMessage("Render Target View Created on Swapchain BackBuffer.");
 
         _logger.BreakLine();
 
         // clearing render target view
         _logger.LogHeader("Clearing Render Target View:-");
-        context.ClearRenderTargetView(renderTarget, new Fragment
+        _context.ClearRenderTargetView(_view, new Fragment
         {
             r = 0f,
             g = 0f,
@@ -84,9 +101,9 @@ internal sealed class MainWindow : Window
         _logger.BreakLine();
 
         // creating test texture 2d
-        _logger.LogHeader("Test Texture2D Creation:-");
         using var surface = new Surface(new Size(256, 256));
-        var texture = device.CreateTexture2D(surface,
+        _logger.LogHeader($"Creating test texture of {surface.Size}");
+        var texture = _device.CreateTexture2D(surface,
             new ResourceUsageInfo()
             {
                 Format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM_SRGB,
@@ -96,6 +113,27 @@ internal sealed class MainWindow : Window
             });
 
         _logger.LogMessage("Test Texture Created.");
+
+        _logger.BreakLine();
+
+        // creating test buffer
+        var fragments = new Fragment[1024];
+        _logger.LogHeader($"Creating test buffer of {fragments.Length * 16} bytes");
+        
+        var vertexBuffer = new VertexBuffer(
+            _device.CreateBuffer(fragments, new ResourceUsageInfo()
+            {
+                Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE,
+                BindFlags = D3D11_BIND_FLAG.D3D11_BIND_VERTEX_BUFFER
+                
+            }));
+        _logger.LogMessage("Test Buffer Created.");
+
+        _logger.BreakLine();
+
+        // presenting
+        _swapchain.Present();
+        _logger.LogMessage("Presenting.");
     }
 
     protected override LRESULT WndProc(HWND hWND, uint msg, WPARAM wParam, LPARAM lParam)

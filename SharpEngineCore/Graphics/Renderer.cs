@@ -1,11 +1,30 @@
-﻿namespace SharpEngineCore.Graphics;
+﻿using TerraFX.Interop.Windows;
 
-internal abstract class Renderer
+
+namespace SharpEngineCore.Graphics;
+
+internal class Renderer
 {
-    protected Device _device;
+    protected readonly Device _device;
+    protected readonly RenderPipeline _pipeline;
 
-    protected Renderer(Device device)
+    public void Render()
     {
-        _device = device;
+        // TODO: Start Pipeline Here.
+        _pipeline.Ready(_device);
+        _pipeline.Go(_device);
+    }
+
+    public Renderer(RenderPipeline pipeline, Adapter adapter)
+    {
+        _pipeline = pipeline;
+        _device = new Device(adapter);
+
+        InitializePipeline();
+    }
+
+    private void InitializePipeline()
+    {
+        _pipeline.Initialize(_device);
     }
 }

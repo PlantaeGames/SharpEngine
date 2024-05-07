@@ -15,6 +15,68 @@ internal sealed class Device
 
     private D3D_FEATURE_LEVEL _featureLevel;
 
+    /// <summary>
+    /// Create buffer for graphics purposes.
+    /// </summary>
+    /// <param name="fragments">The initial data to write.</param>
+    /// <param name="usageInfo">Usuage of the buffer.</param>
+    /// <exception cref="GraphicsException"></exception>
+    /// <returns></returns>
+    public Buffer CreateBuffer(Fragment[] fragments, ResourceUsageInfo usageInfo)
+    {
+        var (ptr, size) = NativeCreateBuffer();
+        return new Buffer(ptr, new BufferInfo()
+        {
+            Size = size,
+            UsageInfo = usageInfo
+        });
+
+        unsafe (ComPtr<ID3D11Buffer> ptr, int size) NativeCreateBuffer()
+        {
+            (ComPtr<ID3D11Buffer> ptr, int size) pBuffer = new();
+            pBuffer.size = sizeof(Fragment) * fragments.Length;
+
+            var desc = new D3D11_BUFFER_DESC();
+            desc.StructureByteStride = (uint) sizeof(Fragment);
+            desc.ByteWidth = (uint) pBuffer.size;
+
+            desc.BindFlags = (uint) usageInfo.BindFlags;
+            desc.CPUAccessFlags = (uint) usageInfo.CPUAccessFlags;
+            desc.Usage = usageInfo.Usage;
+
+            desc.MiscFlags = 0u;
+
+            fixed (ID3D11Device** ppDevice = _pDevice)
+            {
+                fixed (Fragment* pFragment = fragments)
+                {
+                    var initialData = new D3D11_SUBRESOURCE_DATA();
+                    initialData.pSysMem = pFragment;
+
+                    GraphicsException.SetInfoQueue();
+                    var result = (*ppDevice)->CreateBuffer(&desc, &initialData,
+                                                            pBuffer.ptr.GetAddressOf());
+
+                    if (result.FAILED)
+                    {
+                        // error here.
+                        throw GraphicsException.GetLastGraphicsException(
+                            new GraphicsException($"Failed to Create Buffer\nError Code: {result}"));
+                    }
+                }
+            }
+
+            return pBuffer;
+        }
+    }
+
+    /// <summary>
+    /// Creates render target view on viewable resources (i.e texture2d ).
+    /// 
+    /// Throws Graphics Exception on failure.
+    /// </summary>
+    /// <param name="viewable">A viewable resource</param>
+    /// <returns>Created render target view.</returns>
     public RenderTargetView CreateRenderTargetView(IViewable viewable)
     {
         return new RenderTargetView(NativeCreateView());

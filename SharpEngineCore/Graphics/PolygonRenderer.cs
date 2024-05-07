@@ -2,8 +2,8 @@
 
 internal sealed class PolygonRenderer : Renderer
 {
-    public PolygonRenderer(Device device) :
-        base(device)
+    public PolygonRenderer(RenderPipeline pipeline, Adapter adapter) :
+        base(pipeline, adapter)
     {
 
     }
