@@ -36,8 +36,8 @@ internal sealed class Swapchain
                     if(result.FAILED)
                     {
                         // error here
-                        throw GraphicsException.GetLastGraphicsException(
-                            new GraphicsException($"Failed to obtain back buffer of swapchain\nError Code: {result}"));
+                        GraphicsException.ThrowLastGraphicsException(
+                            $"Failed to obtain back buffer of swapchain\nError Code: {result}");
                     }
                 }
 
@@ -66,8 +66,8 @@ internal sealed class Swapchain
 
                 if(result.FAILED)
                 {
-                    throw GraphicsException.GetLastGraphicsException(
-                        new GraphicsException($"Failed to present swapchain\nError Code: {result}"));
+                    GraphicsException.ThrowLastGraphicsException(
+                        $"Failed to present swapchain\nError Code: {result}");
                 }
             }
         }

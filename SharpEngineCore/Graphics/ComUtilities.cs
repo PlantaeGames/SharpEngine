@@ -6,21 +6,16 @@ namespace SharpEngineCore.Graphics;
 
 internal sealed class ComUtilities
 {
-    public static ComPtr<ID3D11Resource> ToResourceNativePtr<T>(ComPtr<T> nativePtr)
+    public static ComPtr<ID3D11Resource> ToResourceNativePtr<T>(ref ComPtr<T> nativePtr)
         where T : unmanaged, IUnknown.Interface
     {
-        return NativeToResource();
+        var ptr = new ComPtr<ID3D11Resource>();
+        var result = nativePtr.As(ref ptr);
 
-        unsafe ComPtr<ID3D11Resource> NativeToResource()
-        {
-            var ptr = new ComPtr<ID3D11Resource>();
-            var result = nativePtr.As(&ptr);
+        Debug.Assert(result.FAILED == false,
+            $"Failed to query {nameof(ID3D11Resource)}" +
+            $" Interface from {nameof(ID3D11Texture2D)}.");
 
-            Debug.Assert(result.FAILED == false,
-                $"Failed to query {nameof(ID3D11Resource)}" +
-                $" Interface from {nameof(ID3D11Texture2D)}.");
-
-            return ptr;
-        }
+        return ptr;
     }
 }

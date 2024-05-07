@@ -1,4 +1,6 @@
-﻿using TerraFX.Interop.DirectX;
+﻿using System.Diagnostics;
+
+using TerraFX.Interop.DirectX;
 using static TerraFX.Interop.DirectX.DirectX;
 using TerraFX.Interop.Windows;
 
@@ -14,6 +16,90 @@ internal sealed class Device
     private DeviceContext _context;
 
     private D3D_FEATURE_LEVEL _featureLevel;
+
+    /// <summary>
+    /// Creates a new pixel shader from shader module.
+    /// </summary>
+    /// <param name="module">The shader module to create shader from.</param>
+    /// <returns>Created Pixel Shader.</returns>
+    /// <exception cref="GraphicsException"></exception>
+    public PixelShader CreatePixelShader(ShaderModule module)
+    {
+        var compiler = new ShaderCompiler();
+        var blob = compiler.Compile(module, new CompileParams()
+        {
+            Target = CompileParams.Shader.PS,
+            FeatureLevel = _featureLevel
+        });
+
+        return new PixelShader(NativeCreatePixelShader());
+
+        unsafe ComPtr<ID3D11PixelShader> NativeCreatePixelShader()
+        {
+            var pBlob = blob.GetNativePtr().Get();
+            var length = pBlob->GetBufferSize();
+
+            var pShader = new ComPtr<ID3D11PixelShader>();
+            fixed (ID3D11Device** ppDevice = _pDevice)
+            {
+                GraphicsException.SetInfoQueue();
+                var result = (*ppDevice)->CreatePixelShader(pBlob->GetBufferPointer(), length,
+                    (ID3D11ClassLinkage*)IntPtr.Zero,
+                    pShader.GetAddressOf());
+
+                if (result.FAILED)
+                {
+                    // error here.
+                    GraphicsException.ThrowLastGraphicsException(
+                        $"Failed to create Pixel Shader\nError Code: {result}");
+                }
+            }
+
+            return pShader;
+        }
+    }
+
+    /// <summary>
+    /// Creates a new vertex shader from shader module.
+    /// </summary>
+    /// <param name="module">The shader module to create shader from.</param>
+    /// <returns>Created Vertex Shader.</returns>
+    /// <exception cref="GraphicsException"></exception>
+    public VertexShader CreateVertexShader(ShaderModule module)
+    {
+        var compiler = new ShaderCompiler();
+        var blob = compiler.Compile(module, new CompileParams()
+        {
+            Target = CompileParams.Shader.VS,
+            FeatureLevel = _featureLevel
+        });
+
+        return new VertexShader(NativeCreateVertexShader());
+
+        unsafe ComPtr<ID3D11VertexShader> NativeCreateVertexShader()
+        {
+            var pBlob = blob.GetNativePtr().Get();
+            var length = pBlob->GetBufferSize();
+
+            var pShader = new ComPtr<ID3D11VertexShader>();
+            fixed(ID3D11Device** ppDevice = _pDevice)
+            {
+                GraphicsException.SetInfoQueue();
+                var result = (*ppDevice)->CreateVertexShader(pBlob->GetBufferPointer(), length,
+                    (ID3D11ClassLinkage*)IntPtr.Zero,
+                    pShader.GetAddressOf());
+
+                if(result.FAILED)
+                {
+                    // error here.
+                    GraphicsException.ThrowLastGraphicsException(
+                        $"Failed to create Vertex Shader\nError Code: {result}");
+                }
+            }
+
+            return pShader;
+        }
+    }
 
     /// <summary>
     /// Create buffer for graphics purposes.
@@ -60,8 +146,8 @@ internal sealed class Device
                     if (result.FAILED)
                     {
                         // error here.
-                        throw GraphicsException.GetLastGraphicsException(
-                            new GraphicsException($"Failed to Create Buffer\nError Code: {result}"));
+                        GraphicsException.ThrowLastGraphicsException(
+                            $"Failed to Create Buffer\nError Code: {result}");
                     }
                 }
             }
@@ -100,9 +186,8 @@ internal sealed class Device
                         if (result.FAILED)
                         {
                             // error here.
-                            throw GraphicsException.GetLastGraphicsException(
-                                new GraphicsException(
-                                    $"Failed to create render target view\nError Code: {result}"));
+                            GraphicsException.ThrowLastGraphicsException(
+                                $"Failed to create render target view\nError Code: {result}");
                         }
                     }
                 }
@@ -154,8 +239,8 @@ internal sealed class Device
                     if(result.FAILED)
                     {
                         // error here
-                        throw GraphicsException.GetLastGraphicsException(
-                            new GraphicsException($"Failed to create texture 2d\nError Code: {result}"));
+                        GraphicsException.ThrowLastGraphicsException(
+                            $"Failed to create texture 2d\nError Code: {result}");
                     }
                 }
 
@@ -164,7 +249,7 @@ internal sealed class Device
         }
     }
 
-    public ComPtr<ID3D11Device> GetNativePtr() => _pDevice;
+    public ComPtr<ID3D11Device> GetNativePtr() => new (_pDevice);
 
     public ImmediateDeviceContext GetContext() => (ImmediateDeviceContext) _context;
     public D3D_FEATURE_LEVEL GetFeatureLevel() => _featureLevel;
@@ -204,8 +289,8 @@ internal sealed class Device
                         if (result.FAILED)
                         {
                             // error here.
-                            throw GraphicsException.GetLastGraphicsException(
-                                new GraphicsException($"Failed to create device\nError Code: {result}"));
+                            GraphicsException.ThrowLastGraphicsException(
+                                $"Failed to create device\nError Code: {result}");
                         }
 
                         _featureLevel = featureLevel;

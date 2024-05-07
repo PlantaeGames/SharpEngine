@@ -17,7 +17,17 @@
   <ItemGroup>
     <Folder Include="Input\" />
     <Folder Include="ECS\" />
+    <Folder Include="Shaders\" />
     <Folder Include="Structures\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Shaders\PIxelShader.hlsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Shaders\VertexShader.hlsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

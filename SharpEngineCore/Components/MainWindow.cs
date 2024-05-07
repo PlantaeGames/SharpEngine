@@ -43,9 +43,6 @@ internal sealed class MainWindow : Window
 
     private void Initialize()
     {
-        // warm up
-        _ = DXGIInfoQueue.GetInstance();
-
         // quering all adapters
         _logger.LogHeader("Queried Adapters:-");
         var adapters = DXGIFactory.GetInstance().GetAdpters();
@@ -129,10 +126,27 @@ internal sealed class MainWindow : Window
 
         _logger.BreakLine();
 
+        // creating shaders
+        const string vertexShaderPath = "Shaders\\VertexShader.hlsl";
+        const string pixelShaderPath = "Shaders\\PixelShader.hlsl";
+
+        _logger.LogHeader("Creating Shaders.");
+        
+        var vertexModule = new ShaderModule(vertexShaderPath);
+        var vertexShader = _device.CreateVertexShader(vertexModule);
+        _logger.LogMessage("Vertex Shader Created.");
+
+        var pixelModule = new ShaderModule(pixelShaderPath);
+        var pixelShader = _device.CreatePixelShader(pixelModule);
+        _logger.LogMessage("Pixel Shader Created.");
+
+
+
+
+        _logger.BreakLine();
         // presenting
         _swapchain.Present();
-        _logger.LogMessage("Presenting.");
-
+        _logger.LogMessage("Presenting...");
 
         _logger.BreakLine();
     }

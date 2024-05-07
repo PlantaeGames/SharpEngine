@@ -4,10 +4,10 @@ using TerraFX.Interop.Windows;
 namespace SharpEngineCore.Graphics;
 
 internal class Buffer(ComPtr<ID3D11Buffer> pBuffer, BufferInfo info) :
-    Resource(ComUtilities.ToResourceNativePtr(pBuffer))
+    Resource(ComUtilities.ToResourceNativePtr(ref pBuffer))
 {
     public readonly BufferInfo Info = info;
-    protected readonly ComPtr<ID3D11Buffer> _ptr = pBuffer;
+    protected readonly ComPtr<ID3D11Buffer> _ptr = new(pBuffer);
 
-    public ComPtr<ID3D11Buffer> GetNativePtr() => _ptr;
+    public ComPtr<ID3D11Buffer> GetNativePtr() => new(_ptr);
 }

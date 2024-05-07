@@ -91,7 +91,7 @@ public class Window
                     var atom = RegisterClassExW(&wc);
                     if (atom == 0)
                     {
-                        throw SharpException.GetLastWin32Exception(new SharpException("Window Register Error"));
+                        SharpException.ThrowLastWin32Exception("Window Register Error");
                     }
                 }
             }
@@ -107,7 +107,7 @@ public class Window
                 {
                     if (UnregisterClassW(pName, (HINSTANCE)Process.GetCurrentProcess().Handle) == 0u)
                     {
-                        throw SharpException.GetLastWin32Exception(new SharpException("Class Unregister Error"));
+                        SharpException.ThrowLastWin32Exception("Class Unregister Error");
                     }
                 }
             }
@@ -152,8 +152,8 @@ public class Window
             if (result == false)
             {
                 // error here.
-                throw SharpException.GetLastWin32Exception(
-                    new SharpException("Failed to get window size."));
+                SharpException.ThrowLastWin32Exception(
+                    "Failed to get window size.");
             }
 
             size.width = rect.right - rect.left;
@@ -198,7 +198,7 @@ public class Window
         {
             if (DestroyWindow(HWnd) == 0)
             {
-                throw SharpException.GetLastWin32Exception(new SharpException("Window Destruction Error"));
+                SharpException.ThrowLastWin32Exception("Window Destruction Error");
             }
         }
     }
@@ -256,7 +256,7 @@ public class Window
             if (hWnd == (HWND)IntPtr.Zero)
             {
                 // error here.
-                throw SharpException.GetLastWin32Exception(new SharpException("Window Creation Error"));
+                SharpException.ThrowLastWin32Exception("Window Creation Error");
             }
 
             HWnd = hWnd;

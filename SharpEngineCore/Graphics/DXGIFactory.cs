@@ -65,8 +65,8 @@ internal sealed class DXGIFactory
                         if(result.FAILED)
                         {
                             // error here.
-                            throw GraphicsException.GetLastGraphicsException(
-                                new GraphicsException($"Failed to create swapchain\nError Code: {result}"));
+                            GraphicsException.ThrowLastGraphicsException(
+                                $"Failed to create swapchain\nError Code: {result}");
                         }
                     }
                 }
@@ -116,8 +116,8 @@ internal sealed class DXGIFactory
                         if (result.FAILED)
                         {
                             // error here.
-                            throw GraphicsException.GetLastGraphicsException
-                                (new GraphicsException($"Failed to get adapter.\nError Code: {result}"));
+                            GraphicsException.ThrowLastGraphicsException
+                                ($"Failed to get adapter.\nError Code: {result}");
                         }
                     }
                 }
@@ -158,8 +158,8 @@ internal sealed class DXGIFactory
                 if(result.FAILED)
                 {
                     // error here.
-                    throw GraphicsException.GetLastGraphicsException(
-                        new GraphicsException($"Failed to create DXGI Factory.\nError Code: {result}"));
+                    GraphicsException.ThrowLastGraphicsException(
+                        $"Failed to create DXGI Factory.\nError Code: {result}");
                 }
             }
         }

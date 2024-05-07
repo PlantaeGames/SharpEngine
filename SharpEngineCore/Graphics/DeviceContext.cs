@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-using TerraFX.Interop.DirectX;
+﻿using TerraFX.Interop.DirectX;
 using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
@@ -8,6 +6,16 @@ namespace SharpEngineCore.Graphics;
 internal abstract class DeviceContext
 {
     protected readonly ComPtr<ID3D11DeviceContext> _pContext;
+
+    public void BindInputAssembler()
+    {
+        NativeBindInputAssembler();
+
+        unsafe void NativeBindInputAssembler()
+        {
+            
+        }
+    }
 
     public void ClearRenderTargetView(RenderTargetView renderTargetView, Fragment color)
     {
@@ -25,8 +33,8 @@ internal abstract class DeviceContext
                     if(GraphicsException.CheckIfAny())
                     {
                         // error here
-                        throw GraphicsException.GetLastGraphicsException(
-                            new GraphicsException("Failed to clear render target view"));
+                        GraphicsException.ThrowLastGraphicsException(
+                            "Failed to clear render target view");
                     }
                 }
             }
@@ -35,7 +43,7 @@ internal abstract class DeviceContext
 
     protected DeviceContext(ComPtr<ID3D11DeviceContext> pDeviceContext)
     {
-        _pContext = pDeviceContext;
+        _pContext = new(pDeviceContext);
     }
 }
 

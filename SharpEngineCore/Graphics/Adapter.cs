@@ -7,11 +7,11 @@ internal sealed class Adapter
 {
     private readonly ComPtr<IDXGIAdapter> _pAdapter;
 
-    public ComPtr<IDXGIAdapter> GetNativePtr() => _pAdapter;
+    public ComPtr<IDXGIAdapter> GetNativePtr() => new(_pAdapter);
 
     public Adapter(ComPtr<IDXGIAdapter> pAdapter)
     {
-        _pAdapter = pAdapter;
+        _pAdapter = new (pAdapter);
     }
 
     public DXGI_ADAPTER_DESC GetDescription()
@@ -30,8 +30,8 @@ internal sealed class Adapter
                 if (result.FAILED)
                 {
                     // error here
-                    throw GraphicsException.GetLastGraphicsException(
-                        new GraphicsException($"Failed to get adapter description.\nError Code: {result}"));
+                    GraphicsException.ThrowLastGraphicsException(
+                        $"Failed to get adapter description.\nError Code: {result}");
                 }
 
                 return description;
