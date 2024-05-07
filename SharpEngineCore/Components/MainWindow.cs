@@ -21,13 +21,11 @@ internal sealed class MainWindow : Window
 
     public void Update()
     {
-        var value = Math.Abs(MathF.Sin(_count));
-
         _context.ClearRenderTargetView(_view, new Fragment
         {
-            r = 0f,
-            g = 0f,
-            b = value,
+            r = Math.Abs(MathF.Sin(_count)),
+            g = Math.Abs(MathF.Sin(_count * 1.1f)),
+            b = Math.Abs(MathF.Sin(_count * 0.7f)),
             a = 1f
         });
 
@@ -134,6 +132,9 @@ internal sealed class MainWindow : Window
         // presenting
         _swapchain.Present();
         _logger.LogMessage("Presenting.");
+
+
+        _logger.BreakLine();
     }
 
     protected override LRESULT WndProc(HWND hWND, uint msg, WPARAM wParam, LPARAM lParam)
