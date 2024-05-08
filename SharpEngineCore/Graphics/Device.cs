@@ -205,10 +205,10 @@ internal sealed class Device
         unsafe (ComPtr<ID3D11Buffer> ptr, int size) NativeCreateBuffer()
         {
             (ComPtr<ID3D11Buffer> ptr, int size) pBuffer = new();
-            pBuffer.size = surface.GetSliceSize() * surface.GetPeiceSize();
+            pBuffer.size = surface.Size.Width * surface.Size.Height;
 
             var desc = new D3D11_BUFFER_DESC();
-            desc.StructureByteStride = (uint) sizeof(Fragment);
+            desc.StructureByteStride = (uint) Buffer.UnitSize;
             desc.ByteWidth = (uint) pBuffer.size;
 
             desc.BindFlags = (uint) usageInfo.BindFlags;

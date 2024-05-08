@@ -7,12 +7,14 @@ namespace SharpEngineCore.Graphics;
 /// </summary>
 internal sealed class IndexBuffer : Buffer
 {
+    public int IndexCount { get; private set; }
+
     /// <summary>
     /// Creates index buffer from already created buffer.
     /// </summary>
     /// <param name="buffer">Buffer to represent as index buffer</param>
     /// <exception cref="GraphicsException"></exception>
-    public IndexBuffer(Buffer buffer) :
+    public IndexBuffer(Buffer buffer, IFragmentable layout) :
         base(buffer.GetNativePtr(), buffer.Info)
     {
         if (buffer.Info.UsageInfo.BindFlags != D3D11_BIND_FLAG.D3D11_BIND_INDEX_BUFFER)
@@ -22,5 +24,8 @@ internal sealed class IndexBuffer : Buffer
                 $"Failed to create {nameof(IndexBuffer)}," +
                 $"provided buffer is not bindable as Index Buffer.");
         }
+
+        var size = buffer.Info.Size;
+        IndexCount = size / layout.GetFragmentsCount();
     }
 }

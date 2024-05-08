@@ -8,6 +8,64 @@ namespace SharpEngineCore.Graphics;
 internal abstract class DeviceContext
 {
     protected readonly ComPtr<ID3D11DeviceContext> _pContext;
+    public void DrawIndexed(int indexCount, int startIndex)
+    {
+        NativeDrawIndexed();
+
+        unsafe void NativeDrawIndexed()
+        {
+            fixed (ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppContext)->DrawIndexed((uint)indexCount, (uint)startIndex, 0);
+
+                if (GraphicsException.CheckIfAny())
+                {
+                    // error here
+                    GraphicsException.ThrowLastGraphicsException(
+                        "Error during submiting draw call.");
+                }
+            }
+        }
+    }
+
+    public void ClearState()
+    {
+        NativeClearState();
+
+        unsafe void NativeClearState()
+        {
+            fixed(ID3D11DeviceContext** pContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*pContext)->ClearState();
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Error in clearing pipeline state.");
+            }
+        }
+    }
+
+    public void Draw(int vertexCount, int startIndex)
+    {
+        NativeDraw();
+
+        unsafe void NativeDraw()
+        {
+            fixed (ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppContext)->Draw((uint)vertexCount, (uint)startIndex);
+
+                if(GraphicsException.CheckIfAny())
+                {
+                    // error here
+                    GraphicsException.ThrowLastGraphicsException(
+                        "Error during submiting draw call.");
+                }
+            }
+        }
+    }
 
     public void OMSetRenderTargets(RenderTargetView[] views)
     {
