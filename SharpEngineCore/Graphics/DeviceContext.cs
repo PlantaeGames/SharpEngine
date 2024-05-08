@@ -9,17 +9,69 @@ internal abstract class DeviceContext
 {
     protected readonly ComPtr<ID3D11DeviceContext> _pContext;
 
-    public void IASetVertexBuffer(VertexBuffer[] vertexBuffers, int startSlot)
+    /// <summary>
+    /// Binds the given vertex Buffers to the input assembler pipline stage
+    /// </summary>
+    /// <param name="vertexBuffers">The vertex buffers to bind.</param>
+    /// <param name="startSlot">The slot to start binding from.</param>
+    /// <remarks>Valid binding slots are 0 - 15.</remarks>
+    public void IASetIndexBuffer(IndexBuffer buffer)
     {
         NativeIASetVertexBuffer();
 
         unsafe void NativeIASetVertexBuffer()
         {
-            fixed(ID3D11DeviceContext** ppContext = _pContext)
+            var pBuffer = buffer.GetNativePtr().Get();
+            var format = DXGI_FORMAT.DXGI_FORMAT_R32_UINT;
+            var offset = 0u;
+
+            fixed (ID3D11DeviceContext** ppContext = _pContext)
             {
                 GraphicsException.SetInfoQueue();
-                (*ppContext)->IASetVertexBuffers(startSlot, vertexBuffers.Length,
-                    , )
+                (*ppContext)->IASetIndexBuffer(pBuffer, format, offset);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Failed to set Input Assembler Vertex Buffers.");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Binds the given vertex Buffers to the input assembler pipline stage
+    /// </summary>
+    /// <param name="buffers">The vertex buffers to bind.</param>
+    /// <param name="startSlot">The slot to start binding from.</param>
+    /// <remarks>Valid binding slots are 0 - 15.</remarks>
+    public void IASetVertexBuffer(VertexBuffer[] buffers, int startSlot)
+    {
+        Debug.Assert(buffers.Length > 0,
+            "Vertex buffers can't be zero to bind to Input Assembler.");
+
+        NativeIASetVertexBuffer();
+
+        unsafe void NativeIASetVertexBuffer()
+        {
+            var count = (uint)buffers.Length;
+
+            var ppBuffers = stackalloc ID3D11Buffer*[buffers.Length];
+            for(var i = 0u; i < count; i++)
+            {
+                ppBuffers[i] = buffers[i].GetNativePtr();
+            }
+            
+            var strides = stackalloc uint[(int)count];
+            var offsets = stackalloc uint[(int)count];
+            for(var i = 0u; i < count; i++)
+            {
+                strides[i] = 0u;
+                offsets[i] = 0u;
+            }
+
+            fixed (ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppContext)->IASetVertexBuffers((uint)startSlot, count,
+                  ppBuffers, strides, offsets);
 
                 Debug.Assert(GraphicsException.CheckIfAny() == false,
                     "Failed to set Input Assembler Vertex Buffers.");

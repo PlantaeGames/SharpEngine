@@ -116,24 +116,27 @@ internal sealed class InputLayout
 
 internal sealed class InputAssembler : IPipelineStage
 {
-    private InputLayout Layout { get; init; }
-    private VertexBuffer VertexBuffer { get; init; }
-    private IndexBuffer IndexBuffer { get; init; }
+    private InputLayout _layout { get; init; }
+    private VertexBuffer _vertexBuffer { get; init; }
+    private IndexBuffer _indexBuffer { get; init; }
+
+    public void Bind(DeviceContext context)
+    {
+        context.IASetInputLayout(_layout);
+        context.IASetVertexBuffer([_vertexBuffer], 0);
+        context.IASetIndexBuffer(_indexBuffer);
+    }
 
     public InputAssembler(InputLayout layout,
                           VertexBuffer vertexBuffer,
                           IndexBuffer indexBuffer)
     {
-        Layout = layout;
-        VertexBuffer = vertexBuffer;
-        IndexBuffer = indexBuffer;
+        _layout = layout;
+        _vertexBuffer = vertexBuffer;
+        _indexBuffer = indexBuffer;
     }
 
     public InputAssembler()
-    { }
-
-    public void Bind(DeviceContext context)
     {
-        throw new NotImplementedException();
     }
 }

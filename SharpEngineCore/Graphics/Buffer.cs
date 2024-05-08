@@ -10,4 +10,6 @@ internal class Buffer(ComPtr<ID3D11Buffer> pBuffer, BufferInfo info) :
     private readonly ComPtr<ID3D11Buffer> _ptr = new(pBuffer);
 
     public ComPtr<ID3D11Buffer> GetNativePtr() => new(_ptr);
+
+    public static int UnitSize => Surface.GetPeiceSize();
 }

@@ -1,11 +1,10 @@
 ﻿using System.Diagnostics;
-using System.Text.Encodings;
+using System.Text;
+using System.Runtime.InteropServices;
 
 using TerraFX.Interop.DirectX;
 using static TerraFX.Interop.DirectX.DirectX;
 using TerraFX.Interop.Windows;
-using System.Text;
-using System.Runtime.InteropServices;
 
 namespace SharpEngineCore.Graphics;
 

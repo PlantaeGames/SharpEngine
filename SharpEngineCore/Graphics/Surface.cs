@@ -17,7 +17,7 @@ public sealed class Surface : IDisposable
     /// Gets the size of single unit of that surface in bytes.
     /// </summary>
     /// <returns>Size in bytes</returns>
-    public int GetPeiceSize()
+    public static int GetPeiceSize()
     {
         unsafe
         {
