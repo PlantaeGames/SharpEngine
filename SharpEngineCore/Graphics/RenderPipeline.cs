@@ -5,9 +5,7 @@ internal abstract class RenderPipeline : PipelineEvents
     protected RenderPass[] _renderPasses;
 
     protected RenderPipeline()
-    {
-
-    }
+    { }
 }
 
 internal abstract class RenderPass : PipelineEvents
@@ -49,8 +47,6 @@ internal abstract class PipelineVariation
 
 internal abstract class PipelineEvents
 {
-
-
     public abstract void Initialize(Device device);
     public abstract void Ready(Device device);
     public abstract void Go(Device device);

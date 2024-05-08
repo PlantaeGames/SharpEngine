@@ -9,6 +9,30 @@ internal abstract class DeviceContext
 {
     protected readonly ComPtr<ID3D11DeviceContext> _pContext;
 
+    public void OMSetRenderTargets(RenderTargetView[] views)
+    {
+        NativeOMSetRenderTargets();
+
+        unsafe void NativeOMSetRenderTargets()
+        {
+            var ppViews = stackalloc ID3D11RenderTargetView*[views.Length];
+            for(var i = 0; i < views.Length; i++)
+            {
+                ppViews[i] = views[i].GetNativePtr();
+            }
+
+            fixed(ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppContext)->OMSetRenderTargets((uint)views.Length,
+                    ppViews, (ID3D11DepthStencilView*) IntPtr.Zero);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Failed to set render target view to output merger");
+            }
+        }
+    }
+
     public void RSSetViewports(Viewport[] ports)
     {
         NativeRSSetViewports();
