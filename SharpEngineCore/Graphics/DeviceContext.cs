@@ -1,4 +1,6 @@
-﻿using TerraFX.Interop.DirectX;
+﻿using System.Diagnostics;
+
+using TerraFX.Interop.DirectX;
 using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
@@ -7,13 +9,38 @@ internal abstract class DeviceContext
 {
     protected readonly ComPtr<ID3D11DeviceContext> _pContext;
 
-    public void BindInputAssembler()
+    public void IASetVertexBuffer(VertexBuffer[] vertexBuffers, int startSlot)
     {
-        NativeBindInputAssembler();
+        NativeIASetVertexBuffer();
 
-        unsafe void NativeBindInputAssembler()
+        unsafe void NativeIASetVertexBuffer()
         {
-            
+            fixed(ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppContext)->IASetVertexBuffers(startSlot, vertexBuffers.Length,
+                    , )
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Failed to set Input Assembler Vertex Buffers.");
+            }
+        }
+    }
+
+    public void IASetInputLayout(InputLayout inputLayout)
+    {
+        NativeIASetInputLayout();
+
+        unsafe void NativeIASetInputLayout()
+        {
+            fixed (ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppContext)->IASetInputLayout(inputLayout.GetNativePtr());
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Failed to set Input Assembler Layout.");
+            }
         }
     }
 

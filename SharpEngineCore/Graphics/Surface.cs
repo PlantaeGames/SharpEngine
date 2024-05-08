@@ -13,11 +13,27 @@ public sealed class Surface : IDisposable
 
     private bool _disposed = false;
 
-    public uint GetSliceSize()
+    /// <summary>
+    /// Gets the size of single unit of that surface in bytes.
+    /// </summary>
+    /// <returns>Size in bytes</returns>
+    public int GetPeiceSize()
     {
         unsafe
         {
-            return (uint)(sizeof(Fragment) * Size.Width);
+            return sizeof(Fragment);
+        }
+    }
+
+    /// <summary>
+    /// Gets the size of the single row in bytes.
+    /// </summary>
+    /// <returns>Size in bytes</returns>
+    public int GetSliceSize()
+    {
+        unsafe
+        {
+            return GetPeiceSize() * Size.Width;
         }
     }
 

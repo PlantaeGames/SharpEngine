@@ -35,8 +35,9 @@ internal sealed class Device
 
             var type = info.Layout.GetType();
             var members = type.GetMembers();
-            var feilds = members.
-                Where(x => x.MemberType == System.Reflection.MemberTypes.Field).ToArray();
+            var feilds = members
+                .Where(x => x.MemberType == System.Reflection.MemberTypes.Field)
+                .ToArray();
 
             var pNames = new nint[count];
             for (var i = 0; i < count; i++)
@@ -189,11 +190,11 @@ internal sealed class Device
     /// <summary>
     /// Create buffer for graphics purposes.
     /// </summary>
-    /// <param name="fragments">The initial data to write.</param>
+    /// <param name="surface">The initial data to write.</param>
     /// <param name="usageInfo">Usuage of the buffer.</param>
     /// <exception cref="GraphicsException"></exception>
     /// <returns></returns>
-    public Buffer CreateBuffer(Fragment[] fragments, ResourceUsageInfo usageInfo)
+    public Buffer CreateBuffer(Surface surface, ResourceUsageInfo usageInfo)
     {
         var (ptr, size) = NativeCreateBuffer();
         return new Buffer(ptr, new BufferInfo()
@@ -205,7 +206,7 @@ internal sealed class Device
         unsafe (ComPtr<ID3D11Buffer> ptr, int size) NativeCreateBuffer()
         {
             (ComPtr<ID3D11Buffer> ptr, int size) pBuffer = new();
-            pBuffer.size = sizeof(Fragment) * fragments.Length;
+            pBuffer.size = surface.GetSliceSize() * surface.GetPeiceSize();
 
             var desc = new D3D11_BUFFER_DESC();
             desc.StructureByteStride = (uint) sizeof(Fragment);
@@ -217,23 +218,20 @@ internal sealed class Device
 
             desc.MiscFlags = 0u;
 
+            var initialData = new D3D11_SUBRESOURCE_DATA();
+            initialData.pSysMem = surface.GetNativePointer().ToPointer();
+
             fixed (ID3D11Device** ppDevice = _pDevice)
             {
-                fixed (Fragment* pFragment = fragments)
+                GraphicsException.SetInfoQueue();
+                var result = (*ppDevice)->CreateBuffer(&desc, &initialData,
+                                                        pBuffer.ptr.GetAddressOf());
+
+                if (result.FAILED)
                 {
-                    var initialData = new D3D11_SUBRESOURCE_DATA();
-                    initialData.pSysMem = pFragment;
-
-                    GraphicsException.SetInfoQueue();
-                    var result = (*ppDevice)->CreateBuffer(&desc, &initialData,
-                                                            pBuffer.ptr.GetAddressOf());
-
-                    if (result.FAILED)
-                    {
-                        // error here.
-                        GraphicsException.ThrowLastGraphicsException(
-                            $"Failed to Create Buffer\nError Code: {result}");
-                    }
+                    // error here.
+                    GraphicsException.ThrowLastGraphicsException(
+                        $"Failed to Create Buffer\nError Code: {result}");
                 }
             }
 
@@ -310,7 +308,7 @@ internal sealed class Device
 
             var initialData = new D3D11_SUBRESOURCE_DATA();
             initialData.pSysMem = surface.GetNativePointer().ToPointer();
-            initialData.SysMemPitch = surface.GetSliceSize();
+            initialData.SysMemPitch = (uint)surface.GetSliceSize();
 
             fixed (ID3D11Device** ppDevice = _pDevice)
             {
