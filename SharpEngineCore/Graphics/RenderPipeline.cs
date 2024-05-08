@@ -27,9 +27,21 @@ internal abstract class Pass : PipelineEvents
     { }
 }
 
+internal interface IPipelineStage
+{
+    void Bind(DeviceContext context);
+}
+
 internal abstract class PipelineVariation 
 {
-    public abstract void Bind(DeviceContext context);
+    protected IPipelineStage[] _stages;
+    public void Bind(DeviceContext context)
+    {
+        foreach(var stage in _stages)
+        {
+            stage.Bind(context);
+        }
+    }
 
     protected PipelineVariation()
     { }

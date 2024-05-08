@@ -140,8 +140,17 @@ internal sealed class MainWindow : Window
         var pixelShader = _device.CreatePixelShader(pixelModule);
         _logger.LogMessage("Pixel Shader Created.");
 
+        _logger.BreakLine();
 
-
+        // creating inputlayout
+        _logger.LogHeader("Creating Input Layout.");
+        var inputLayout = _device.CreateInputLayout(new InputLayoutInfo()
+        {
+            Topology = D3D_PRIMITIVE_TOPOLOGY.D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+            Layout = new Vertex(),
+            VertexShader = vertexShader
+        });
+        _logger.LogMessage("Input Layout Created.");
 
         _logger.BreakLine();
         // presenting

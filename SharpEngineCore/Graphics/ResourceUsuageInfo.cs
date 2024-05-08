@@ -2,7 +2,7 @@
 
 namespace SharpEngineCore.Graphics;
 
-internal readonly struct ResourceUsageInfo(D3D11_USAGE usage,
+public readonly struct ResourceUsageInfo(D3D11_USAGE usage,
                           DXGI_FORMAT format,
                           D3D11_BIND_FLAG bindFlags,
                           D3D11_CPU_ACCESS_FLAG cpuAccessFlags)

@@ -1,18 +1,22 @@
-struct Vertex
+struct InputVertex
 {
-    float4 position : SV_Position;
+    float4 position : POSITION;
+    float4 normal : NORMAL;
     float4 color : COLOR;
+    float4 textureCoord : TEXCOORD;
 };
 
-struct PixelInput
+struct OutputVertex
 {
     float4 position : SV_Position;
+    float4 normal : NORMAL;
     float4 color : COLOR;
+    float4 textureCoord : TEXCOORD;
 };
 
-Vertex main(Vertex vertex)
+OutputVertex main(InputVertex vertex)
 {
-    PixelInput output;
+    OutputVertex output = (OutputVertex) 0;
     
     output.position = vertex.position;
     output.color = vertex.color;

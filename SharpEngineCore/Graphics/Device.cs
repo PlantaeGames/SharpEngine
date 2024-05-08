@@ -1,8 +1,11 @@
 ﻿using System.Diagnostics;
+using System.Text.Encodings;
 
 using TerraFX.Interop.DirectX;
 using static TerraFX.Interop.DirectX.DirectX;
 using TerraFX.Interop.Windows;
+using System.Text;
+using System.Runtime.InteropServices;
 
 namespace SharpEngineCore.Graphics;
 
@@ -17,6 +20,88 @@ internal sealed class Device
 
     private D3D_FEATURE_LEVEL _featureLevel;
 
+    public InputLayout CreateInputLayout(InputLayoutInfo info)
+    {
+        var count = info.Layout.GetFragmentsCount();
+
+        Debug.Assert(count > 0,
+            "Fragment count can't be zero here.");
+
+        return new InputLayout(NativeCreateInputLayout(), info);
+
+        unsafe ComPtr<ID3D11InputLayout> NativeCreateInputLayout()
+        {
+            var pDesc = stackalloc D3D11_INPUT_ELEMENT_DESC[count];
+
+            var type = info.Layout.GetType();
+            var members = type.GetMembers();
+            var feilds = members.
+                Where(x => x.MemberType == System.Reflection.MemberTypes.Field).ToArray();
+
+            var pNames = new nint[count];
+            for (var i = 0; i < count; i++)
+            {
+                var nameBytes = Encoding.ASCII.GetBytes(feilds[i].Name);
+                nint pName = 0x0;
+                try
+                {
+                   pName = Marshal.AllocHGlobal(nameBytes.Length + 1);
+                }
+                catch (Exception)
+                {
+                    foreach (var p in pNames)
+                        Marshal.FreeHGlobal(p);
+
+                    throw;
+                }
+
+                for (var x = 0; x < nameBytes.Length; x++)
+                {
+                    *((byte*)pName + (sizeof(byte) * x)) = nameBytes[x];
+                }
+                *((byte*)pName + (sizeof(byte) * nameBytes.Length)) = 0;
+
+                pNames[i] = pName;
+            }
+            for (var i = 0; i < count; i++)
+            {
+                pDesc[i].SemanticName = (sbyte*)pNames[i];
+                pDesc[i].SemanticIndex = 0u;
+                pDesc[i].Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32A32_FLOAT;
+                pDesc[i].AlignedByteOffset = D3D11.D3D11_APPEND_ALIGNED_ELEMENT;
+                pDesc[i].InstanceDataStepRate = 0u;
+                pDesc[i].InputSlot = 0u;
+                pDesc[i].InputSlotClass = D3D11_INPUT_CLASSIFICATION.D3D11_INPUT_PER_VERTEX_DATA;
+            }
+
+            var pBlob = info.VertexShader.GetBlob().GetNativePtr().Get();
+
+            var pInputLayout = new ComPtr<ID3D11InputLayout>();
+            fixed(ID3D11Device** ppDevice = _pDevice)
+            {
+                GraphicsException.SetInfoQueue();
+                var result = (*ppDevice)->CreateInputLayout(pDesc, (uint)count,
+                    pBlob->GetBufferPointer(), pBlob->GetBufferSize(),
+                    pInputLayout.GetAddressOf());
+
+                if(result.FAILED)
+                {
+                    foreach (var p in pNames)
+                        Marshal.FreeHGlobal(p);
+
+                    // error here
+                    GraphicsException.ThrowLastGraphicsException(
+                        $"Failed to create input layout.\nError Code: {result}");
+                }
+            }
+
+            foreach (var p in pNames)
+                Marshal.FreeHGlobal(p);
+
+            return pInputLayout;
+        }
+    }
+
     /// <summary>
     /// Creates a new pixel shader from shader module.
     /// </summary>
@@ -26,13 +111,13 @@ internal sealed class Device
     public PixelShader CreatePixelShader(ShaderModule module)
     {
         var compiler = new ShaderCompiler();
-        var blob = compiler.Compile(module, new CompileParams()
+        var blob = compiler.Compile(module, new ShaderCompiler.Params()
         {
-            Target = CompileParams.Shader.PS,
+            Target = ShaderCompiler.Params.Shader.PS,
             FeatureLevel = _featureLevel
         });
 
-        return new PixelShader(NativeCreatePixelShader());
+        return new PixelShader(NativeCreatePixelShader(), blob);
 
         unsafe ComPtr<ID3D11PixelShader> NativeCreatePixelShader()
         {
@@ -68,13 +153,13 @@ internal sealed class Device
     public VertexShader CreateVertexShader(ShaderModule module)
     {
         var compiler = new ShaderCompiler();
-        var blob = compiler.Compile(module, new CompileParams()
+        var blob = compiler.Compile(module, new ShaderCompiler.Params()
         {
-            Target = CompileParams.Shader.VS,
+            Target = ShaderCompiler.Params.Shader.VS,
             FeatureLevel = _featureLevel
         });
 
-        return new VertexShader(NativeCreateVertexShader());
+        return new VertexShader(NativeCreateVertexShader(), blob);
 
         unsafe ComPtr<ID3D11VertexShader> NativeCreateVertexShader()
         {
@@ -161,9 +246,9 @@ internal sealed class Device
     /// 
     /// Throws Graphics Exception on failure.
     /// </summary>
-    /// <param name="viewable">A viewable resource</param>
+    /// <param name="resource">A viewable resource</param>
     /// <returns>Created render target view.</returns>
-    public RenderTargetView CreateRenderTargetView(IViewable viewable)
+    public RenderTargetView CreateRenderTargetView(Resource resource)
     {
         return new RenderTargetView(NativeCreateView());
 
@@ -177,7 +262,7 @@ internal sealed class Device
                 var pRenderTargetView = new ComPtr<ID3D11RenderTargetView>();
                 fixed (ID3D11RenderTargetView** ppRenderTargetView = pRenderTargetView)
                 {
-                    fixed (ID3D11Resource** ppResource = viewable.GetNativePtrAsResource())
+                    fixed (ID3D11Resource** ppResource = resource.GetNativePtrAsResource())
                     {
                         GraphicsException.SetInfoQueue();
                         var result = (*ppDevice)->CreateRenderTargetView(

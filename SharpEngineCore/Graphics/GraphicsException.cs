@@ -171,7 +171,7 @@ public class GraphicsException : SharpException
 
                     _debugLibHandle = handle;
 
-                    var bytes = Encoding.UTF8.GetBytes("DXGIGetDebugInterface");
+                    var bytes = Encoding.ASCII.GetBytes("DXGIGetDebugInterface");
                     var sbytes = new sbyte[bytes.Length];
                     for (var i = 0; i < bytes.Length; i++)
                         sbytes[i] = (sbyte)bytes[i];

@@ -7,7 +7,7 @@ internal class Buffer(ComPtr<ID3D11Buffer> pBuffer, BufferInfo info) :
     Resource(ComUtilities.ToResourceNativePtr(ref pBuffer))
 {
     public readonly BufferInfo Info = info;
-    protected readonly ComPtr<ID3D11Buffer> _ptr = new(pBuffer);
+    private readonly ComPtr<ID3D11Buffer> _ptr = new(pBuffer);
 
     public ComPtr<ID3D11Buffer> GetNativePtr() => new(_ptr);
 }

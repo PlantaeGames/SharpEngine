@@ -3,9 +3,9 @@ using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
 
-internal abstract class Resource : IViewable
+public abstract class Resource
 {
-    protected readonly ComPtr<ID3D11Resource> _pResource;
+    private readonly ComPtr<ID3D11Resource> _pResource;
 
     public D3D11_RESOURCE_DIMENSION GetResourceType()
     {
@@ -24,7 +24,7 @@ internal abstract class Resource : IViewable
         }
     }
 
-    public ComPtr<ID3D11Resource> GetNativePtrAsResource() => new(_pResource);
+    internal ComPtr<ID3D11Resource> GetNativePtrAsResource() => new(_pResource);
 
     protected Resource(ComPtr<ID3D11Resource> pResource)
     { 

@@ -1,47 +1,132 @@
-﻿using TerraFX.Interop.DirectX;
+﻿using System.Runtime.InteropServices;
+
+using TerraFX.Interop.DirectX;
 using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
 
-internal sealed class InputAssembler
+internal sealed class InputLayoutInfo
 {
-    public readonly D3D_PRIMITIVE_TOPOLOGY Topology =
-        D3D_PRIMITIVE_TOPOLOGY.D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    public D3D_PRIMITIVE_TOPOLOGY Topology { get; init; }
+    public IFragmentable Layout { get; init; }
+    public VertexShader VertexShader { get; init; }
+
+    public InputLayoutInfo()
+    { }
+
+    public InputLayoutInfo(
+        D3D_PRIMITIVE_TOPOLOGY topology,
+        IFragmentable layout,
+        VertexShader vertexShader)
+    {
+        this.Topology = topology;
+        this.Layout = layout;
+        this.VertexShader = vertexShader;
+    }
+}
+
+public interface IFragmentable
+{
+    public Fragment[] ToFragments();
+    public int GetFragmentsCount();
+}
+
+[StructLayout(LayoutKind.Sequential, Pack = 0, Size = 64)]
+public struct Vertex : IFragmentable
+{
+    public Fragment Position;
+    public Fragment Normal;
+    public Fragment Color;
+    public Fragment TexCoord;
+
+    public int GetFragmentsCount()
+    {
+        return ToFragments().Length;
+    }
+
+    public Fragment[] ToFragments()
+    {
+        return [Position, Normal, Color, TexCoord];
+    }
+}
+
+internal sealed class PixelShaderStage : IPipelineStage
+{
+    public PixelShader[] PixelShaders { get; init; }
+
+    public PixelShaderStage()
+    { }
+
+    public void Bind(DeviceContext context)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+internal sealed class VertexShaderStage : IPipelineStage
+{
+    public VertexShader[] VertexShaders { get; init; }
+
+    public VertexShaderStage()
+    { }
+
+    public void Bind(DeviceContext context)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+internal sealed class OutputMerger : IPipelineStage
+{
+    public OutputMerger()
+    { }
+
+    public void Bind(DeviceContext context)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+internal sealed class Rasterizer : IPipelineStage
+{
+    public Rasterizer()
+    { }
+
+
+    public void Bind(DeviceContext context)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+internal sealed class InputLayout
+{
+    private InputLayoutInfo _info;
+    private ComPtr<ID3D11InputLayout> _ptr;
+
+    public ComPtr<ID3D11InputLayout> GetNativePtr() => new(_ptr);
+
+    public InputLayout(ComPtr<ID3D11InputLayout> pInputLayout,
+                       InputLayoutInfo info)
+    {
+        _ptr = new(pInputLayout);
+        _info = info;
+    }
+}
+
+internal sealed class InputAssembler : IPipelineStage
+{
+    private InputLayout _layout { get; init; }
+    private VertexBuffer VertexBuffer { get; init; }
+    private IndexBuffer IndexBuffer { get; init; }
 
     public InputAssembler()
     {
 
     }
-}
 
-public sealed class PixelShader : Shader
-{
-    private readonly ComPtr<ID3D11PixelShader> _ptr;
-
-    public ComPtr<ID3D11PixelShader> GetNativePtr() => new(_ptr);
-
-    public PixelShader(ComPtr<ID3D11PixelShader> pShader) :
-        base()
+    public void Bind(DeviceContext context)
     {
-        _ptr = new(pShader);
+        throw new NotImplementedException();
     }
-}
-
-public sealed class VertexShader : Shader
-{
-    private readonly ComPtr<ID3D11VertexShader> _ptr;
-
-    public ComPtr<ID3D11VertexShader> GetNativePtr() => new(_ptr);
-
-    public VertexShader(ComPtr<ID3D11VertexShader> pShader) :
-        base()
-    { 
-        _ptr = new(pShader);
-    }
-}
-
-public abstract class Shader
-{ 
-    protected Shader()
-    { }
 }

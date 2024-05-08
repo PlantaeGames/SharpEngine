@@ -6,24 +6,24 @@ using static TerraFX.Interop.DirectX.DirectX;
 
 namespace SharpEngineCore.Graphics;
 
-internal readonly struct CompileParams(D3D_FEATURE_LEVEL featureLevel,
-                                       CompileParams.Shader target)
-{
-    public enum Shader
-    {
-        VS,
-        PS
-    }
-
-    public readonly D3D_FEATURE_LEVEL FeatureLevel { get; init; } = featureLevel;
-    public readonly Shader Target { get; init; } = target;
-}
-
 /// <summary>
 /// Compiles d3d shader source code.
 /// </summary>
 internal sealed class ShaderCompiler
 {
+    internal readonly struct Params(D3D_FEATURE_LEVEL featureLevel,
+                                       Params.Shader target)
+    {
+        public enum Shader
+        {
+            VS,
+            PS
+        }
+
+        public readonly D3D_FEATURE_LEVEL FeatureLevel { get; init; } = featureLevel;
+        public readonly Shader Target { get; init; } = target;
+    }
+
     /// <summary>
     /// Compiles shader module.
     /// </summary>
@@ -31,7 +31,7 @@ internal sealed class ShaderCompiler
     /// <param name="featureLevel">The feature level to compile the module with.</param>
     /// <returns>Blob of the compiled shader</returns>
     /// <exception cref="GraphicsException"></exception>
-    public Blob Compile(ShaderModule module, CompileParams @params)
+    public Blob Compile(ShaderModule module, ShaderCompiler.Params @params)
     {
         return new Blob(NativeCompile());
 
@@ -51,10 +51,10 @@ internal sealed class ShaderCompiler
             profile += @params.FeatureLevel >= D3D_FEATURE_LEVEL.D3D_FEATURE_LEVEL_11_0 ?
                                                fifthVersion : fourthVersion;
 
-            var profileBytes = Encoding.UTF8.GetBytes(profile);
+            var profileBytes = Encoding.ASCII.GetBytes(profile);
 
             string entryPoint = "main";
-            var entryPointBytes = Encoding.UTF8.GetBytes(entryPoint);
+            var entryPointBytes = Encoding.ASCII.GetBytes(entryPoint);
 
             fixed(byte* pProfile = profileBytes)
             {

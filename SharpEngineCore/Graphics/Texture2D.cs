@@ -5,7 +5,7 @@ using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
 
-internal sealed class Texture2D : Texture
+public sealed class Texture2D : Texture
 {
     private readonly ComPtr<ID3D11Texture2D> _pTexture;
 
