@@ -52,27 +52,37 @@ public struct Vertex : IFragmentable
 
 internal sealed class PixelShaderStage : IPipelineStage
 {
-    public PixelShader[] PixelShaders { get; init; }
+    public PixelShader PixelShader { get; init; }
+
+    public PixelShaderStage(PixelShader pixelShader)
+    {
+        PixelShader = pixelShader;
+    }
 
     public PixelShaderStage()
     { }
 
     public void Bind(DeviceContext context)
     {
-        throw new NotImplementedException();
+        context.PSSetShader(PixelShader);
     }
 }
 
 internal sealed class VertexShaderStage : IPipelineStage
 {
-    public VertexShader[] VertexShaders { get; init; }
+    public VertexShader VertexShader { get; init; }
+
+    public VertexShaderStage(VertexShader vertexShader)
+    {
+        VertexShader = vertexShader;
+    }
 
     public VertexShaderStage()
     { }
 
     public void Bind(DeviceContext context)
     {
-        throw new NotImplementedException();
+        context.VSSetShader(VertexShader);
     }
 }
 
@@ -101,8 +111,8 @@ internal sealed class Rasterizer : IPipelineStage
 
 internal sealed class InputLayout
 {
-    private InputLayoutInfo _info;
-    private ComPtr<ID3D11InputLayout> _ptr;
+    private readonly InputLayoutInfo _info;
+    private readonly ComPtr<ID3D11InputLayout> _ptr;
 
     public ComPtr<ID3D11InputLayout> GetNativePtr() => new(_ptr);
 
@@ -116,24 +126,24 @@ internal sealed class InputLayout
 
 internal sealed class InputAssembler : IPipelineStage
 {
-    private InputLayout _layout { get; init; }
-    private VertexBuffer _vertexBuffer { get; init; }
-    private IndexBuffer _indexBuffer { get; init; }
+    private InputLayout Layout { get; init; }
+    private VertexBuffer VertexBuffer { get; init; }
+    private IndexBuffer IndexBuffer { get; init; }
 
     public void Bind(DeviceContext context)
     {
-        context.IASetInputLayout(_layout);
-        context.IASetVertexBuffer([_vertexBuffer], 0);
-        context.IASetIndexBuffer(_indexBuffer);
+        context.IASetInputLayout(Layout);
+        context.IASetVertexBuffer([VertexBuffer], 0);
+        context.IASetIndexBuffer(IndexBuffer);
     }
 
     public InputAssembler(InputLayout layout,
                           VertexBuffer vertexBuffer,
                           IndexBuffer indexBuffer)
     {
-        _layout = layout;
-        _vertexBuffer = vertexBuffer;
-        _indexBuffer = indexBuffer;
+        Layout = layout;
+        VertexBuffer = vertexBuffer;
+        IndexBuffer = indexBuffer;
     }
 
     public InputAssembler()

@@ -9,6 +9,55 @@ internal abstract class DeviceContext
 {
     protected readonly ComPtr<ID3D11DeviceContext> _pContext;
 
+
+    /// <summary>
+    /// Binds the pixel shader to the pipeline.
+    /// </summary>
+    /// <param name="shader"></param>
+    public void PSSetShader(PixelShader shader)
+    {
+        NativePSSetShader();
+
+        unsafe void NativePSSetShader()
+        {
+            var pShader = shader.GetNativePtr().Get();
+
+            fixed (ID3D11DeviceContext** ppDeviceContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppDeviceContext)->PSSetShader(pShader,
+                    (ID3D11ClassInstance**)IntPtr.Zero, 0u);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Failed to set Vertex Shader");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Binds vertex shader to pipeline
+    /// </summary>
+    /// <param name="shader">The vertex shader to bind</param>
+    public void VSSetShader(VertexShader shader)
+    {
+        NativeVSSetShader();
+
+        unsafe void NativeVSSetShader()
+        {
+            var pShader = shader.GetNativePtr().Get();
+
+            fixed(ID3D11DeviceContext** ppDeviceContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppDeviceContext)->VSSetShader(pShader,
+                    (ID3D11ClassInstance**)IntPtr.Zero, 0u);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Failed to set Vertex Shader");
+            }
+        }
+    }
+
     /// <summary>
     /// Binds the given vertex Buffers to the input assembler pipline stage
     /// </summary>
