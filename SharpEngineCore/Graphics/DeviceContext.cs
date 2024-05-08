@@ -9,6 +9,33 @@ internal abstract class DeviceContext
 {
     protected readonly ComPtr<ID3D11DeviceContext> _pContext;
 
+    public void RSSetViewports(Viewport[] ports)
+    {
+        NativeRSSetViewports();
+
+        unsafe void NativeRSSetViewports()
+        {
+            var rPorts = new D3D11_VIEWPORT[ports.Length];
+            for(var i = 0; i < ports.Length; i++)
+            {
+                rPorts[i] = ports[i].Info;
+            }
+
+            fixed (D3D11_VIEWPORT* pPorts = rPorts)
+            {
+
+                fixed (ID3D11DeviceContext** ppContext = _pContext)
+                {
+                    GraphicsException.SetInfoQueue();
+
+                    (*ppContext)->RSSetViewports((uint)ports.Length, pPorts);
+    
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Failed to set view ports to rasterizer.");
+                }
+            }
+        }
+    }
 
     /// <summary>
     /// Binds the pixel shader to the pipeline.

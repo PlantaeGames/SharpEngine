@@ -97,15 +97,35 @@ internal sealed class OutputMerger : IPipelineStage
     }
 }
 
+internal readonly struct Viewport
+{
+    public readonly D3D11_VIEWPORT Info { get; init; }
+
+    public Viewport(D3D11_VIEWPORT info)
+    {
+        Info = info;
+    }
+
+    public Viewport()
+    { }
+}
+
 internal sealed class Rasterizer : IPipelineStage
 {
+    private Viewport[] Viewports { get; init; }
+
+    public Rasterizer(Viewport[] viewports)
+    {
+        Viewports = viewports;
+    }
+
     public Rasterizer()
     { }
 
 
     public void Bind(DeviceContext context)
     {
-        throw new NotImplementedException();
+        context.RSSetViewports(Viewports);
     }
 }
 
