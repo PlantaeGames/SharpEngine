@@ -8,6 +8,7 @@ namespace SharpEngineCore.Graphics;
 internal abstract class DeviceContext
 {
     protected readonly ComPtr<ID3D11DeviceContext> _pContext;
+
     public void DrawIndexed(int indexCount, int startIndex)
     {
         NativeDrawIndexed();
@@ -35,7 +36,7 @@ internal abstract class DeviceContext
 
         unsafe void NativeClearState()
         {
-            fixed(ID3D11DeviceContext** pContext = _pContext)
+            fixed (ID3D11DeviceContext** pContext = _pContext)
             {
                 GraphicsException.SetInfoQueue();
                 (*pContext)->ClearState();
@@ -57,7 +58,7 @@ internal abstract class DeviceContext
                 GraphicsException.SetInfoQueue();
                 (*ppContext)->Draw((uint)vertexCount, (uint)startIndex);
 
-                if(GraphicsException.CheckIfAny())
+                if (GraphicsException.CheckIfAny())
                 {
                     // error here
                     GraphicsException.ThrowLastGraphicsException(
@@ -74,16 +75,16 @@ internal abstract class DeviceContext
         unsafe void NativeOMSetRenderTargets()
         {
             var ppViews = stackalloc ID3D11RenderTargetView*[views.Length];
-            for(var i = 0; i < views.Length; i++)
+            for (var i = 0; i < views.Length; i++)
             {
                 ppViews[i] = views[i].GetNativePtr();
             }
 
-            fixed(ID3D11DeviceContext** ppContext = _pContext)
+            fixed (ID3D11DeviceContext** ppContext = _pContext)
             {
                 GraphicsException.SetInfoQueue();
                 (*ppContext)->OMSetRenderTargets((uint)views.Length,
-                    ppViews, (ID3D11DepthStencilView*) IntPtr.Zero);
+                    ppViews, (ID3D11DepthStencilView*)IntPtr.Zero);
 
                 Debug.Assert(GraphicsException.CheckIfAny() == false,
                     "Failed to set render target view to output merger");
@@ -98,7 +99,7 @@ internal abstract class DeviceContext
         unsafe void NativeRSSetViewports()
         {
             var rPorts = new D3D11_VIEWPORT[ports.Length];
-            for(var i = 0; i < ports.Length; i++)
+            for (var i = 0; i < ports.Length; i++)
             {
                 rPorts[i] = ports[i].Info;
             }
@@ -111,9 +112,9 @@ internal abstract class DeviceContext
                     GraphicsException.SetInfoQueue();
 
                     (*ppContext)->RSSetViewports((uint)ports.Length, pPorts);
-    
-                Debug.Assert(GraphicsException.CheckIfAny() == false,
-                    "Failed to set view ports to rasterizer.");
+
+                    Debug.Assert(GraphicsException.CheckIfAny() == false,
+                        "Failed to set view ports to rasterizer.");
                 }
             }
         }
@@ -155,7 +156,7 @@ internal abstract class DeviceContext
         {
             var pShader = shader.GetNativePtr().Get();
 
-            fixed(ID3D11DeviceContext** ppDeviceContext = _pContext)
+            fixed (ID3D11DeviceContext** ppDeviceContext = _pContext)
             {
                 GraphicsException.SetInfoQueue();
                 (*ppDeviceContext)->VSSetShader(pShader,
@@ -212,16 +213,16 @@ internal abstract class DeviceContext
             var count = (uint)buffers.Length;
 
             var ppBuffers = stackalloc ID3D11Buffer*[buffers.Length];
-            for(var i = 0u; i < count; i++)
+            for (var i = 0u; i < count; i++)
             {
                 ppBuffers[i] = buffers[i].GetNativePtr();
             }
-            
+
             var strides = stackalloc uint[(int)count];
             var offsets = stackalloc uint[(int)count];
-            for(var i = 0u; i < count; i++)
+            for (var i = 0u; i < count; i++)
             {
-                strides[i] = 0u;
+                strides[i] = (uint)buffers[i].Info.Layout.GetDataTypeSize();
                 offsets[i] = 0u;
             }
 
@@ -233,6 +234,24 @@ internal abstract class DeviceContext
 
                 Debug.Assert(GraphicsException.CheckIfAny() == false,
                     "Failed to set Input Assembler Vertex Buffers.");
+            }
+        }
+    }
+
+    public void IASetTopology(Topology topology)
+    {
+        NativeIASetTopology();
+
+        unsafe void NativeIASetTopology()
+        {
+            fixed (ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+
+                (*ppContext)->IASetPrimitiveTopology((D3D_PRIMITIVE_TOPOLOGY)topology);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Error in setting input assembler primitive topology");
             }
         }
     }
@@ -254,11 +273,11 @@ internal abstract class DeviceContext
         }
     }
 
-    public void ClearRenderTargetView(RenderTargetView renderTargetView, Fragment color)
+    public void ClearRenderTargetView(RenderTargetView renderTargetView, FColor4 color)
     {
         NativeClearRenderTargetView(color);
 
-        unsafe void NativeClearRenderTargetView(Fragment color)
+        unsafe void NativeClearRenderTargetView(FColor4 color)
         {
             fixed(ID3D11DeviceContext** ppContext = _pContext)
             {

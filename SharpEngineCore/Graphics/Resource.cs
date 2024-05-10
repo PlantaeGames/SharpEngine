@@ -3,9 +3,13 @@ using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
 
-public abstract class Resource
+
+internal abstract class Resource
 {
+    public readonly ResourceInfo ResourceInfo;
+
     private readonly ComPtr<ID3D11Resource> _pResource;
+    protected readonly Device _device;
 
     public D3D11_RESOURCE_DIMENSION GetResourceType()
     {
@@ -26,8 +30,12 @@ public abstract class Resource
 
     internal ComPtr<ID3D11Resource> GetNativePtrAsResource() => new(_pResource);
 
-    protected Resource(ComPtr<ID3D11Resource> pResource)
-    { 
+    protected Resource(ComPtr<ID3D11Resource> pResource,
+        ResourceInfo info,
+        Device device)
+    {
+        ResourceInfo = info;
         _pResource = new(pResource);
+        _device = device;
     }
 }

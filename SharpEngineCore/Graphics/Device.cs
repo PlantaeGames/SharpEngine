@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using TerraFX.Interop.DirectX;
 using static TerraFX.Interop.DirectX.DirectX;
 using TerraFX.Interop.Windows;
+using SharpEngineCore.Utilities;
 
 namespace SharpEngineCore.Graphics;
 
@@ -14,6 +15,7 @@ namespace SharpEngineCore.Graphics;
 /// </summary>
 internal sealed class Device
 {
+    private Adapter _adapter;
     private ComPtr<ID3D11Device> _pDevice;
     private DeviceContext _context;
 
@@ -21,22 +23,40 @@ internal sealed class Device
 
     public InputLayout CreateInputLayout(InputLayoutInfo info)
     {
-        var count = info.Layout.GetFragmentsCount();
+        var type = info.Layout.GetType();
+        var feilds = type.GetFields();;
+
+        var count = feilds.Length;
 
         Debug.Assert(count > 0,
             "Fragment count can't be zero here.");
 
-        return new InputLayout(NativeCreateInputLayout(), info);
+        return new InputLayout(NativeCreateInputLayout(), info, this);
 
         unsafe ComPtr<ID3D11InputLayout> NativeCreateInputLayout()
         {
-            var pDesc = stackalloc D3D11_INPUT_ELEMENT_DESC[count];
+            var format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
+            switch (info.Layout.GetFragmentsCount())
+            {
+                case 4:
+                    format = DXGI_FORMAT.DXGI_FORMAT_R32_FLOAT;
+                    break;
+                case 8:
+                    format = DXGI_FORMAT.DXGI_FORMAT_R32G32_FLOAT;
+                    break;
+                case 12:
+                    format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT;
+                    break;
+                case 16:
+                    format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32A32_FLOAT;
+                    break;
+                default:
+                    Debug.Assert(false,
+                        "Input Layout can only have 4,8,12,16 fragments.");
+                    break;
+            }
 
-            var type = info.Layout.GetType();
-            var members = type.GetMembers();
-            var feilds = members
-                .Where(x => x.MemberType == System.Reflection.MemberTypes.Field)
-                .ToArray();
+            var pDesc = stackalloc D3D11_INPUT_ELEMENT_DESC[count];
 
             var pNames = new nint[count];
             for (var i = 0; i < count; i++)
@@ -63,11 +83,12 @@ internal sealed class Device
 
                 pNames[i] = pName;
             }
+
             for (var i = 0; i < count; i++)
             {
                 pDesc[i].SemanticName = (sbyte*)pNames[i];
                 pDesc[i].SemanticIndex = 0u;
-                pDesc[i].Format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32A32_FLOAT;
+                pDesc[i].Format = format;
                 pDesc[i].AlignedByteOffset = D3D11.D3D11_APPEND_ALIGNED_ELEMENT;
                 pDesc[i].InstanceDataStepRate = 0u;
                 pDesc[i].InputSlot = 0u;
@@ -117,7 +138,7 @@ internal sealed class Device
             FeatureLevel = _featureLevel
         });
 
-        return new PixelShader(NativeCreatePixelShader(), blob);
+        return new PixelShader(NativeCreatePixelShader(), blob, this);
 
         unsafe ComPtr<ID3D11PixelShader> NativeCreatePixelShader()
         {
@@ -159,7 +180,7 @@ internal sealed class Device
             FeatureLevel = _featureLevel
         });
 
-        return new VertexShader(NativeCreateVertexShader(), blob);
+        return new VertexShader(NativeCreateVertexShader(), blob, this);
 
         unsafe ComPtr<ID3D11VertexShader> NativeCreateVertexShader()
         {
@@ -187,44 +208,55 @@ internal sealed class Device
     }
 
     /// <summary>
-    /// Create buffer for graphics purposes.
+    /// Create structured buffer for graphics purposes.
     /// </summary>
     /// <param name="surface">The initial data to write.</param>
     /// <param name="usageInfo">Usuage of the buffer.</param>
     /// <exception cref="GraphicsException"></exception>
-    /// <returns></returns>
-    public Buffer CreateBuffer(Surface surface, ResourceUsageInfo usageInfo)
+    /// <returns>Created structured buffer.</returns>
+    public Buffer CreateBuffer(Surface surface, Type layout,
+        ResourceUsageInfo usageInfo)
     {
-        var (ptr, size) = NativeCreateBuffer();
+        Debug.Assert(layout.GetMembers().Length > 0,
+            "Layout can't be empty.");
+        Debug.Assert(layout.GetInterface(nameof(IFragmentable)) != null ||
+                     layout.GetInterface(nameof(IUnitable)) != null,
+            "Layout must be inherited from IUnitable or IFragmentable.");
+        Debug.Assert(surface.Size.Height == 1,
+            "Buffers can't be 2 dimensional, consider setting the height to 1.");
+        Debug.Assert(surface.Channels == Channels.Single,
+            "Surface used for creating buffer must be single channel.");
+
+        var ptr = NativeCreateBuffer();
         return new Buffer(ptr, new BufferInfo()
         {
-            Size = size,
+            Layout = layout,
+            Size = surface.Size,
             UsageInfo = usageInfo
-        });
+        },
+        this);
 
-        unsafe (ComPtr<ID3D11Buffer> ptr, int size) NativeCreateBuffer()
+        unsafe ComPtr<ID3D11Buffer> NativeCreateBuffer()
         {
-            (ComPtr<ID3D11Buffer> ptr, int size) pBuffer = new();
-            pBuffer.size = surface.Size.Width * surface.Size.Height;
-
             var desc = new D3D11_BUFFER_DESC();
-            desc.StructureByteStride = (uint) Buffer.UnitSize;
-            desc.ByteWidth = (uint) pBuffer.size;
+            desc.ByteWidth = (uint) (surface.Size.ToArea() *
+                                     surface.GetPeiceSize());
 
             desc.BindFlags = (uint) usageInfo.BindFlags;
             desc.CPUAccessFlags = (uint) usageInfo.CPUAccessFlags;
             desc.Usage = usageInfo.Usage;
 
-            desc.MiscFlags = 0u;
+            desc.MiscFlags = (uint)usageInfo.MiscFlags;
 
             var initialData = new D3D11_SUBRESOURCE_DATA();
             initialData.pSysMem = surface.GetNativePointer().ToPointer();
 
+            ComPtr<ID3D11Buffer> pBuffer = new();
             fixed (ID3D11Device** ppDevice = _pDevice)
             {
                 GraphicsException.SetInfoQueue();
                 var result = (*ppDevice)->CreateBuffer(&desc, &initialData,
-                                                        pBuffer.ptr.GetAddressOf());
+                                                        pBuffer.GetAddressOf());
 
                 if (result.FAILED)
                 {
@@ -247,7 +279,11 @@ internal sealed class Device
     /// <returns>Created render target view.</returns>
     public RenderTargetView CreateRenderTargetView(Resource resource)
     {
-        return new RenderTargetView(NativeCreateView());
+        return new RenderTargetView(NativeCreateView(), new ResourceViewInfo()
+        {
+            Size = resource.ResourceInfo.Size
+        },
+        this);
 
         unsafe ComPtr<ID3D11RenderTargetView> NativeCreateView()
         {
@@ -279,13 +315,15 @@ internal sealed class Device
         }
     }
 
-    public Texture2D CreateTexture2D(Surface surface, ResourceUsageInfo usageInfo)
+    public Texture2D CreateTexture2D(FSurface surface, ResourceUsageInfo usageInfo)
     {
         return new Texture2D(NativeCreateTexture2D(), new TextureInfo()
         {
             Size = surface.Size,
+            Channels = surface.Channels,
             UsageInfo = usageInfo
-        });
+        },
+        this);
 
         unsafe ComPtr<ID3D11Texture2D> NativeCreateTexture2D()
         {
@@ -299,8 +337,8 @@ internal sealed class Device
                 Quality = 0u,
                 Count = 1u
             };
-            desc.MiscFlags = 0u;
-            desc.Format = usageInfo.Format;
+            desc.MiscFlags = (uint)usageInfo.MiscFlags;
+            desc.Format = surface.Channels.ToFFormat();
             desc.Usage = usageInfo.Usage;
             desc.BindFlags = (uint)usageInfo.BindFlags;
             desc.CPUAccessFlags = (uint)usageInfo.CPUAccessFlags;
@@ -344,6 +382,7 @@ internal sealed class Device
     private void Create(Adapter adaper, bool isEnumalted)
     {
         NativeCreate();
+        _adapter = adaper;
 
         unsafe void NativeCreate()
         {

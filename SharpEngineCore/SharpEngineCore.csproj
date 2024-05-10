@@ -11,23 +11,31 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Shaders\PIxelShader.hlsl" />
+    <None Remove="Shaders\VertexShader.hlsl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.HLSL.CSharpVB" Version="1.0.2" />
     <PackageReference Include="TerraFX.Interop.Windows" Version="10.0.22621.6" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Input\" />
     <Folder Include="ECS\" />
-    <Folder Include="Shaders\" />
     <Folder Include="Structures\" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Shaders\PIxelShader.hlsl">
+    <PixelShader Include="Shaders\PIxelShader.hlsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Shaders\VertexShader.hlsl">
+    </PixelShader>
+  </ItemGroup>
+
+  <ItemGroup>
+    <VertexShader Include="Shaders\VertexShader.hlsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </VertexShader>
   </ItemGroup>
 
 </Project>

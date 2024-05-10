@@ -7,12 +7,11 @@ namespace SharpEngineCore.Graphics;
 
 internal sealed class Swapchain
 {
-    private ComPtr<IDXGISwapChain> _pSwapchain;
+    private Device _device;
     private Window _window;
     private Texture2D _backTexture;
 
-    // TODO: unused
-    // private readonly (float r, float g, float b, float a) CLEAR_COLOR = (0f, 0f, 0f, 0f);
+    private ComPtr<IDXGISwapChain> _pSwapchain;
 
     public Texture2D GetBackTexture() => _backTexture;
 
@@ -47,8 +46,10 @@ internal sealed class Swapchain
                 Debug.Assert(result.FAILED == false,
                     "Failed to query ID311Texture2D from ID3D11Resource.");
 
-                _backTexture = new Texture2D(pBackTexture,
-                    new TextureInfo() { Size = _window.GetSize() });
+                _backTexture = new Texture2D(
+                    pBackTexture,
+                    new() { Size = _window.GetSize() },
+                    _device);
             }
         }
     }
@@ -73,9 +74,10 @@ internal sealed class Swapchain
         }
     }
 
-    public Swapchain(ComPtr<IDXGISwapChain> pSwapchain, Window window)
+    public Swapchain(ComPtr<IDXGISwapChain> pSwapchain, Window window, Device device)
     {
         _pSwapchain = pSwapchain;
+        _device = device;
         _window = window;
 
         CreateBackTexture();

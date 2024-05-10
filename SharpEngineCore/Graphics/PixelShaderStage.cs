@@ -2,11 +2,21 @@
 
 internal sealed class PixelShaderStage : IPipelineStage
 {
+    [Flags]
+    public enum BindFlags
+    {
+        None = 0,
+        PixelShader = 1 << 1
+    }
     public PixelShader PixelShader { get; init; }
+    public BindFlags Flags { get; init; }
 
-    public PixelShaderStage(PixelShader pixelShader)
+    public PixelShaderStage(PixelShader pixelShader,
+                            BindFlags flags)
     {
         PixelShader = pixelShader;
+
+        Flags = flags;
     }
 
     public PixelShaderStage()
@@ -14,6 +24,9 @@ internal sealed class PixelShaderStage : IPipelineStage
 
     public void Bind(DeviceContext context)
     {
-        context.PSSetShader(PixelShader);
+        if(Flags.HasFlag(BindFlags.PixelShader))
+        {
+            context.PSSetShader(PixelShader);
+        }
     }
 }

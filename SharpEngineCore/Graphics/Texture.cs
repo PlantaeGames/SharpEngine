@@ -3,8 +3,9 @@ using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
 
-public abstract class Texture(TextureInfo info, ComPtr<ID3D11Resource> pResource)
-    : Resource(pResource)
+internal abstract class Texture(TextureInfo info, ComPtr<ID3D11Resource> pResource,
+    Device device) : 
+    Resource(pResource, new (info.Size) ,device)
 {
     public readonly TextureInfo Info = info;
 }

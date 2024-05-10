@@ -1,4 +1,5 @@
-﻿using TerraFX.Interop.Windows;
+﻿using SharpEngineCore.Tests;
+using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Components;
 
@@ -40,6 +41,7 @@ internal sealed class App
 
                 // other code here.
                 window.Update();
+                //          //
             }
         }
         catch

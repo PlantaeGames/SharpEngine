@@ -7,27 +7,34 @@ namespace SharpEngineCore.Graphics;
 /// </summary>
 public sealed class ShaderModule
 {
+    public readonly string Name;
+    public readonly bool PreCompiled = false;
     private byte[] _bytes;
     public byte[] GetBytes() => _bytes;
 
-    public ShaderModule(string path)
+    public ShaderModule(string path, bool preCompiled = false)
     {
         Debug.Assert(path != null && path != string.Empty,
             "Path can't be null here.");
 
-        Load(path);
+        Name = path;
+        PreCompiled = preCompiled;
+
+        Load();
     }
 
     /// <summary>
     /// Loads the binary of the shader source file.
     /// </summary>
-    /// <param name="path">Path of the shader file.</param>
     /// <exception cref="Exception"></exception>
-    private void Load(string path)
+    private void Load()
     {
+        if (PreCompiled)
+            return;
+
         try
         {
-            using var s = File.OpenRead(path);
+            using var s = File.OpenRead(Name);
             using BinaryReader br = new(s);
 
             var end = br.BaseStream.Seek(0, SeekOrigin.End);

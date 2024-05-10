@@ -4,7 +4,18 @@ internal class Renderer
 {
     protected readonly Device _device;
     protected readonly DeviceContext _context;
-    protected readonly RenderPipeline _pipeline;
+    protected RenderPipeline _pipeline;
+
+    public void SetPipeline(RenderPipeline pipeline)
+    {
+        _pipeline = pipeline;
+        InitializePipeline();
+    }
+
+    public Swapchain CreateSwapchain(Window window)
+    {
+        return Factory.GetInstance().CreateSwapchain(window, _device);
+    }
 
     public void Render()
     {
@@ -13,17 +24,17 @@ internal class Renderer
         _pipeline.Go(_device, _context);
     }
 
-    public Renderer(RenderPipeline pipeline, Adapter adapter)
+    public Renderer(Adapter adapter)
     {
-        _pipeline = pipeline;
         _device = new Device(adapter);
         _context = _device.GetContext();
-
-        InitializePipeline();
     }
 
     private void InitializePipeline()
     {
+        if (_pipeline.Initalized)
+            return;
+
         _pipeline.Initialize(_device, _context);
     }
 }

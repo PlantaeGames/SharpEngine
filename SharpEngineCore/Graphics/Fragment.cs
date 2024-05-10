@@ -2,25 +2,38 @@
 
 namespace SharpEngineCore.Graphics;
 
-/// <summary>
-/// Containing Raw Colors in R,G,B,A Format, 4 byte each channel.
-/// </summary>
-[StructLayout(LayoutKind.Sequential, Pack = 0, Size = 16)]
+[StructLayout(LayoutKind.Sequential, Pack = 0, Size = 4)]
 public struct Fragment
 {
-    public float r = 0f;
-    public float g = 0f;
-    public float b = 0f;
-    public float a = 0f;
+    public float value = 0f;
 
-    public Fragment(float r, float g, float b, float a)
+    public static implicit operator float(Fragment a)
     {
-        this.r = r;
-        this.g = g;
-        this.b = b;
-        this.a = a;
+        return a.value;
+    }
+
+    public static implicit operator Fragment(float a)
+    {
+        return new Fragment(a);
+    }
+
+    public Fragment(float a)
+    {
+        this.value = a;
     }
 
     public Fragment()
     { }
+
+    /// <summary>
+    /// Size of the structure in bytes.
+    /// </summary>
+    /// <returns>Size</returns>
+    public static int GetSize()
+    {
+        unsafe
+        {
+            return sizeof(Fragment);
+        }
+    }
 }

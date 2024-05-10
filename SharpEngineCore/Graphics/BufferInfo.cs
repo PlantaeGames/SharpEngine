@@ -1,7 +1,8 @@
 ﻿namespace SharpEngineCore.Graphics;
 
-internal readonly struct BufferInfo(int size, ResourceUsageInfo usageInfo)
+internal readonly struct BufferInfo(Size size, Type layout, ResourceUsageInfo usageInfo)
 {
-    public readonly int Size { get; init; } = size;
+    public readonly Type Layout { get; init; } = layout;
+    public readonly Size Size { get; init; } = size;
     public readonly ResourceUsageInfo UsageInfo { get; init; } = usageInfo;
 }

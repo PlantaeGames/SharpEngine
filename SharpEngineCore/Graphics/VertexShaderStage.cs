@@ -2,11 +2,21 @@
 
 internal sealed class VertexShaderStage : IPipelineStage
 {
-    public VertexShader VertexShader { get; init; }
+    [Flags]
+    public enum BindFlags
+    {
+        None = 0, 
+        VertexShader = 1 << 1
+    }
 
-    public VertexShaderStage(VertexShader vertexShader)
+
+    public VertexShader VertexShader { get; init; }
+    public BindFlags Flags { get; init; }
+
+    public VertexShaderStage(VertexShader vertexShader, BindFlags flags)
     {
         VertexShader = vertexShader;
+        Flags = flags;
     }
 
     public VertexShaderStage()
@@ -14,6 +24,9 @@ internal sealed class VertexShaderStage : IPipelineStage
 
     public void Bind(DeviceContext context)
     {
-        context.VSSetShader(VertexShader);
+        if(Flags.HasFlag(BindFlags.VertexShader))
+        {
+            context.VSSetShader(VertexShader);
+        }
     }
 }

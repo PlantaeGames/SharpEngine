@@ -4,76 +4,61 @@ namespace SharpEngineCore.Graphics;
 
 internal abstract class RenderPipeline : PipelineEvents
 {
+    public bool Initalized { get; private set; }
     protected RenderPass[] _renderPasses;
-
-    protected RenderPipeline()
-    { }
-}
-
-internal abstract class RenderPass : PipelineEvents
-{
-    protected Pass[] _passes;
-
-    protected RenderPass()
-    { }
-}
-
-internal abstract class Pass : PipelineEvents
-{
-    protected PipelineVariation _varitation;
-    protected PipelineVariation[] _subVariations;
-
-    protected Pass()
-    { }
-}
-
-internal interface IPipelineStage
-{
-    void Bind(DeviceContext context);
-}
-
-internal abstract class PipelineVariation 
-{
-    public int VertexCount { get; protected set; }
-    public int IndexCount { get; protected set; }
-
-    protected IPipelineStage[] _stages;
-    public void Bind(DeviceContext context)
-    {
-        foreach(var stage in _stages)
-        {
-            stage.Bind(context);
-        }
-    }
 
 #nullable enable
     public T? Get<T>()
-        where T : class, IPipelineStage
+        where T : RenderPass
     {
-        foreach(var stage in _stages)
+        foreach (var renderPass in _renderPasses)
         {
-            if(stage as T is not null)
+            if (renderPass is T)
             {
-                return (T)stage;
+                return (T)renderPass;
             }
         }
 
         Debug.Assert(false,
-            "Pipeline stage is not present on this varitation.");
+            $"Could not found {nameof(T)}.");
 
         return null;
     }
 #nullable disable
 
-    protected PipelineVariation()
+
+    public sealed override void Initialize(Device device, DeviceContext context)
+    {
+        OnInitialize(device, context);
+
+        foreach (var renderPass in _renderPasses)
+        {
+            renderPass.Initialize(device, context);
+        }
+
+        Initalized = true;
+    }
+
+    public sealed override void Ready(Device device, DeviceContext context)
+    {
+        OnReady(device, context);
+
+        foreach (var renderPass in _renderPasses)
+        {
+            renderPass.Ready(device, context);
+        }
+    }
+
+    public sealed override void Go(Device device, DeviceContext context)
+    {
+        OnGo(device, context);
+
+        foreach (var renderPass in _renderPasses)
+        {
+            renderPass.Go(device, context);
+        }
+    }
+
+    protected RenderPipeline()
     { }
-}
-
-internal abstract class PipelineEvents
-{
-    public abstract void Initialize(Device device, DeviceContext context);
-    public abstract void Ready(Device device, DeviceContext context);
-    public abstract void Go(Device device, DeviceContext context);
-
-    protected PipelineEvents() { }
 }

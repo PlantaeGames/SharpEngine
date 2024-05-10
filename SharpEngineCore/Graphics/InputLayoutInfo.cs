@@ -4,7 +4,7 @@ namespace SharpEngineCore.Graphics;
 
 internal sealed class InputLayoutInfo
 {
-    public D3D_PRIMITIVE_TOPOLOGY Topology { get; init; }
+    public Topology Topology { get; init; }
     public IFragmentable Layout { get; init; }
     public VertexShader VertexShader { get; init; }
 
@@ -12,8 +12,8 @@ internal sealed class InputLayoutInfo
     { }
 
     public InputLayoutInfo(
-        D3D_PRIMITIVE_TOPOLOGY topology,
         IFragmentable layout,
+        Topology topology,
         VertexShader vertexShader)
     {
         Topology = topology;

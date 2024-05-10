@@ -1,4 +1,6 @@
-﻿using TerraFX.Interop.DirectX;
+﻿using SharpEngineCore.Utilities;
+using System.Diagnostics;
+using TerraFX.Interop.DirectX;
 
 namespace SharpEngineCore.Graphics;
 
@@ -9,23 +11,28 @@ internal sealed class VertexBuffer : Buffer
 {
     public int VertexCount { get; init; }
 
-    /// <summary>
-    /// Creates vertex buffer from already created buffer.
-    /// </summary>
-    /// <param name="buffer">Buffer to represent as vertex buffer</param>
-    /// <exception cref="GraphicsException"></exception>
-    public VertexBuffer(Buffer buffer, IFragmentable layout) :
-        base(buffer.GetNativePtr(), buffer.Info)
-    { 
-        if(buffer.Info.UsageInfo.BindFlags != D3D11_BIND_FLAG.D3D11_BIND_VERTEX_BUFFER)
-        {
-            // error here.
-            throw new GraphicsException(
-                $"Failed to create {nameof(VertexBuffer)}," +
-                $"provided buffer is not bindable as Vertex Buffer.");
-        }
+    public VertexBuffer(Buffer buffer, Device device) :
+        base(buffer.GetNativePtr(), buffer.Info, device)
+    {
+        Debug.Assert(device != null,
+            "Device can't be null here. Use Buffer.CreateVertexBuffer().");
 
-        var size = buffer.Info.Size;
-        VertexCount = size / layout.GetFragmentsCount();
+        Debug.Assert(
+            Info.UsageInfo.BindFlags.HasFlag(D3D11_BIND_FLAG.D3D11_BIND_VERTEX_BUFFER) ||
+            Info.UsageInfo.BindFlags.HasFlag(D3D11_BIND_FLAG.D3D11_BIND_STREAM_OUTPUT),
+            "The given buffer is not created to be used as vertex buffer.");
+        Debug.Assert(
+            Info.Layout.GetInterface(nameof(IFragmentable)) != null,
+            "Vertex Buffers can only have fragmentable layout.");
+
+        var obj = Activator.CreateInstance(Info.Layout);
+
+        var count = (int)Info.Layout.InvokeMember(nameof(IFragmentable.GetFragmentsCount),
+            System.Reflection.BindingFlags.Public |
+            System.Reflection.BindingFlags.InvokeMethod |
+            System.Reflection.BindingFlags.Instance, Type.DefaultBinder,
+            obj, null);
+
+        VertexCount = buffer.Info.Size.ToArea() / count;
     }
 }

@@ -1,25 +1,51 @@
-﻿namespace SharpEngineCore.Graphics;
+﻿using TerraFX.Interop.WinRT;
+
+namespace SharpEngineCore.Graphics;
 
 internal sealed class InputAssembler : IPipelineStage
 {
+    [Flags]
+    public enum BindFlags
+    {
+        None = 0,
+        Layout = 1 << 1,
+        VertexBuffer = 1 << 2,
+        IndexBuffer = 1 << 3
+    }
+
     public InputLayout Layout { get; init; }
     public VertexBuffer VertexBuffer { get; init; }
     public IndexBuffer IndexBuffer { get; init; }
 
+    public BindFlags Flags { get; init; }
+
     public void Bind(DeviceContext context)
     {
-        context.IASetInputLayout(Layout);
-        context.IASetVertexBuffer([VertexBuffer], 0);
-        context.IASetIndexBuffer(IndexBuffer);
+        if(Flags.HasFlag(BindFlags.Layout))
+        {
+            context.IASetInputLayout(Layout);
+            context.IASetTopology(Layout.Info.Topology);
+        }
+        if(Flags.HasFlag(BindFlags.VertexBuffer))
+        {
+            context.IASetVertexBuffer([VertexBuffer], 0);
+        }
+        if(Flags.HasFlag(BindFlags.IndexBuffer))
+        {
+            context.IASetIndexBuffer(IndexBuffer);
+        }
     }
 
     public InputAssembler(InputLayout layout,
                           VertexBuffer vertexBuffer,
-                          IndexBuffer indexBuffer)
+                          IndexBuffer indexBuffer,
+                          BindFlags flags)
     {
         Layout = layout;
         VertexBuffer = vertexBuffer;
         IndexBuffer = indexBuffer;
+
+        Flags = flags;
     }
 
     public InputAssembler()

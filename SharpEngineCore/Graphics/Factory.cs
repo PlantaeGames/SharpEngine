@@ -3,18 +3,18 @@ using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
 
-internal sealed class DXGIFactory
+internal sealed class Factory
 {
     private ComPtr<IDXGIFactory> _pFactory;
 
-    private static DXGIFactory _instance;
+    private static Factory _instance;
     private static object _instanceLock = new();
 
     private const uint MAX_ENUMERATE_DEVICE_COUNT = 12u;
 
     public Swapchain CreateSwapchain(Window window, Device device)
     {
-        return new Swapchain(NativeCreateSwapchain(), window);
+        return new Swapchain(NativeCreateSwapchain(), window, device);
 
         unsafe ComPtr<IDXGISwapChain> NativeCreateSwapchain()
         {
@@ -127,17 +127,17 @@ internal sealed class DXGIFactory
         }
     }
 
-    public static DXGIFactory GetInstance()
+    public static Factory GetInstance()
     {
         lock (_instanceLock)
         {
-            _instance ??= new DXGIFactory();
+            _instance ??= new Factory();
 
             return _instance;
         }
     }
 
-    private DXGIFactory()
+    private Factory()
     {
         Initialize();
     }

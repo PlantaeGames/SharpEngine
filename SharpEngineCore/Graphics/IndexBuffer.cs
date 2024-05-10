@@ -1,4 +1,6 @@
-﻿using TerraFX.Interop.DirectX;
+﻿using SharpEngineCore.Utilities;
+using System.Diagnostics;
+using TerraFX.Interop.DirectX;
 
 namespace SharpEngineCore.Graphics;
 
@@ -9,23 +11,20 @@ internal sealed class IndexBuffer : Buffer
 {
     public int IndexCount { get; private set; }
 
-    /// <summary>
-    /// Creates index buffer from already created buffer.
-    /// </summary>
-    /// <param name="buffer">Buffer to represent as index buffer</param>
-    /// <exception cref="GraphicsException"></exception>
-    public IndexBuffer(Buffer buffer, IFragmentable layout) :
-        base(buffer.GetNativePtr(), buffer.Info)
+    public IndexBuffer(Buffer buffer, Device device) :
+        base(buffer.GetNativePtr(), buffer.Info, device)
     {
-        if (buffer.Info.UsageInfo.BindFlags != D3D11_BIND_FLAG.D3D11_BIND_INDEX_BUFFER)
-        {
-            // error here.
-            throw new GraphicsException(
-                $"Failed to create {nameof(IndexBuffer)}," +
-                $"provided buffer is not bindable as Index Buffer.");
-        }
+        Debug.Assert(
+            Info.UsageInfo.BindFlags == D3D11_BIND_FLAG.D3D11_BIND_INDEX_BUFFER,
+        $"Failed to create Index Buffer, provided buffer is not bindable as Index Buffer.");
+        Debug.Assert(
+            Info.Layout.GetFields().Length == 1,
+            "Index Buffers can only have one unit.");
+        Debug.Assert(
+            Info.Layout.GetInterface(nameof(IUnitable)) != null,
+            "Index Buffer must have unitable layout.");
 
-        var size = buffer.Info.Size;
-        IndexCount = size / layout.GetFragmentsCount();
+     
+        IndexCount = buffer.Info.Size.ToArea() / Info.Layout.GetFields().Length;
     }
 }

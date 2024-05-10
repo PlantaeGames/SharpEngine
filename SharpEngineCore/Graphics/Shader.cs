@@ -1,14 +1,14 @@
-﻿using TerraFX.Interop.Windows;
+﻿namespace SharpEngineCore.Graphics;
 
-namespace SharpEngineCore.Graphics;
-
-public abstract class Shader
+internal abstract class Shader
 {
     private readonly Blob _blob;
+    private readonly Device _device;
     internal Blob GetBlob() => _blob;
 
-    protected Shader(Blob blob)
+    protected Shader(Blob blob, Device device)
     {
         _blob = blob;
+        _device = device;
     }
 }

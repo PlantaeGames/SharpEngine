@@ -2,11 +2,20 @@
 
 internal sealed class Rasterizer : IPipelineStage
 {
-    public Viewport[] Viewports { get; init; }
+    [Flags]
+    public enum BindFlags
+    {
+        None = 0,
+        Viewports = 1 << 1
+    }
 
-    public Rasterizer(Viewport[] viewports)
+    public Viewport[] Viewports { get; init; }
+    public BindFlags Flags { get; init; }
+
+    public Rasterizer(Viewport[] viewports, BindFlags flags)
     {
         Viewports = viewports;
+        Flags = flags;
     }
 
     public Rasterizer()
@@ -15,6 +24,9 @@ internal sealed class Rasterizer : IPipelineStage
 
     public void Bind(DeviceContext context)
     {
-        context.RSSetViewports(Viewports);
+        if(Flags.HasFlag(BindFlags.Viewports))
+        {
+            context.RSSetViewports(Viewports);
+        }
     }
 }

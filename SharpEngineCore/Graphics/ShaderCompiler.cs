@@ -33,7 +33,32 @@ internal sealed class ShaderCompiler
     /// <exception cref="GraphicsException"></exception>
     public Blob Compile(ShaderModule module, ShaderCompiler.Params @params)
     {
+        if(module.PreCompiled)
+        {
+            return new Blob(NativePreCompiled());
+        }
+
         return new Blob(NativeCompile());
+
+        unsafe ComPtr<ID3DBlob> NativePreCompiled()
+        {
+            var pBlob = new ComPtr<ID3DBlob>();
+
+            fixed (char* pName = module.Name)
+            {
+                GraphicsException.SetInfoQueue();
+                var result = D3DReadFileToBlob(pName, pBlob.GetAddressOf());
+
+                if(result.FAILED)
+                {
+                    // error here.
+                    GraphicsException.ThrowLastGraphicsException(
+                        "Failed to load pre compiled shader.");
+                }
+            }
+
+            return pBlob;
+        }
 
         unsafe ComPtr<ID3DBlob> NativeCompile()
         {

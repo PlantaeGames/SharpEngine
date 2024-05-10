@@ -9,8 +9,9 @@ internal sealed class RenderTargetView : ResourceView
 
     public ComPtr<ID3D11RenderTargetView> GetNativePtr() => new(_pView);
 
-    public RenderTargetView(ComPtr<ID3D11RenderTargetView> pView) :
-        base()
+    public RenderTargetView(ComPtr<ID3D11RenderTargetView> pView,
+        ResourceViewInfo info, Device device) :
+        base(info, device)
     {
         _pView = new(pView);
     }

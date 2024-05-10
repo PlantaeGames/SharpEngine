@@ -3,7 +3,7 @@
 internal sealed class PolygonRenderer : Renderer
 {
     public PolygonRenderer(RenderPipeline pipeline, Adapter adapter) :
-        base(pipeline, adapter)
+        base(adapter)
     {
 
     }

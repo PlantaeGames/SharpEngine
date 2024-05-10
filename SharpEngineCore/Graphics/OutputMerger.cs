@@ -1,12 +1,20 @@
 ﻿namespace SharpEngineCore.Graphics;
-
 internal sealed class OutputMerger : IPipelineStage
 {
-    public RenderTargetView[] RenderTargetViews { get; init; }
+    [Flags]
+    public enum BindFlags
+    {
+        None = 0,
+        RenderTargetViews = 1 << 1
+    }
 
-    public OutputMerger(RenderTargetView[] renderTargetViews)
+    public RenderTargetView[] RenderTargetViews { get; init; }
+    public BindFlags Flags { get; init; }
+
+    public OutputMerger(RenderTargetView[] renderTargetViews, BindFlags flags)
     {
         RenderTargetViews = renderTargetViews;
+        Flags = flags;
     }
 
     public OutputMerger()
@@ -14,6 +22,9 @@ internal sealed class OutputMerger : IPipelineStage
 
     public void Bind(DeviceContext context)
     {
-        context.OMSetRenderTargets(RenderTargetViews);
+        if(Flags.HasFlag(BindFlags.RenderTargetViews))
+        {
+            context.OMSetRenderTargets(RenderTargetViews);
+        }
     }
 }

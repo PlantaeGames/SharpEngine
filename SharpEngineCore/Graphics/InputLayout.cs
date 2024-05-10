@@ -5,15 +5,18 @@ namespace SharpEngineCore.Graphics;
 
 internal sealed class InputLayout
 {
-    private readonly InputLayoutInfo _info;
+    public readonly InputLayoutInfo Info;
     private readonly ComPtr<ID3D11InputLayout> _ptr;
+    private readonly Device _device;
 
     public ComPtr<ID3D11InputLayout> GetNativePtr() => new(_ptr);
 
     public InputLayout(ComPtr<ID3D11InputLayout> pInputLayout,
-                       InputLayoutInfo info)
+                       InputLayoutInfo info,
+                        Device device)
     {
         _ptr = new(pInputLayout);
-        _info = info;
+        Info = info;
+        _device = device;
     }
 }
