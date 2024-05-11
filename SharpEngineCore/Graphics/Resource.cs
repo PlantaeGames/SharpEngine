@@ -1,29 +1,11 @@
-﻿using SharpEngineCore.Utilities;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+
 using TerraFX.Interop.DirectX;
 using TerraFX.Interop.Windows;
 
+using SharpEngineCore.Utilities;
+
 namespace SharpEngineCore.Graphics;
-
-public sealed class PerspectivePoint
-{
-    public TransformConstantData Transform;
-
-    public PerspectivePoint()
-    { }
-}
-
-public sealed class GraphicsObject
-{
-    public TransformConstantData Transform { get; }
-    public Mesh Mesh;
-
-    public GraphicsObject()
-    {
-
-    }
-}
-
 
 internal abstract class Resource
 {

@@ -8,6 +8,6 @@ internal readonly struct ResourceInfo
     public ResourceInfo(Size size, ResourceUsageInfo usageInfo)
     {
         Size = size;
-        Usage = usageInfo;
+        UsageInfo = usageInfo;
     }
 }

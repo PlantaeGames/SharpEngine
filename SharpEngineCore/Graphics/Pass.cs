@@ -2,8 +2,6 @@
 
 internal abstract class Pass : PipelineEvents
 {
-    protected PipelineVariation _staticVariation;
-    protected PipelineVariation _dynamicVariation;
     protected Queue<PipelineVariation> _subVariations;
 
     public sealed override void Initialize(Device device, DeviceContext context)

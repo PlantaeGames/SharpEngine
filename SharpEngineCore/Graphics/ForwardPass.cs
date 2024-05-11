@@ -3,6 +3,9 @@ internal sealed class ForwardPass : Pass
 {
     private Texture2D _output;
 
+    private PipelineVariation _staticVariation;
+    private PipelineVariation _dynamicVariation;
+
     private Queue<ForwardSubVariationCreateInfo> _installment;
 
     public void AddSubVariation(ForwardSubVariationCreateInfo info)

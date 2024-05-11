@@ -2,7 +2,7 @@
 
 namespace SharpEngineCore.Graphics;
 
-internal readonly struct Viewport
+public readonly struct Viewport
 {
     public readonly D3D11_VIEWPORT Info { get; init; }
 

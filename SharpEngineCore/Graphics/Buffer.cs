@@ -6,7 +6,7 @@ namespace SharpEngineCore.Graphics;
 internal class Buffer(ComPtr<ID3D11Buffer> pBuffer, BufferInfo info,
     Device device) :
     Resource(ComUtilities.ToResourceNativePtr(ref pBuffer), 
-        new (info.Size, info.), device)
+        new (info.Size, info.UsageInfo), device)
 {
     public readonly BufferInfo Info = info;
 
