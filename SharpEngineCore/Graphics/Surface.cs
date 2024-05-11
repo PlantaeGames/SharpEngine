@@ -1,4 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using SharpEngineCore.Utilities;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace SharpEngineCore.Graphics;
 
@@ -11,6 +13,28 @@ public abstract class Surface : IDisposable
     private bool _disposed = false;
 
     public abstract int SubDivisionCount { get; }
+
+    public void Set(byte value, int offset)
+    {
+        Debug.Assert(Size.ToArea() * GetPeiceSize() <= offset,
+            "Offset is beyound buffer size.");
+
+        unsafe
+        {
+            *((byte*)_pColors + offset) = value;
+        }
+    }
+
+    public byte Get(int offset)
+    {
+        Debug.Assert(Size.ToArea() * GetPeiceSize() <= offset,
+            "Offset is beyound buffer size.");
+
+        unsafe
+        {
+            return *((byte*)_pColors + offset);
+        }
+    }
 
     /// <summary>
     /// Gets the size of single unit of that surface in bytes.

@@ -3,9 +3,11 @@
 internal readonly struct ResourceInfo
 {
     public readonly Size Size { get; init; }
+    public readonly ResourceUsageInfo UsageInfo { get; init; }
 
-    public ResourceInfo(Size size)
+    public ResourceInfo(Size size, ResourceUsageInfo usageInfo)
     {
         Size = size;
+        Usage = usageInfo;
     }
 }

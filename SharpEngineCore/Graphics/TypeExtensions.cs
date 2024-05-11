@@ -1,10 +1,14 @@
 ﻿using System.Diagnostics;
-using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
 
 internal static class TypeExtensions
 {
+    public static bool Match<TOther>(this Type type, TOther other)
+    {
+        return type.Name == other.GetType().Name;
+    }
+
     /// <summary>
     /// Gets the size in bytes of type.
     /// </summary>

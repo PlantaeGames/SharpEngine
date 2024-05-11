@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using TerraFX.Interop.DirectX;
 using static TerraFX.Interop.DirectX.DirectX;
 using TerraFX.Interop.Windows;
+
 using SharpEngineCore.Utilities;
 
 namespace SharpEngineCore.Graphics;
@@ -20,6 +21,65 @@ internal sealed class Device
     private DeviceContext _context;
 
     private D3D_FEATURE_LEVEL _featureLevel;
+
+    public ShaderResourceView CreateShaderResourceView(Resource resource)
+    {
+        return new ShaderResourceView(NativeCreateShaderResourceView(), this);
+
+        unsafe ComPtr<ID3D11ShaderResourceView> NativeCreateShaderResourceView()
+        {
+            // TODO: Using the while resource,
+            //var desc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
+
+            var pView = new ComPtr<ID3D11ShaderResourceView>();
+            fixed(ID3D11Device** ppDevice = _pDevice)
+            {
+                GraphicsException.SetInfoQueue();
+                var result = (*ppDevice)->CreateShaderResourceView(
+                    resource.GetNativePtrAsResource(),
+                    (D3D11_SHADER_RESOURCE_VIEW_DESC*)IntPtr.Zero, pView.GetAddressOf());
+
+                if(result.FAILED)
+                {
+                    // error here
+                    GraphicsException.ThrowLastGraphicsException(
+                        $"Failed to create shader resource view\nError Code: {result}");
+                }
+            }
+
+            return pView;
+        }
+    }
+
+    public Sampler CreateSampler(SamplerInfo info, Texture texture)
+    {
+        return new Sampler(NativeCreateSampler(), texture, this);
+
+        unsafe ComPtr<ID3D11SamplerState> NativeCreateSampler()
+        {
+            var desc = new D3D11_SAMPLER_DESC();
+            desc.Filter = info.Filter;
+            desc.AddressU = info.AddressMode;
+            desc.AddressV = info.AddressMode;
+            desc.AddressW = info.AddressMode;
+
+            var pSampler = new ComPtr<ID3D11SamplerState>();
+            fixed(ID3D11Device** ppDevice = _pDevice)
+            {
+                GraphicsException.SetInfoQueue();
+                var result = (*ppDevice)->CreateSamplerState(&desc, pSampler.GetAddressOf());
+
+                if(result.FAILED)
+                {
+                    // error here
+                    GraphicsException.ThrowLastGraphicsException(
+                        $"Failed to Create Sampler\nError Code: {result}");
+                }
+            }
+
+            return pSampler;
+        }
+    }
 
     public InputLayout CreateInputLayout(InputLayoutInfo info)
     {

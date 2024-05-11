@@ -5,9 +5,181 @@ using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
 
-internal abstract class DeviceContext
+internal abstract partial class DeviceContext
 {
     protected readonly ComPtr<ID3D11DeviceContext> _pContext;
+
+    public void VSSetShaderResources(ShaderResourceView[] views, int startIndex)
+    {
+        NativeVSSetShaderResources();
+
+        unsafe void NativeVSSetShaderResources()
+        {
+            var count = views.Length;
+
+            var pViews = stackalloc ID3D11ShaderResourceView*[count];
+            for (var i = 0; i < count; i++)
+            {
+                pViews[i] = views[i].GetNativePtr().Get();
+            }
+
+            fixed (ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppContext)->VSSetShaderResources((uint)startIndex, (uint)count, pViews);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Error in vertex shader setting resource views.");
+            }
+        }
+    }
+
+    public void VSSetConstantBuffers(ConstantBuffer[] buffers, int startIndex)
+    {
+        NativeVSConstantBuffers();
+
+        unsafe void NativeVSConstantBuffers()
+        {
+            var count = buffers.Length;
+
+            var pBuffers = stackalloc ID3D11Buffer*[count];
+            for (var i = 0; i < count; i++)
+            {
+                pBuffers[i] = buffers[i].GetNativePtr().Get();
+            }
+
+            fixed (ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppContext)->VSSetConstantBuffers((uint)startIndex, (uint)count, pBuffers);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Error in setting vertex shaders constant buffers.");
+            }
+        }
+    }
+
+    public void PSSetConstantBuffers(ConstantBuffer[] buffers, int startIndex)
+    {
+        NativePSSetConstantBuffers();
+
+        unsafe void NativePSSetConstantBuffers()
+        {
+            var count = buffers.Length;
+
+            var pBuffers = stackalloc ID3D11Buffer*[count];
+            for (var i = 0; i < count; i++)
+            {
+                pBuffers[i] = buffers[i].GetNativePtr().Get();
+            }
+
+            fixed (ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppContext)->PSSetConstantBuffers((uint)startIndex, (uint)count, pBuffers);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Error in setting pixel shaders constant buffers.");
+            }
+        }
+    }
+
+    public void PSSetSamplers(Sampler[] samplers, int startIndex)
+    {
+        NativePSSetSamplers();
+
+        unsafe void NativePSSetSamplers()
+        {
+            var count = samplers.Length;
+
+            var pSamplers = stackalloc ID3D11SamplerState*[count];
+            for (var i = 0; i < count; i++)
+            {
+                pSamplers[i] = samplers[i].GetNativePtr().Get();
+            }
+
+            fixed(ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppContext)->PSSetSamplers((uint)startIndex, (uint)count, pSamplers);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Error in setting pixel shader samplers.");
+            }
+        }
+    }
+
+    public void PSSetShaderResources(ShaderResourceView[] views, int startIndex)
+    {
+        NativePSSetShaderResources();
+
+        unsafe void NativePSSetShaderResources()
+        {
+            var count = views.Length;
+
+            var pViews = stackalloc ID3D11ShaderResourceView*[count];
+            for(var i = 0; i < count; i++)
+            {
+                pViews[i] = views[i].GetNativePtr().Get();
+            }
+
+            fixed(ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppContext)->PSSetShaderResources((uint)startIndex, (uint)count, pViews);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Error in Pixel shader setting resource views.");
+            }
+        }
+    }
+
+    public void Unmap(Resource resource, MapInfo info)
+    {
+        NativeUnmap();
+
+        unsafe void NativeUnmap()
+        {
+            fixed(ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppContext)->Unmap(resource.GetNativePtrAsResource(),
+                    (uint)info.SubResourceIndex);
+
+                if(GraphicsException.CheckIfAny())
+                {
+                    GraphicsException.ThrowLastGraphicsException(
+                        "Failed to unmap memory");
+                }
+            }
+        }
+    }
+
+    public MappedSubResource Map(Resource resource, MapInfo info)
+    {
+        return new(NativeMap(), info);
+
+        unsafe D3D11_MAPPED_SUBRESOURCE NativeMap()
+        {
+            var map = new D3D11_MAPPED_SUBRESOURCE();
+
+            fixed(ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                var result = (*ppContext)->Map(resource.GetNativePtrAsResource(),
+                    (uint)info.SubResourceIndex, info.MapType, 0u, &map);
+
+                if(result.FAILED)
+                {
+                    // error here
+                    GraphicsException.ThrowLastGraphicsException(
+                        $"Failed to map memory\nError Code: {result}");
+                }
+            }
+
+            return map;
+        }
+    }
 
     public void DrawIndexed(int indexCount, int startIndex)
     {

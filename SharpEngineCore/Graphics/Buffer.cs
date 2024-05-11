@@ -6,9 +6,14 @@ namespace SharpEngineCore.Graphics;
 internal class Buffer(ComPtr<ID3D11Buffer> pBuffer, BufferInfo info,
     Device device) :
     Resource(ComUtilities.ToResourceNativePtr(ref pBuffer), 
-        new (info.Size), device)
+        new (info.Size, info.), device)
 {
     public readonly BufferInfo Info = info;
+
+    public void Update(Surface surface)
+    {
+        Write(surface, 0);
+    }
 
     /// <summary>
     /// Creates a Vertex Buffer from a buffer.

@@ -8,6 +8,15 @@ namespace SharpEngineCore.Graphics;
 /// </summary>
 internal sealed class ConstantBuffer : Buffer
 {
+    public void Update(ISurfaceable surfaceable)
+    {
+        Debug.Assert(surfaceable.GetType().Match(Info.Layout),
+            "Constant buffer can't be updated layout does not matched.");
+
+        base.Update(surfaceable.ToSurface());
+    }
+
+
     public ConstantBuffer(Buffer buffer, Device device) :
         base(buffer.GetNativePtr(), buffer.Info, device)
     {
