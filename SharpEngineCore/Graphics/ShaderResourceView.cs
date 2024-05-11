@@ -3,15 +3,21 @@ using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
 
-internal sealed class ShaderResourceView
+internal sealed class ShaderResourceView : ResourceView
 {
-    private ComPtr<ID3D11ShaderResourceView> _ptr;
-    public ComPtr<ID3D11ShaderResourceView> GetNativePtr() => new(_ptr);
-    private Device _device;
+    public readonly ShaderResourceViewInfo Info;
 
-    public ShaderResourceView(ComPtr<ID3D11ShaderResourceView> pView, Device device)
+    private readonly ComPtr<ID3D11ShaderResourceView> _ptr;
+    public ComPtr<ID3D11ShaderResourceView> GetNativePtr() => new(_ptr);
+
+    public ShaderResourceView(ComPtr<ID3D11ShaderResourceView> pView, 
+        Resource resource,
+        ShaderResourceViewInfo info,
+        Device device) :
+        base(resource, info.ResourceViewInfo, device)
     {
+        Info = info;
+
         _ptr = new(pView);
-        _device = device;
     }
 }

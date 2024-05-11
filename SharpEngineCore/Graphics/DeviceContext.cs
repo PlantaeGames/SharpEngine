@@ -240,7 +240,8 @@ internal abstract partial class DeviceContext
         }
     }
 
-    public void OMSetRenderTargets(RenderTargetView[] views)
+    public void OMSetRenderTargets(RenderTargetView[] views,
+        DepthStencilView depthStencilView)
     {
         NativeOMSetRenderTargets();
 
@@ -256,7 +257,7 @@ internal abstract partial class DeviceContext
             {
                 GraphicsException.SetInfoQueue();
                 (*ppContext)->OMSetRenderTargets((uint)views.Length,
-                    ppViews, (ID3D11DepthStencilView*)IntPtr.Zero);
+                    ppViews, depthStencilView.GetNativePtr());
 
                 Debug.Assert(GraphicsException.CheckIfAny() == false,
                     "Failed to set render target view to output merger");

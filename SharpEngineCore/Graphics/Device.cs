@@ -22,9 +22,97 @@ internal sealed class Device
 
     private D3D_FEATURE_LEVEL _featureLevel;
 
-    public ShaderResourceView CreateShaderResourceView(Resource resource)
+    public DepthStencilView CreateDepthStencilView(Resource resource, ViewCreationInfo info)
     {
-        return new ShaderResourceView(NativeCreateShaderResourceView(), this);
+        return new DepthStencilView(NativeCreateDepthStencilView(), resource,
+            new DepthStencilViewInfo()
+            {
+                ResourceViewInfo = new ResourceViewInfo()
+                {
+                    Size = info.Size,
+                    ResourceInfo = resource.ResourceInfo
+                }
+            },
+            this);
+
+        unsafe ComPtr<ID3D11DepthStencilView> NativeCreateDepthStencilView()
+        {
+            // TODO: Using the same params as the resource created, at mip map 0.
+            //var desc = new D3D11_DEPTH_STENCIL_VIEW_DESC();
+
+            var pView = new ComPtr<ID3D11DepthStencilView>();
+            fixed(ID3D11Device** ppDevice = _pDevice)
+            {
+                GraphicsException.SetInfoQueue();
+                var result = (*ppDevice)->CreateDepthStencilView(resource.GetNativePtrAsResource(),
+                    (D3D11_DEPTH_STENCIL_VIEW_DESC*)IntPtr.Zero,
+                    pView.GetAddressOf());
+
+                if(result.FAILED)
+                {
+                    // error here
+                    GraphicsException.ThrowLastGraphicsException(
+                        $"Failed to create depth stencil view\nError Code: {result}");
+                }
+            }
+
+            return pView;
+        }
+    }
+
+    public DepthStencilState CreateDepthStencilState(DepthStencilStateInfo info)
+    {
+        return new DepthStencilState(NativeCreateDepthStencilState(), info,
+            this);
+
+        unsafe ComPtr<ID3D11DepthStencilState> NativeCreateDepthStencilState()
+        {
+            var desc = new D3D11_DEPTH_STENCIL_DESC();
+            desc.DepthEnable = info.DepthEnabled;
+            desc.DepthWriteMask = info.DepthWriteMask;
+            desc.DepthFunc = info.DepthComparisionFunc;
+
+            desc.StencilEnable = info.StencilEnable;
+            desc.StencilReadMask = info.StencilReadMask;
+            desc.StencilWriteMask = info.StencilWriteMask;
+            desc.FrontFace = info.FrontFace;
+            desc.BackFace = info.BackFace;
+
+            var pState = new ComPtr<ID3D11DepthStencilState>();
+            fixed(ID3D11Device** ppDevice = _pDevice)
+            {
+                GraphicsException.SetInfoQueue();
+
+                var result = (*ppDevice)->CreateDepthStencilState(&desc,
+                    pState.GetAddressOf());
+
+                if(result.FAILED)
+                {
+                    // error here
+                    GraphicsException.ThrowLastGraphicsException(
+                        $"Failed to create Depth Stencil State\nError Code: {result}");
+                }
+            }
+
+            return pState;
+        }
+    }
+
+    public ShaderResourceView CreateShaderResourceView(Resource resource,
+        ViewCreationInfo info)
+    {
+        return new ShaderResourceView(
+            NativeCreateShaderResourceView(),
+            resource,
+            new ShaderResourceViewInfo
+            {
+                ResourceViewInfo = new ResourceViewInfo()
+                {
+                    Size = info.Size,
+                    ResourceInfo = resource.ResourceInfo
+                }
+            },
+            this);
 
         unsafe ComPtr<ID3D11ShaderResourceView> NativeCreateShaderResourceView()
         {
@@ -53,7 +141,7 @@ internal sealed class Device
 
     public Sampler CreateSampler(SamplerInfo info, Texture texture)
     {
-        return new Sampler(NativeCreateSampler(), texture, this);
+        return new Sampler(NativeCreateSampler(), info, texture, this);
 
         unsafe ComPtr<ID3D11SamplerState> NativeCreateSampler()
         {
@@ -301,6 +389,7 @@ internal sealed class Device
             var desc = new D3D11_BUFFER_DESC();
             desc.ByteWidth = (uint) (surface.Size.ToArea() *
                                      surface.GetPeiceSize());
+            desc.StructureByteStride = (uint)layout.GetDataTypeSize();
 
             desc.BindFlags = (uint) usageInfo.BindFlags;
             desc.CPUAccessFlags = (uint) usageInfo.CPUAccessFlags;
@@ -337,11 +426,17 @@ internal sealed class Device
     /// </summary>
     /// <param name="resource">A viewable resource</param>
     /// <returns>Created render target view.</returns>
-    public RenderTargetView CreateRenderTargetView(Resource resource)
+    public RenderTargetView CreateRenderTargetView(Resource resource,
+        ViewCreationInfo info)
     {
-        return new RenderTargetView(NativeCreateView(), new ResourceViewInfo()
+        return new RenderTargetView(NativeCreateView(), resource,
+        new RenderTargetViewInfo()
         {
-            Size = resource.ResourceInfo.Size
+            ResourceViewInfo = new ResourceViewInfo()
+            {
+                Size = info.Size,
+                ResourceInfo = resource.ResourceInfo
+            }
         },
         this);
 
