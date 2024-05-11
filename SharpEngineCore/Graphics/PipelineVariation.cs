@@ -13,7 +13,4 @@ internal abstract class PipelineVariation
             stage.Bind(context);
         }
     }
-
-    protected PipelineVariation()
-    { }
 }

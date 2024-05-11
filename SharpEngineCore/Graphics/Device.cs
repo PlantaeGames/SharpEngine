@@ -470,12 +470,28 @@ internal sealed class Device
         }
     }
 
-    public Texture2D CreateTexture2D(FSurface surface, ResourceUsageInfo usageInfo)
+    /// <summary>
+    /// Creates a 2d texture.
+    /// </summary>
+    /// <param name="surface">The surface to create texture from.</param>
+    /// <param name="usageInfo">Resource Usuage Info.</param>
+    /// <param name="format">The format of the texture.</param>
+    /// <returns>Created 2d texture.</returns>
+    /// <exception cref="GraphicsException"></exception>
+    /// <remarks>If the format set unknown the format will be taken from surface channels.</remarks>
+    public Texture2D CreateTexture2D(FSurface surface, ResourceUsageInfo usageInfo,
+        DXGI_FORMAT format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN)
     {
+        var formatToUse = format == DXGI_FORMAT.DXGI_FORMAT_UNKNOWN ?
+                                    surface.Channels.ToFFormat() :
+                                    format;
+
+
         return new Texture2D(NativeCreateTexture2D(), new TextureInfo()
         {
             Size = surface.Size,
             Channels = surface.Channels,
+            Format = formatToUse,
             UsageInfo = usageInfo
         },
         this);
@@ -493,7 +509,7 @@ internal sealed class Device
                 Count = 1u
             };
             desc.MiscFlags = (uint)usageInfo.MiscFlags;
-            desc.Format = surface.Channels.ToFFormat();
+            desc.Format = formatToUse;
             desc.Usage = usageInfo.Usage;
             desc.BindFlags = (uint)usageInfo.BindFlags;
             desc.CPUAccessFlags = (uint)usageInfo.CPUAccessFlags;

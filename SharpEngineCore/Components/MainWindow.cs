@@ -1,7 +1,4 @@
-﻿using System.Text;
-
-using TerraFX.Interop.Windows;
-using TerraFX.Interop.DirectX;
+﻿using TerraFX.Interop.Windows;
 
 using SharpEngineCore.Graphics;
 using SharpEngineCore.Utilities;
@@ -34,10 +31,6 @@ internal sealed class MainWindow : Window
         var backTexture = _swapchain.GetBackTexture();
 
         var pipeline = new DefaultRenderPipeline(backTexture);
-
-        var pass = pipeline
-                        .Get<ForwardRenderPass>()
-                        .Get<ForwardPass>();
 
         var triangle = new Mesh();
         triangle.Vertices =
@@ -80,12 +73,16 @@ internal sealed class MainWindow : Window
                 }
             ];
 
-        pass.AddSubVariation(new (triangle));
-
         _renderer.SetPipeline(pipeline);
+
+        var pass = pipeline
+                .Get<ForwardRenderPass>()
+                .Get<ForwardPass>();
+        pass.AddSubVariation(new(triangle));
 
         _log.LogMessage("Renderer Created.");
         _log.BreakLine();
+        _log.LogMessage("Presenting...");
     }
 
     public MainWindow(string name, Point location, Size size) : base(name, location, size)

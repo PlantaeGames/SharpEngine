@@ -1,11 +1,12 @@
 ﻿namespace SharpEngineCore.Graphics;
 internal sealed class ForwardPass : Pass
 {
-    private Texture2D _output;
+    private RenderTargetView _outputView;
+
+    private DepthStencilState _depthState;
+    private DepthStencilView _depthView;
 
     private PipelineVariation _staticVariation;
-    private PipelineVariation _dynamicVariation;
-
     private Queue<ForwardSubVariationCreateInfo> _installment;
 
     public void AddSubVariation(ForwardSubVariationCreateInfo info)
@@ -13,13 +14,16 @@ internal sealed class ForwardPass : Pass
         _installment.Enqueue(info);
     }
 
-    public ForwardPass(Texture2D output)
-        : base()
+    public ForwardPass(RenderTargetView outputView, 
+        DepthStencilState depthState, DepthStencilView depthView) :
+        base()
     {
         _installment = new();
         _subVariations = new();
 
-        _output = output;
+        _outputView = outputView;
+        _depthState = depthState;
+        _depthView = depthView;
     }
 
     public override void OnGo(Device device, DeviceContext context)
@@ -57,19 +61,17 @@ internal sealed class ForwardPass : Pass
             {
                 TopLeftX = 1f,
                 TopLeftY = 1f,
-                Width = _output.Info.Size.Width,
-                Height = _output.Info.Size.Height,
+                Width = _outputView.Info.ResourceViewInfo.Size.Width,
+                Height = _outputView.Info.ResourceViewInfo.Size.Height,
                 MinDepth = 0f,
                 MaxDepth = 1f
             }
         };
 
-        var targetView = device.CreateRenderTargetView(_output);
-
         _staticVariation = new ForwardVariation(
             layout,
             vertexShader, pixelShader,
-            viewport, targetView);
+            viewport, _outputView, _depthState, _depthView);
     }
 
     public override void OnReady(Device device, DeviceContext context)

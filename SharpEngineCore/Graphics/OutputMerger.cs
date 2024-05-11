@@ -5,20 +5,25 @@ internal sealed class OutputMerger : IPipelineStage
     public enum BindFlags
     {
         None = 0,
-        RenderTargetViews = 1 << 1,
+        RenderTargetView = 1 << 1,
+        DepthStencilState = 1 << 2
     }
 
     public RenderTargetView[] RenderTargetViews { get; init; }
-    public DepthStencilView DepthStencilState { get; init; }
+    public DepthStencilState DepthStencilState { get; init; }
+    public DepthStencilView DepthStencilView { get; init; }
 
     public BindFlags Flags { get; init; }
 
     public OutputMerger(RenderTargetView[] renderTargetViews,
-        DepthStencilView depthStencilState,
+        DepthStencilState depthStencilState,
+        DepthStencilView depthStencilView,
         BindFlags flags)
     {
         RenderTargetViews = renderTargetViews;
         DepthStencilState = depthStencilState;
+        DepthStencilView = depthStencilView;
+
         Flags = flags;
     }
 
@@ -27,10 +32,16 @@ internal sealed class OutputMerger : IPipelineStage
 
     public void Bind(DeviceContext context)
     {
-        if(Flags.HasFlag(BindFlags.RenderTargetViews))
+        if(Flags.HasFlag(BindFlags.RenderTargetView))
         {
             context.OMSetRenderTargets(RenderTargetViews,
-                DepthStencilState);
+                DepthStencilView);
+        }
+
+        if (Flags.HasFlag(BindFlags.DepthStencilState))
+        {
+            context.OMSetRenderTargets(RenderTargetViews,
+                DepthStencilView);
         }
     }
 }

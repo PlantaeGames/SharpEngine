@@ -9,6 +9,41 @@ internal abstract partial class DeviceContext
 {
     protected readonly ComPtr<ID3D11DeviceContext> _pContext;
 
+    public void ClearDepthStencilView(DepthStencilView view, DepthStencilClearInfo info)
+    {
+        NativeClearDepthStencilView();
+
+        unsafe void NativeClearDepthStencilView()
+        {
+            fixed(ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppContext)->ClearDepthStencilView(view.GetNativePtr(),
+                    (uint)info.ClearFlags, info.Depth, info.Stencil);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Error in clearing depth stencil view.");
+            }
+        }
+    }
+
+    public void OMSetDepthStencilState(DepthStencilState state)
+    {
+        NativeOMSetDepthStencilState();
+
+        unsafe void NativeOMSetDepthStencilState()
+        {
+            fixed(ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppContext)->OMSetDepthStencilState(state.GetNativePtr(), 1u);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Error in setting depth stencil state of output merger");
+            }
+        }
+    }
+
     public void VSSetShaderResources(ShaderResourceView[] views, int startIndex)
     {
         NativeVSSetShaderResources();
@@ -481,4 +516,3 @@ internal sealed class ImmediateDeviceContext : DeviceContext
     public ImmediateDeviceContext(ComPtr<ID3D11DeviceContext> pDeviceContext)
         : base(pDeviceContext) { }
 }
-

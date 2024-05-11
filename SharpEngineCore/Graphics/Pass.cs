@@ -20,5 +20,7 @@ internal abstract class Pass : PipelineEvents
     }
 
     protected Pass()
-    { }
+    {
+        _subVariations = [];
+    }
 }

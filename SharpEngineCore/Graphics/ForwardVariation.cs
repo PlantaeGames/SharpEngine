@@ -6,7 +6,9 @@ internal sealed class ForwardVariation : PipelineVariation
                             VertexShader vertexShader,
                             PixelShader pixelShader,
                             Viewport viewport,
-                            RenderTargetView renderTargetView)
+                            RenderTargetView renderTargetView,
+                            DepthStencilState depthStencilState,
+                            DepthStencilView depthStencilView)
         : base()
     {
         var inputAssembler = new InputAssembler()
@@ -39,8 +41,10 @@ internal sealed class ForwardVariation : PipelineVariation
         var outputMerger = new OutputMerger()
         {
             RenderTargetViews = [renderTargetView],
+            DepthStencilView = depthStencilView,
 
-            Flags = OutputMerger.BindFlags.RenderTargetViews
+            Flags = OutputMerger.BindFlags.RenderTargetView |
+                    OutputMerger.BindFlags.DepthStencilState
         };
 
         _stages = [inputAssembler,

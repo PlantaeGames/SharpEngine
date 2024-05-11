@@ -2,15 +2,10 @@
 
 internal sealed class DefaultRenderPipeline : RenderPipeline
 {
-    private Texture2D _finalOutput;
-    private RenderTargetView _targetView;
-
-    public DefaultRenderPipeline(Texture2D output) :
+    public DefaultRenderPipeline(Texture2D outputTexture) :
         base()
     {
-        _finalOutput = output;
-
-        var forwardRenderPass = new ForwardRenderPass(_finalOutput);
+        var forwardRenderPass = new ForwardRenderPass(outputTexture);
         _renderPasses = [forwardRenderPass];
     }
 
@@ -20,12 +15,9 @@ internal sealed class DefaultRenderPipeline : RenderPipeline
 
     public override void OnInitialize(Device device, DeviceContext context)
     {
-        _targetView = device.CreateRenderTargetView(_finalOutput);
     }
 
     public override void OnReady(Device device, DeviceContext context)
     {
-       context.ClearRenderTargetView(_targetView,
-                                     new FColor4(0,0,0,0));
     }
 }

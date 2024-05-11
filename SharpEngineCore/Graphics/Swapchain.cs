@@ -48,7 +48,10 @@ internal sealed class Swapchain
 
                 _backTexture = new Texture2D(
                     pBackTexture,
-                    new() { Size = _window.GetSize() },
+                    new() 
+                    { 
+                        Size = _window.GetSize()
+                    },
                     _device);
             }
         }

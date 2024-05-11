@@ -60,5 +60,7 @@ internal abstract class RenderPipeline : PipelineEvents
     }
 
     protected RenderPipeline()
-    { }
+    {
+        _renderPasses = [];
+    }
 }

@@ -75,7 +75,7 @@ internal sealed class GraphicsTests
 
         // creating render target
         _logger.LogHeader("Render Target View Creation:-");
-        _view = _device.CreateRenderTargetView(_swapchain.GetBackTexture());
+        _view = _device.CreateRenderTargetView(_swapchain.GetBackTexture(), new ViewCreationInfo());
         _logger.LogMessage("Render Target View Created on Swapchain BackBuffer.");
 
         _logger.BreakLine();
