@@ -43,12 +43,12 @@ internal sealed class VertexShaderStage : IPipelineStage
 
         if (Flags.HasFlag(BindFlags.ConstantBuffers))
         {
-            context.PSSetConstantBuffers(ConstantBuffers, 0);
+            context.VSSetConstantBuffers(ConstantBuffers, 0);
         }
 
         if (Flags.HasFlag(BindFlags.ShaderResourceViews))
         {
-            context.PSSetShaderResources(ShaderResourceViews, 0);
+            context.VSSetShaderResources(ShaderResourceViews, 0);
         }
     }
 }

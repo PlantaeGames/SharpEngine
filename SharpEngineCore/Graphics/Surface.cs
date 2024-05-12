@@ -27,7 +27,7 @@ public abstract class Surface : IDisposable
 
     public byte Get(int offset)
     {
-        Debug.Assert(Size.ToArea() * GetPeiceSize() <= offset,
+        Debug.Assert(Size.ToArea() * GetPeiceSize() >= offset,
             "Offset is beyound buffer size.");
 
         unsafe

@@ -42,7 +42,7 @@ internal abstract class Resource
 
             for(var i = 0; i < surface.ToArea() * surface.GetPeiceSize(); i++)
             {
-                *((byte*)pDest) = surface.Get(i);
+                *((byte*)pDest + i) = surface.Get(i);
             }
 
         }

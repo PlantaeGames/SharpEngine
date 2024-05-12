@@ -2,7 +2,9 @@
 
 internal sealed class ForwardSubVariation : PipelineVariation
 {
-    public ForwardSubVariation(VertexBuffer vertexBuffer, IndexBuffer indexBuffer) :
+    public ForwardSubVariation(VertexBuffer vertexBuffer, IndexBuffer indexBuffer,
+        ConstantBuffer transformConstantBuffer,
+        ConstantBuffer camTransformConstantBuffer) :
         base()
     {
         var inputAssembler = new InputAssembler()
@@ -14,9 +16,16 @@ internal sealed class ForwardSubVariation : PipelineVariation
                     InputAssembler.BindFlags.VertexBuffer
         };
 
+        var vertexShaderStage = new VertexShaderStage()
+        {
+            ConstantBuffers = [transformConstantBuffer, camTransformConstantBuffer],
+
+            Flags = VertexShaderStage.BindFlags.ConstantBuffers
+        };
+
         VertexCount = vertexBuffer.VertexCount;
         IndexCount = indexBuffer.IndexCount;
 
-        _stages = [inputAssembler];
+        _stages = [inputAssembler, vertexShaderStage];
     }
 }

@@ -1,8 +1,8 @@
 ﻿using TerraFX.Interop.Windows;
+using static TerraFX.Interop.Windows.Windows;
 
 using SharpEngineCore.Graphics;
 using SharpEngineCore.Utilities;
-using Index = SharpEngineCore.Graphics.Index;
 
 namespace SharpEngineCore.Components;
 
@@ -12,10 +12,51 @@ internal sealed class MainWindow : Window
     private Renderer _renderer;
     private Swapchain _swapchain;
 
+    private ForwardPass _forwardPass;
+    private Guid _cubeId;
+
+    private float _angle = 0f;
+    private float _angleX = 0f;
+
     public void Update()
     {
+        var up = GetAsyncKeyState(VK.VK_UP);
+        if(up < 0)
+        {
+            _angle += 0.1f;
+        }
+
+        var down = GetAsyncKeyState(VK.VK_DOWN);
+        if (down < 0)
+        {
+            _angle -= 0.1f;
+        }
+
+        var left = GetAsyncKeyState(VK.VK_LEFT);
+        if (left < 0)
+        {
+            _angleX -= 0.1f;
+        }
+
+        var right = GetAsyncKeyState(VK.VK_RIGHT);
+        if (right < 0)
+        {
+            _angleX += 0.1f;
+        }
+
         _renderer.Render();
         _swapchain.Present();
+
+        _forwardPass.GraphicsObjects
+            .Where(x => x.Id == _cubeId)
+            .ToArray()[0]
+            .TransformConstantBuffer
+            .Update(new TransformConstantData()
+            {
+                Position = new (_angleX, 0, _angle, 0f),
+                Scale = new (1, 1, 1, 1)
+            });
+            
     }
 
     private void Initialize()
@@ -32,53 +73,13 @@ internal sealed class MainWindow : Window
 
         var pipeline = new DefaultRenderPipeline(backTexture);
 
-        var triangle = new Mesh();
-        triangle.Vertices =
-            [
-                new Vertex()
-                {
-                    Position = new(0f, 0.5f, 0, 1),
-                    Color = new(1f, 0, 0, 0),
-                    Normal = new (),
-                    TexCoord = new()
-                },
-                new Vertex()
-                {
-                    Position = new(0.5f, -0.5f, 0, 1),
-                    Color = new(0f, 1f, 0, 0),
-                    Normal = new (),
-                    TexCoord = new()
-                },
-                new Vertex()
-                {
-                    Position = new(-0.5f, -0.5f, 0, 1),
-                    Color = new(0f, 0, 1f, 0),
-                    Normal = new (),
-                    TexCoord = new()
-                }
-            ];
-        triangle.Indices =
-            [
-                new Index()
-                {
-                    Value = new (0)
-                },
-                new Index()
-                {
-                    Value = new (1)
-                },
-                new Index()
-                {
-                    Value = new (2)
-                }
-            ];
-
         _renderer.SetPipeline(pipeline);
 
-        var pass = pipeline
+        _forwardPass = pipeline
                 .Get<ForwardRenderPass>()
                 .Get<ForwardPass>();
-        pass.AddSubVariation(new(triangle));
+        _cubeId = _forwardPass.AddSubVariation(new(Mesh.Cube()));
+        
 
         _log.LogMessage("Renderer Created.");
         _log.BreakLine();

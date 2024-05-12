@@ -41,7 +41,7 @@ internal sealed class ForwardRenderPass : RenderPass
 
         _depthState = device.CreateDepthStencilState(new DepthStencilStateInfo()
         {
-            DepthEnabled = true,
+            DepthEnabled = false,
             DepthWriteMask = TerraFX.Interop.DirectX.D3D11_DEPTH_WRITE_MASK.D3D11_DEPTH_WRITE_MASK_ALL,
             DepthComparisionFunc = TerraFX.Interop.DirectX.D3D11_COMPARISON_FUNC.D3D11_COMPARISON_GREATER
 

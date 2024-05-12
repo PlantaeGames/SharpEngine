@@ -1,12 +1,14 @@
 ﻿namespace SharpEngineCore.Graphics;
 
-public sealed class GraphicsObject
+internal sealed class GraphicsObject
 {
-    public TransformConstantData Transform { get; }
-    public Mesh Mesh;
+    public readonly Guid Id;
+    public readonly ConstantBuffer TransformConstantBuffer;
 
-    public GraphicsObject()
+    public GraphicsObject(ConstantBuffer transformConstantBuffer,
+        Guid id)
     {
-
+        TransformConstantBuffer = transformConstantBuffer;
+        Id = id;
     }
 }
