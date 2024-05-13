@@ -5,6 +5,7 @@ internal sealed class ForwardVariation : PipelineVariation
     public ForwardVariation(InputLayout layout, 
                             VertexShader vertexShader,
                             PixelShader pixelShader,
+                            ConstantBuffer lightConstantBuffer,
                             Viewport viewport,
                             RenderTargetView renderTargetView,
                             DepthStencilState depthStencilState,
@@ -27,8 +28,10 @@ internal sealed class ForwardVariation : PipelineVariation
         var pixelShaderStage = new PixelShaderStage()
         {
             PixelShader = pixelShader,
+            ConstantBuffers = [lightConstantBuffer],
 
-            Flags = PixelShaderStage.BindFlags.PixelShader
+            Flags = PixelShaderStage.BindFlags.PixelShader |
+                    PixelShaderStage.BindFlags.ConstantBuffers
         };
 
         var rasterizer = new Rasterizer()
@@ -42,6 +45,7 @@ internal sealed class ForwardVariation : PipelineVariation
         {
             RenderTargetViews = [renderTargetView],
             DepthStencilView = depthStencilView,
+            DepthStencilState = depthStencilState,
 
             Flags = OutputMerger.BindFlags.RenderTargetView |
                     OutputMerger.BindFlags.DepthStencilState

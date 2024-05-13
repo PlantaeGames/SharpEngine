@@ -1,6 +1,4 @@
-﻿using TerraFX.Interop.Windows;
-
-namespace SharpEngineCore.Graphics;
+﻿namespace SharpEngineCore.Graphics;
 
 public sealed class Mesh
 {
@@ -10,6 +8,7 @@ public sealed class Mesh
     public static Mesh Triangle()
     {
         var triangle = new Mesh();
+        var gen = new NormalGenerator();
 
         triangle.Vertices =
             [
@@ -52,12 +51,15 @@ public sealed class Mesh
                 }
             ];
 
+        gen.GenerateForTriangles(ref triangle.Vertices);
+
         return triangle;
     }
 
     public static Mesh Cube()
     {
         var mesh = new Mesh();
+        var gen = new NormalGenerator();
 
         mesh.Vertices = 
             [
@@ -240,6 +242,19 @@ public sealed class Mesh
                 new (21)
             ];
 
+        var vertices = new Vertex[mesh.Indices.Length];
+        for(var i = 0; i < vertices.Length; i++)
+        {
+            var v = new Vertex();
+
+            v = mesh.Vertices[mesh.Indices[i].Value];
+
+            vertices[i] = v;
+        }
+
+        mesh.Vertices = vertices;
+        gen.GenerateForTriangles(ref mesh.Vertices);
+
         return mesh;
     }
 
@@ -265,6 +280,9 @@ public sealed class Mesh
 
     public Unit[] ToIndexUnits()
     {
+        //if (Indices.Length < 1)
+        //    return [];
+
         int indexCount = Indices.Length;
         int perIndexUnits = Indices[0].GetUnitCount();
 

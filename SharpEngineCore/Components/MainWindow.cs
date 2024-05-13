@@ -17,6 +17,7 @@ internal sealed class MainWindow : Window
 
     private float _angle = 0f;
     private float _angleX = 0f;
+    private float _angleZ = 0;
 
     public void Update()
     {
@@ -44,6 +45,18 @@ internal sealed class MainWindow : Window
             _angleX += 0.1f;
         }
 
+        var forward = GetAsyncKeyState(VK.VK_LBUTTON);
+        if (forward < 0)
+        {
+            _angleZ -= 0.1f;
+        }
+
+        var backward = GetAsyncKeyState(VK.VK_RBUTTON);
+        if (backward < 0)
+        {
+            _angleZ += 0.1f;
+        }
+
         _renderer.Render();
         _swapchain.Present();
 
@@ -53,7 +66,8 @@ internal sealed class MainWindow : Window
             .TransformConstantBuffer
             .Update(new TransformConstantData()
             {
-                Position = new (_angleX, 0, _angle, 0f),
+                Position = new (_angleX, _angleZ, _angle, 0f),
+                Rotation = new(0, 0, 0, 0),
                 Scale = new (1, 1, 1, 1)
             });
             
@@ -78,6 +92,8 @@ internal sealed class MainWindow : Window
         _forwardPass = pipeline
                 .Get<ForwardRenderPass>()
                 .Get<ForwardPass>();
+
+        var mesh = new ObjLoader().Load("Modals\\cube.obj");
         _cubeId = _forwardPass.AddSubVariation(new(Mesh.Cube()));
         
 

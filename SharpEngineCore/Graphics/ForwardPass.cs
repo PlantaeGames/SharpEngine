@@ -38,7 +38,7 @@ internal sealed class ForwardPass : Pass
         {
             varitation.Bind(context);
 
-            context.DrawIndexed(varitation.IndexCount, 0);
+            context.Draw(varitation.VertexCount, 0);
         }
     }
 
@@ -61,9 +61,24 @@ internal sealed class ForwardPass : Pass
 
         var viewport = PerspectiveCamera.Viewport;
 
+        var lightData = new LightConstantData();
+        lightData.Color = new(1, 1, 1, 1);
+        lightData.AmbientColor = new(0.15f, 0.15f, 0.15f, 0.15f);
+        lightData.Position = new(0, 100, 0, 0);
+        lightData.Rotation = new(0, 0, 0, 0);
+
+        var lightSurface = lightData.ToSurface();
+        var lightConstantBuffer = Buffer.CreateConstantBuffer(
+            device.CreateBuffer(lightSurface, typeof(LightConstantData),
+            new ResourceUsageInfo()
+            {
+                BindFlags = TerraFX.Interop.DirectX.D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER,
+                Usage = TerraFX.Interop.DirectX.D3D11_USAGE.D3D11_USAGE_IMMUTABLE,
+            }));
+
         _staticVariation = new ForwardVariation(
             layout,
-            vertexShader, pixelShader,
+            vertexShader, pixelShader, lightConstantBuffer,
             viewport, _outputView, _depthState, _depthView);
     }
 
