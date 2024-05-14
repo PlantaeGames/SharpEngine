@@ -13,6 +13,7 @@ struct OutputVertex
     float4 color : COLOR;
     float4 textureCoord : TEXCOORD;
     float4 camPosition : CAMPOSITION;
+    float4 worldPos : WORLDPOS;
 };
 
 cbuffer Transform : register(b0)
@@ -48,15 +49,6 @@ OutputVertex main(InputVertex vertex)
     rotations.x = Rotation.x;
     rotations.y = Rotation.y;
     rotations.z = Rotation.z;
-    
-    // camera respective
-    coordinates.x -= CamPosition.x;
-    coordinates.y -= CamPosition.y;
-    coordinates.z -= CamPosition.z;
-    
-    rotations.x -= CamRotation.x;
-    rotations.y -= CamRotation.y;
-    rotations.z -= CamRotation.z;
     
     // rotation
     //  rotation rotation
@@ -114,6 +106,17 @@ OutputVertex main(InputVertex vertex)
     translationMatrix[3][3] = 1;
     
     coordinates = mul(translationMatrix, coordinates);
+    
+    output.worldPos = coordinates;
+    
+    // camera respective
+    coordinates.x -= CamPosition.x;
+    coordinates.y -= CamPosition.y;
+    coordinates.z -= CamPosition.z;
+    
+    rotations.x -= CamRotation.x;
+    rotations.y -= CamRotation.y;
+    rotations.z -= CamRotation.z;
    
     // perspective transformation  
     // creating perspective transformaopm matrix
@@ -127,44 +130,16 @@ OutputVertex main(InputVertex vertex)
     // applying perspective transformation
     float4 result = mul(perspectiveMatrix, coordinates);
     
-    // applying weak perspective
-    if (result.w != 0)
-    {
-        result.x /= result.w;
-        result.y /= result.w;
-        result.z /= result.w;
-    }
-    
-    output.position = float4(result.x, result.y, result.z, 1);
+    output.position = float4(result.x, result.y, result.z, result.w);
 
     output.color = vertex.color;
     output.normal = vertex.normal;
+    output.normal.w = 1;
+    output.camPosition = CamPosition;
     
-    // -----------------------
-    // normal transformations
-    // -----------------------
-    coordinates = 0;
-    coordinates.x = vertex.normal.x;
-    coordinates.y = vertex.normal.y;
-    coordinates.z = vertex.normal.z;
-    coordinates.w = 1;
+    // transforming normal
+    coordinates = output.normal;
     
-    rotations = 0;
-    rotations.x = Rotation.x;
-    rotations.y = Rotation.y;
-    rotations.z = Rotation.z;
-    
-    // camera respective
-    coordinates.x -= CamPosition.x;
-    coordinates.y -= CamPosition.y;
-    coordinates.z -= CamPosition.z;
-    
-    rotations.x -= CamRotation.x;
-    rotations.y -= CamRotation.y;
-    rotations.z -= CamRotation.z;
-    
-    // rotation
-    //  rotation rotation
     zRotationMatrix = 0;
     zRotationMatrix[1][1] = cos(radians(rotations.z));
     zRotationMatrix[1][2] = -sin(radians(rotations.z));
@@ -198,33 +173,10 @@ OutputVertex main(InputVertex vertex)
     coordinates = mul(yRotationMatrix, coordinates);
     coordinates = mul(zRotationMatrix, coordinates);
     
-    //sclaing
-    scalingMatrix = 0;
-    scalingMatrix[0][0] = Scale.x;
-    scalingMatrix[1][1] = Scale.y;
-    scalingMatrix[2][2] = Scale.z;
-    scalingMatrix[3][3] = 1;
-    
-    coordinates = mul(scalingMatrix, coordinates);
-    
-    // translation
-    translationMatrix = 0;
-    translationMatrix[0][3] = Position.x;
-    translationMatrix[1][3] = Position.y;
-    translationMatrix[2][3] = Position.z;
-    
-    translationMatrix[0][0] = 1;
-    translationMatrix[1][1] = 1;
-    translationMatrix[2][2] = 1;
-    translationMatrix[3][3] = 1;
-    
-    coordinates = mul(translationMatrix, coordinates);
-    
     output.normal = coordinates;
-    output.normal.w = 0;
     
-    output.textureCoord = vertex.textureCoord;
-    output.camPosition = CamPosition;
+    output.normal += Position;
+    output.normal.w = 1;
     
     return output;
 };

@@ -5,6 +5,7 @@ struct Input
     float4 color : COLOR;
     float4 textureCoord : TEXCOORD;
     float4 camPosition : CAMPOSITION;
+    float4 worldPos : WORLDPOS;
 };
 
 cbuffer Light : register(b0)
@@ -20,25 +21,19 @@ float4 main(Input input) : SV_Target
     float4 color = input.color;
     
     // diffuse 
-    float4 Lm = normalize(LightPosition - input.position);
-    float4 Kd = 1;
-    float4 diffuse = saturate(mul(dot(Lm, normalize(input.normal)), Kd));
+    float3 l = (float3) LightPosition;
+    float3 p = { input.worldPos.x, input.worldPos.y, input.worldPos.z };
+    float3 Lm = normalize(l - p);
+    float Kd = 1;
+    float diffuse = saturate(mul(dot(normalize((float3)input.normal), Lm), Kd));
     
-    // ambient
-    float Ia = 1;
-    float4 ambient = mul(LightAmbient, Ia);
+     // specular
+    float3 r = normalize(reflect(Lm, normalize((float3)input.normal)));
+    float3 v = normalize((float3) input.camPosition - p);
+    float Ks = 1.0f;
+    float specular = mul(pow(saturate(dot(r, v)), 256), Ks);
     
-    // specular
-    float4 r = normalize(reflect(Lm, normalize(input.normal)));
-    float4 v = normalize(input.camPosition - input.position);
-    float Ks = .2;
-    float specular = mul(pow(saturate(dot(r, v)), 100), Ks);
-     
-    // final illumination
-    float4 illumination = ambient + diffuse;
-    
-    color = float4(1, 1, 1, 1);
-    color *= illumination;
+    color *= LightAmbient + diffuse + specular;
     
     return color;
 }

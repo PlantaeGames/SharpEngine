@@ -18,6 +18,7 @@ internal sealed class MainWindow : Window
     private float _angle = 0f;
     private float _angleX = 0f;
     private float _angleZ = 0;
+    private float _angleYaw = 0f;
 
     public void Update()
     {
@@ -57,6 +58,18 @@ internal sealed class MainWindow : Window
             _angleZ += 0.1f;
         }
 
+        var yaw2 = GetAsyncKeyState(VK.VK_F2);
+        if (yaw2 < 0)
+        {
+            _angleYaw -= 0.1f;
+        }
+
+        var yaw = GetAsyncKeyState(VK.VK_F1);
+        if (yaw < 0)
+        {
+            _angleYaw += 0.1f;
+        }
+
         _renderer.Render();
         _swapchain.Present();
 
@@ -66,11 +79,10 @@ internal sealed class MainWindow : Window
             .TransformConstantBuffer
             .Update(new TransformConstantData()
             {
-                Position = new (_angleX, _angleZ, _angle, 0f),
-                Rotation = new(0, 0, 0, 0),
-                Scale = new (1, 1, 1, 1)
+                Position = new(_angleX, _angleYaw, _angle, 0f),
+                Rotation = new(_angleZ * 3, 0, 0, 0),
+                Scale = new(1, 1, 1, 1)
             });
-            
     }
 
     private void Initialize()

@@ -64,8 +64,19 @@ internal sealed class ForwardPass : Pass
         var lightData = new LightConstantData();
         lightData.Color = new(1, 1, 1, 1);
         lightData.AmbientColor = new(0.15f, 0.15f, 0.15f, 0.15f);
-        lightData.Position = new(0, 100, 0, 0);
+        lightData.Position = new(0, 0, -10, 0);
         lightData.Rotation = new(0, 0, 0, 0);
+
+        var lightId = AddSubVariation(new ForwardSubVariationCreateInfo(Mesh.Cube()));
+        ClearInstallments(device);
+        GraphicsObjects.Where(x => x.Id == lightId)
+            .ToArray()[0].TransformConstantBuffer.Update(
+            new TransformConstantData()
+            {
+                Position = lightData.Position,
+                Rotation = lightData.Rotation,
+                Scale = new(1,1,1,1)
+            });
 
         var lightSurface = lightData.ToSurface();
         var lightConstantBuffer = Buffer.CreateConstantBuffer(
@@ -123,17 +134,21 @@ internal sealed class ForwardPass : Pass
                     Usage = TerraFX.Interop.DirectX.D3D11_USAGE.D3D11_USAGE_IMMUTABLE
                 }));
 
-            var transform = new TransformConstantData();
-            transform.Scale = new FColor4(1f, 1f, 1f, 1f);
-            transform.W = new FColor4((float)_outputView.Info.ResourceViewInfo.Size.Height /
+            var camTransform = new TransformConstantData();
+            camTransform.Position = new(0, 0, -10, 0);
+            camTransform.Scale = new FColor4(1f, 1f, 1f, 1f);
+            camTransform.W = new FColor4((float)_outputView.Info.ResourceViewInfo.Size.Height /
                                       (float)_outputView.Info.ResourceViewInfo.Size.Width,
                                        70f,
                                        0.1f,
                                        1000f);
+            var camTransformSurface = camTransform.ToSurface();
 
-            var transformSurface = transform.ToSurface();
             var transformConstantBuffer = Buffer.CreateConstantBuffer(device.CreateBuffer(
-                transformSurface, typeof(TransformConstantData), new ResourceUsageInfo()
+                new TransformConstantData()
+                {
+                    Scale = new(1, 1, 1, 1)
+                }.ToSurface(), typeof(TransformConstantData), new ResourceUsageInfo()
                 {
                     BindFlags = TerraFX.Interop.DirectX.D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER,
                     Usage = TerraFX.Interop.DirectX.D3D11_USAGE.D3D11_USAGE_DYNAMIC,
@@ -142,7 +157,7 @@ internal sealed class ForwardPass : Pass
                 ));
 
             var camTransformConstantBuffer = Buffer.CreateConstantBuffer(device.CreateBuffer(
-                transformSurface, typeof(TransformConstantData), new ResourceUsageInfo()
+                camTransformSurface, typeof(TransformConstantData), new ResourceUsageInfo()
                 {
                     BindFlags = TerraFX.Interop.DirectX.D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER,
                     Usage = TerraFX.Interop.DirectX.D3D11_USAGE.D3D11_USAGE_DYNAMIC,
