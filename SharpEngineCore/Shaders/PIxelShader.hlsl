@@ -25,15 +25,16 @@ float4 main(Input input) : SV_Target
     float3 p = { input.worldPos.x, input.worldPos.y, input.worldPos.z };
     float3 Lm = normalize(l - p);
     float Kd = 1;
-    float diffuse = saturate(mul(dot(normalize((float3)input.normal), Lm), Kd));
+    float diffuse = saturate(mul(dot(Lm, normalize((float3)input.normal)), Kd));
     
      // specular
     float3 r = normalize(reflect(Lm, normalize((float3)input.normal)));
     float3 v = normalize((float3) input.camPosition - p);
-    float Ks = 1.0f;
-    float specular = mul(pow(saturate(dot(r, v)), 256), Ks);
+    float Ks = 0.6f;
+    float specular = mul(pow(saturate(dot(r, v)), 32), Ks);
     
-    color *= LightAmbient + diffuse + specular;
+    color = 1;
+    color *= specular + LightAmbient + diffuse;
     
     return color;
 }

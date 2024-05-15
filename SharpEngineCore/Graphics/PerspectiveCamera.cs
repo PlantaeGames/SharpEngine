@@ -1,12 +1,13 @@
 ﻿namespace SharpEngineCore.Graphics;
 
-public sealed class PerspectiveCamera
+internal sealed class PerspectiveCamera
 {
-    public readonly TransformConstantData Transform;
+    public readonly ConstantBuffer Transform;
     
     public readonly Viewport Viewport;
+    public readonly float AspectRatio;
 
-    public PerspectiveCamera(Size size)
+    public PerspectiveCamera(Size size, ConstantBuffer transformBuffer)
     { 
         Viewport = new Viewport()
         {
@@ -20,5 +21,8 @@ public sealed class PerspectiveCamera
                 MaxDepth = 1f
             }
         };
+
+        AspectRatio = (float)size.Height / (float)size.Width;
+        Transform = transformBuffer;
     }
 }

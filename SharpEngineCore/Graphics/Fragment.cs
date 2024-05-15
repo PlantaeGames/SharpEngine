@@ -36,4 +36,9 @@ public struct Fragment
             return sizeof(Fragment);
         }
     }
+
+    public override string ToString()
+    {
+        return $"{value}";
+    }
 }

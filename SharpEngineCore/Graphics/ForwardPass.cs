@@ -25,7 +25,6 @@ internal sealed class ForwardPass : Pass
         _installment = new();
         _subVariations = new();
         GraphicsObjects = new();
-        PerspectiveCamera = new (outputView.Info.ResourceViewInfo.Size);
 
         _outputView = outputView;
         _depthState = depthState;
@@ -59,12 +58,32 @@ internal sealed class ForwardPass : Pass
                 VertexShader = vertexShader
             });
 
-        var viewport = PerspectiveCamera.Viewport;
+        var camTransform = new TransformConstantData();
+        camTransform.Position = new(0, 0, -10, 0);
+        camTransform.Scale = new FColor4(1f, 1f, 1f, 1f);
+        camTransform.W = new FColor4((float)_outputView.Info.ResourceViewInfo.Size.Height /
+                                  (float)_outputView.Info.ResourceViewInfo.Size.Width,
+                                   70f,
+                                   0.1f,
+                                   1000f);
+        var camTransformSurface = camTransform.ToSurface();
+
+        var camTransformConstantBuffer = Buffer.CreateConstantBuffer(device.CreateBuffer(
+            camTransformSurface, typeof(TransformConstantData), new ResourceUsageInfo()
+            {
+                BindFlags = TerraFX.Interop.DirectX.D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER,
+                Usage = TerraFX.Interop.DirectX.D3D11_USAGE.D3D11_USAGE_DYNAMIC,
+                CPUAccessFlags = TerraFX.Interop.DirectX.D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE
+            }
+            ));
+
+        PerspectiveCamera = new(_outputView.Info.ResourceViewInfo.Size,
+            camTransformConstantBuffer);
 
         var lightData = new LightConstantData();
         lightData.Color = new(1, 1, 1, 1);
         lightData.AmbientColor = new(0.15f, 0.15f, 0.15f, 0.15f);
-        lightData.Position = new(0, 0, -10, 0);
+        lightData.Position = new(-2, 2, -1, 0);
         lightData.Rotation = new(0, 0, 0, 0);
 
         var lightId = AddSubVariation(new ForwardSubVariationCreateInfo(Mesh.Cube()));
@@ -87,6 +106,7 @@ internal sealed class ForwardPass : Pass
                 Usage = TerraFX.Interop.DirectX.D3D11_USAGE.D3D11_USAGE_IMMUTABLE,
             }));
 
+        var viewport = PerspectiveCamera.Viewport;
         _staticVariation = new ForwardVariation(
             layout,
             vertexShader, pixelShader, lightConstantBuffer,
@@ -134,19 +154,11 @@ internal sealed class ForwardPass : Pass
                     Usage = TerraFX.Interop.DirectX.D3D11_USAGE.D3D11_USAGE_IMMUTABLE
                 }));
 
-            var camTransform = new TransformConstantData();
-            camTransform.Position = new(0, 0, -10, 0);
-            camTransform.Scale = new FColor4(1f, 1f, 1f, 1f);
-            camTransform.W = new FColor4((float)_outputView.Info.ResourceViewInfo.Size.Height /
-                                      (float)_outputView.Info.ResourceViewInfo.Size.Width,
-                                       70f,
-                                       0.1f,
-                                       1000f);
-            var camTransformSurface = camTransform.ToSurface();
 
             var transformConstantBuffer = Buffer.CreateConstantBuffer(device.CreateBuffer(
                 new TransformConstantData()
                 {
+                    Position = new(0, 0, 0, 0),
                     Scale = new(1, 1, 1, 1)
                 }.ToSurface(), typeof(TransformConstantData), new ResourceUsageInfo()
                 {
@@ -156,20 +168,12 @@ internal sealed class ForwardPass : Pass
                 }
                 ));
 
-            var camTransformConstantBuffer = Buffer.CreateConstantBuffer(device.CreateBuffer(
-                camTransformSurface, typeof(TransformConstantData), new ResourceUsageInfo()
-                {
-                    BindFlags = TerraFX.Interop.DirectX.D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER,
-                    Usage = TerraFX.Interop.DirectX.D3D11_USAGE.D3D11_USAGE_DYNAMIC,
-                    CPUAccessFlags = TerraFX.Interop.DirectX.D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE
-                }
-                ));
 
             var graphicsObject = new GraphicsObject(transformConstantBuffer, info.Id);
             GraphicsObjects.Add(graphicsObject);
 
             var variation = new ForwardSubVariation(vertexBuffer, indexBuffer,
-                transformConstantBuffer, camTransformConstantBuffer);
+                transformConstantBuffer, PerspectiveCamera.Transform);
             _subVariations.Enqueue(variation);
         }
     }

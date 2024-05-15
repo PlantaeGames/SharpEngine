@@ -106,7 +106,7 @@ OutputVertex main(InputVertex vertex)
     translationMatrix[3][3] = 1;
     
     coordinates = mul(translationMatrix, coordinates);
-    
+
     output.worldPos = coordinates;
     
     // camera respective
@@ -114,9 +114,42 @@ OutputVertex main(InputVertex vertex)
     coordinates.y -= CamPosition.y;
     coordinates.z -= CamPosition.z;
     
-    rotations.x -= CamRotation.x;
-    rotations.y -= CamRotation.y;
-    rotations.z -= CamRotation.z;
+    rotations.x = -CamRotation.x;
+    rotations.y = -CamRotation.y;
+    rotations.z = -CamRotation.z;
+
+    zRotationMatrix = 0;
+    zRotationMatrix[1][1] = cos(radians(rotations.z));
+    zRotationMatrix[1][2] = -sin(radians(rotations.z));
+    zRotationMatrix[2][1] = sin(radians(rotations.z));
+    zRotationMatrix[2][2] = cos(radians(rotations.z));
+
+    zRotationMatrix[0][0] = 1;
+    zRotationMatrix[3][3] = 1;
+
+    // x rotation
+    xRotationMatrix = 0;
+    xRotationMatrix[0][0] = cos(radians(rotations.x));
+    xRotationMatrix[0][2] = sin(radians(rotations.x));
+    xRotationMatrix[2][0] = -sin(radians(rotations.x));
+    xRotationMatrix[2][2] = cos(radians(rotations.x));
+
+    xRotationMatrix[1][1] = 1;
+    xRotationMatrix[3][3] = 1;
+
+    // y rotation
+    yRotationMatrix = 0;
+    yRotationMatrix[0][0] = cos(radians(rotations.y));
+    yRotationMatrix[0][1] = -sin(radians(rotations.y));
+    yRotationMatrix[1][0] = sin(radians(rotations.y));
+    yRotationMatrix[1][1] = cos(radians(rotations.y));
+
+    yRotationMatrix[2][2] = 1;
+    yRotationMatrix[3][3] = 1;
+
+    coordinates = mul(xRotationMatrix, coordinates);
+    coordinates = mul(yRotationMatrix, coordinates);
+    coordinates = mul(zRotationMatrix, coordinates);
    
     // perspective transformation  
     // creating perspective transformaopm matrix
@@ -138,7 +171,12 @@ OutputVertex main(InputVertex vertex)
     output.camPosition = CamPosition;
     
     // transforming normal
+    //output.normal -= Position;
     coordinates = output.normal;
+
+    rotations.x = Rotation.x;
+    rotations.y = Rotation.y;
+    rotations.z = Rotation.z;
     
     zRotationMatrix = 0;
     zRotationMatrix[1][1] = cos(radians(rotations.z));
@@ -175,7 +213,6 @@ OutputVertex main(InputVertex vertex)
     
     output.normal = coordinates;
     
-    output.normal += Position;
     output.normal.w = 1;
     
     return output;

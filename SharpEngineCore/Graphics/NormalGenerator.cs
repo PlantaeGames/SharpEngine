@@ -22,6 +22,11 @@ internal sealed class NormalGenerator
                     new(b.r, b.g, b.b),
                     new(c.r, c.g, c.b));
 
+            if(i >= 3)
+            {
+
+            }
+
             vertices[i + 0].Normal = new FColor4(n.X, n.Y, n.Z, 1);
             vertices[i + 1].Normal = new FColor4(n.X, n.Y, n.Z, 1);
             vertices[i + 2].Normal = new FColor4(n.X, n.Y, n.Z, 1);
