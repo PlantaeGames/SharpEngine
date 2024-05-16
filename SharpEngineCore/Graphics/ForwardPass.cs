@@ -82,8 +82,8 @@ internal sealed class ForwardPass : Pass
 
         var lightData = new LightConstantData();
         lightData.Color = new(1, 1, 1, 1);
-        lightData.AmbientColor = new(0.15f, 0.15f, 0.15f, 0.15f);
-        lightData.Position = new(-2, 2, -1, 0);
+        lightData.AmbientColor = new(0.25f, 0.25f, 0.25f, 0.25f);
+        lightData.Position = new(-2, 0, -1, 0);
         lightData.Rotation = new(0, 0, 0, 0);
 
         var lightId = AddSubVariation(new ForwardSubVariationCreateInfo(Mesh.Cube()));
@@ -158,7 +158,7 @@ internal sealed class ForwardPass : Pass
             var transformConstantBuffer = Buffer.CreateConstantBuffer(device.CreateBuffer(
                 new TransformConstantData()
                 {
-                    Position = new(0, 0, 0, 0),
+                    Position = new(2, 0, 10, 0),
                     Scale = new(1, 1, 1, 1)
                 }.ToSurface(), typeof(TransformConstantData), new ResourceUsageInfo()
                 {

@@ -19,22 +19,24 @@ cbuffer Light : register(b0)
 float4 main(Input input) : SV_Target
 {
     float4 color = input.color;
-    
+
+    float3 n = (float3)input.normal;
+    float3 l = (float3)LightPosition;
+    float3 p = (float3)input.worldPos;
+
     // diffuse 
-    float3 l = (float3) LightPosition;
-    float3 p = { input.worldPos.x, input.worldPos.y, input.worldPos.z };
     float3 Lm = normalize(l - p);
-    float Kd = 1;
-    float diffuse = saturate(mul(dot(Lm, normalize((float3)input.normal)), Kd));
+    float Kd = 0.8f;
+    float diffuse = saturate(mul(dot(Lm, n), Kd));
     
      // specular
-    float3 r = normalize(reflect(Lm, normalize((float3)input.normal)));
+    float3 r = normalize(reflect(-Lm, n));
     float3 v = normalize((float3) input.camPosition - p);
-    float Ks = 0.6f;
-    float specular = mul(pow(saturate(dot(r, v)), 32), Ks);
+    float Ks = 1;
+    float specular = mul(pow(saturate(dot(r, v)), 64), Ks);
     
     color = 1;
-    color *= specular + LightAmbient + diffuse;
+    color *= diffuse + specular + LightAmbient;
     
     return color;
 }

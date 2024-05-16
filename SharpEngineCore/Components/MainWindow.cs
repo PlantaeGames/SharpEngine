@@ -5,7 +5,6 @@ using SharpEngineCore.Graphics;
 using SharpEngineCore.Utilities;
 using System;
 using System.Numerics;
-using System.Security.Cryptography.Xml;
 
 namespace SharpEngineCore.Components;
 
@@ -21,6 +20,7 @@ internal sealed class MainWindow : Window
     private float _angle = 0f;
     private float _angleX = 0f;
     private float _angleZ = 0;
+    private float _angleY = 0;
     private float _anglePitch = 0f;
 
     private float _lastX = 0;
@@ -70,6 +70,9 @@ internal sealed class MainWindow : Window
         rightDir.Y = 0;
         rightDir.Z = -MathF.Sin(_anglePitch * (float)(Math.PI / 180));
         rightDir = Vector3.Normalize(rightDir);
+
+        var upDir = Vector3.Cross(forwardDir, rightDir);
+        upDir = Vector3.Normalize(upDir);
 
         _log.LogMessage($"{forwardDir}              Angle: {_anglePitch}");
 
@@ -131,6 +134,38 @@ internal sealed class MainWindow : Window
             newPos = new FColor4(_lastX - (-rightDir.X * _speed * _deltaTime),
                _lastY - (-rightDir.Y * _speed * _deltaTime),
                _lastZ - (-rightDir.Z * _speed * _deltaTime),
+               0);
+            newPos.a = 0;
+
+            _lastX = newPos.r;
+            _lastY = newPos.g;
+            _lastZ = newPos.b;
+        }
+
+        var y = GetAsyncKeyState(0x53);
+        if (y < 0)
+        {
+            _angleY -= 0.1f;
+
+            newPos = new FColor4(_lastX - (upDir.X * _speed * _deltaTime),
+               _lastY - (upDir.Y * _speed * _deltaTime),
+               _lastZ - (upDir.Z * _speed * _deltaTime),
+               0);
+            newPos.a = 0;
+
+            _lastX = newPos.r;
+            _lastY = newPos.g;
+            _lastZ = newPos.b;
+        }
+
+        var y2 = GetAsyncKeyState(0x57);
+        if (y2 < 0)
+        {
+            _angleY += 0.1f;
+
+            newPos = new FColor4(_lastX + (upDir.X * _speed * _deltaTime),
+               _lastY + (upDir.Y * _speed * _deltaTime),
+               _lastZ + (upDir.Z * _speed * _deltaTime),
                0);
             newPos.a = 0;
 
