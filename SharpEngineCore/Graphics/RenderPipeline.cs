@@ -5,10 +5,15 @@ namespace SharpEngineCore.Graphics;
 internal abstract class RenderPipeline : PipelineEvents
 {
     public bool Initalized { get; private set; }
-    protected RenderPass[] _renderPasses;
+    protected RenderPass[] _renderPasses = [];
+
+    public abstract Guid CreateGraphicsObject(Material material, Mesh mesh);
+    public abstract CameraObject AddCamera(CameraConstantData data, Viewport viewport);
+    public abstract LightObject AddLight(LightData data);
+    public abstract List<GraphicsObject> GetGraphicsObjects();
 
 #nullable enable
-    public T? Get<T>()
+    protected T? Get<T>()
         where T : RenderPass
     {
         foreach (var renderPass in _renderPasses)
@@ -57,10 +62,5 @@ internal abstract class RenderPipeline : PipelineEvents
         {
             renderPass.Go(device, context);
         }
-    }
-
-    protected RenderPipeline()
-    {
-        _renderPasses = [];
     }
 }

@@ -1,14 +1,27 @@
 ﻿namespace SharpEngineCore.Graphics;
 
-internal sealed class GraphicsObject
+public sealed class GraphicsObject : Object
 {
-    public readonly Guid Id;
-    public readonly ConstantBuffer TransformConstantBuffer;
+    private readonly ConstantBuffer _transformConstantData;
 
-    public GraphicsObject(ConstantBuffer transformConstantBuffer,
-        Guid id)
+    internal readonly PipelineVariation _variation;
+
+    public void Update(TransformConstantData transform)
     {
-        TransformConstantBuffer = transformConstantBuffer;
-        Id = id;
+        _transformConstantData.Update(transform);
+    }
+
+    protected override void OnPause()
+    { }
+    protected override void OnResume()
+    { }
+    protected override void OnRemove()
+    { }
+
+    internal GraphicsObject(Guid id, ConstantBuffer transformBuffer, PipelineVariation variation) :
+        base(id)
+    {
+        _transformConstantData = transformBuffer;
+        _variation = variation;
     }
 }

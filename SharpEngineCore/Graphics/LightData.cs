@@ -3,12 +3,13 @@
 namespace SharpEngineCore.Graphics;
 
 [StructLayout(LayoutKind.Sequential, Pack = 0, Size = 64)]
-public struct LightConstantData : IFragmentable, ISurfaceable
+public struct LightData : IFragmentable, ISurfaceable
 {
     public FColor4 Position;
     public FColor4 Rotation;
     public FColor4 Color;
     public FColor4 AmbientColor;
+    public FColor4 LightType;
 
     public int GetFragmentsCount()
     {
@@ -19,7 +20,7 @@ public struct LightConstantData : IFragmentable, ISurfaceable
     {
         unsafe
         {
-            return sizeof(TransformConstantData);
+            return sizeof(LightData);
         }
     }
 
@@ -45,7 +46,12 @@ public struct LightConstantData : IFragmentable, ISurfaceable
                 AmbientColor.r,
                 AmbientColor.g,
                 AmbientColor.b,
-                AmbientColor.a
+                AmbientColor.a,
+
+                LightType.r,
+                LightType.g,
+                LightType.b,
+                LightType.a,
             ];
     }
 

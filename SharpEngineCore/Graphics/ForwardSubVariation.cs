@@ -2,30 +2,65 @@
 
 internal sealed class ForwardSubVariation : PipelineVariation
 {
-    public ForwardSubVariation(VertexBuffer vertexBuffer, IndexBuffer indexBuffer,
-        ConstantBuffer transformConstantBuffer,
-        ConstantBuffer camTransformConstantBuffer) :
+
+    public ForwardSubVariation(InputLayout layout,
+                               VertexBuffer vertexBuffer,
+                               IndexBuffer indexBuffer,
+                               VertexShader vertexShader,
+                               Sampler[] vertexSamplers,
+                               ConstantBuffer[] vertexConstantBuffers,
+                               ShaderResourceView[] vertexResourceViews,
+                               PixelShader pixelShader,
+                               Sampler[] pixelSamplers,
+                               ConstantBuffer[] pixelConstantBuffers,
+                               ShaderResourceView[] pixelResourceViews,
+                               bool useIndexedRendering) :
         base()
     {
         var inputAssembler = new InputAssembler()
         {
+            Layout = layout,
             VertexBuffer = vertexBuffer,
             IndexBuffer = indexBuffer,
 
             Flags = InputAssembler.BindFlags.IndexBuffer |
-                    InputAssembler.BindFlags.VertexBuffer
+                    InputAssembler.BindFlags.VertexBuffer |
+                    InputAssembler.BindFlags.Layout
         };
 
         var vertexShaderStage = new VertexShaderStage()
         {
-            ConstantBuffers = [transformConstantBuffer, camTransformConstantBuffer],
+            VertexShader = vertexShader,
+            Samplers = vertexSamplers,
+            ConstantBuffers = vertexConstantBuffers,
+            ShaderResourceViews = vertexResourceViews,
 
-            Flags = VertexShaderStage.BindFlags.ConstantBuffers
+            Flags = VertexShaderStage.BindFlags.VertexShader |
+                    VertexShaderStage.BindFlags.ConstantBuffers |
+                    VertexShaderStage.BindFlags.ShaderResourceViews |
+                    VertexShaderStage.BindFlags.Samplers
+        };
+
+        var pixelShaderStage = new PixelShaderStage()
+        {
+            PixelShader = pixelShader,
+            Samplers = pixelSamplers,
+            ConstantBuffers = pixelConstantBuffers,
+            ShaderResourceViews = pixelResourceViews,
+
+            Flags = PixelShaderStage.BindFlags.PixelShader |
+                    PixelShaderStage.BindFlags.Samplers |
+                    PixelShaderStage.BindFlags.ConstantBuffers |
+                    PixelShaderStage.BindFlags.ShaderResourceViews
         };
 
         VertexCount = vertexBuffer.VertexCount;
         IndexCount = indexBuffer.IndexCount;
+        UseIndexRendering = useIndexedRendering;
 
-        _stages = [inputAssembler, vertexShaderStage];
+
+        _stages = [inputAssembler,
+                   vertexShaderStage,
+                   pixelShaderStage];
     }
 }

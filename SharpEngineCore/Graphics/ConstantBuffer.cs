@@ -6,7 +6,7 @@ namespace SharpEngineCore.Graphics;
 /// <summary>
 /// Constant buffer able to bind with shaders.
 /// </summary>
-internal sealed class ConstantBuffer : Buffer
+public sealed class ConstantBuffer : Buffer
 {
     public void Update(ISurfaceable surfaceable)
     {
@@ -17,7 +17,7 @@ internal sealed class ConstantBuffer : Buffer
     }
 
 
-    public ConstantBuffer(Buffer buffer, Device device) :
+    internal ConstantBuffer(Buffer buffer, Device device) :
         base(buffer.GetNativePtr(), buffer.Info, device)
     {
         Debug.Assert(

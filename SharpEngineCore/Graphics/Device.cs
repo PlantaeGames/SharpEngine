@@ -22,6 +22,55 @@ internal sealed class Device
 
     private D3D_FEATURE_LEVEL _featureLevel;
 
+    public UnorderedAccessView CreateUnorderedAccessView(Resource resource,
+    UnorderedAccessViewInfo info)
+    {
+        return new UnorderedAccessView(NativeCreateUnorderedAccessView(),
+            resource, info, this);
+
+        unsafe ComPtr<ID3D11UnorderedAccessView> NativeCreateUnorderedAccessView()
+        {
+            var desc = new D3D11_UNORDERED_ACCESS_VIEW_DESC();
+            desc.Format = info.Format;
+
+            switch (info.ViewType)
+            {
+                case UnorderedAccessViewInfo.Type.Buffer:
+                    desc.ViewDimension = D3D11_UAV_DIMENSION.D3D11_UAV_DIMENSION_BUFFER;
+                    desc.Buffer.FirstElement = (uint)info.Size.Height;
+                    desc.Buffer.NumElements = (uint)info.Size.Width;
+
+                    break;
+                case UnorderedAccessViewInfo.Type.Texture2D:
+                    desc.ViewDimension = D3D11_UAV_DIMENSION.D3D11_UAV_DIMENSION_TEXTURE2D;
+                    desc.Texture2D.MipSlice = 0u;
+                    break;
+
+                default:
+                    Debug.Assert(false,
+                        "Unknown type of unordered access view");
+                    break;
+            }
+
+            var pView = new ComPtr<ID3D11UnorderedAccessView>();
+            fixed (ID3D11Device** ppDevice = _pDevice)
+            {
+                GraphicsException.SetInfoQueue();
+                var result = (*ppDevice)->CreateUnorderedAccessView(resource.GetNativePtrAsResource(),
+                                &desc, pView.GetAddressOf());
+
+                if(result.FAILED)
+                {
+                    // error here.
+                    GraphicsException.ThrowLastGraphicsException(
+                        $"Failed to create unordered resource view\nError Code: {result}");
+                }
+            }
+
+            return pView;
+        }
+    }
+
     public DepthStencilView CreateDepthStencilView(Resource resource, ViewCreationInfo info)
     {
         return new DepthStencilView(NativeCreateDepthStencilView(), resource,
@@ -139,9 +188,9 @@ internal sealed class Device
         }
     }
 
-    public Sampler CreateSampler(SamplerInfo info, Texture texture)
+    public Sampler CreateSampler(SamplerInfo info)
     {
-        return new Sampler(NativeCreateSampler(), info, texture, this);
+        return new Sampler(NativeCreateSampler(), info, this);
 
         unsafe ComPtr<ID3D11SamplerState> NativeCreateSampler()
         {

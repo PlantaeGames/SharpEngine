@@ -7,7 +7,7 @@ internal abstract class RenderPass : PipelineEvents
     protected Pass[] _passes;
 
 #nullable enable
-    public T? Get<T>()
+    protected T? Get<T>()
         where T : Pass
     {
         foreach(var pass in _passes)

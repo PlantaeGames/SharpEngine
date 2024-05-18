@@ -9,6 +9,48 @@ internal abstract partial class DeviceContext
 {
     protected readonly ComPtr<ID3D11DeviceContext> _pContext;
 
+    public void VSSetSamplers(Sampler[] samplers, int startIndex)
+    {
+        NativeVSSetSamplers();
+
+        unsafe void NativeVSSetSamplers()
+        {
+            var ppSamplers = stackalloc ID3D11SamplerState*[samplers.Length];
+
+            for(var i = 0; i < samplers.Length; i++)
+            {
+                ppSamplers[i] = samplers[i].GetNativePtr();
+            }
+
+            fixed(ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppContext)->VSGetSamplers((uint)startIndex, (uint)samplers.Length, 
+                    ppSamplers);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Error in setting vertex shader samplers");
+            }
+        }
+    }
+
+    public void CopyResource(Resource src, Resource dst)
+    {
+        NativeCopyResource();
+
+        unsafe void NativeCopyResource()
+        {
+            fixed (ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppContext)->CopyResource(dst.GetNativePtrAsResource(), src.GetNativePtrAsResource());
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Error in copying resource.");
+            }
+        }
+    }
+
     public void ClearDepthStencilView(DepthStencilView view, DepthStencilClearInfo info)
     {
         NativeClearDepthStencilView();

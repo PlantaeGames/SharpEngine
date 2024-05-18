@@ -4,6 +4,8 @@ internal abstract class PipelineVariation
 {
     public int VertexCount { get; protected set; }
     public int IndexCount { get; protected set; }
+    public bool UseIndexRendering { get; protected set; }
+
 
     protected IPipelineStage[] _stages;
     public void Bind(DeviceContext context)

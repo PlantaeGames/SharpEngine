@@ -2,7 +2,7 @@
 
 namespace SharpEngineCore.Graphics;
 
-internal readonly struct SamplerInfo
+public readonly struct SamplerInfo
 { 
     public readonly D3D11_FILTER Filter { get; init; }
 
