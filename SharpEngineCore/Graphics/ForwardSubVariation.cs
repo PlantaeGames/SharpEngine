@@ -17,7 +17,7 @@ internal sealed class ForwardSubVariation : PipelineVariation
                                bool useIndexedRendering) :
         base()
     {
-        var inputAssembler = new InputAssembler()
+        InputAssembler = new InputAssembler()
         {
             Layout = layout,
             VertexBuffer = vertexBuffer,
@@ -28,7 +28,7 @@ internal sealed class ForwardSubVariation : PipelineVariation
                     InputAssembler.BindFlags.Layout
         };
 
-        var vertexShaderStage = new VertexShaderStage()
+        VertexShaderStage = new VertexShaderStage()
         {
             VertexShader = vertexShader,
             Samplers = vertexSamplers,
@@ -41,7 +41,7 @@ internal sealed class ForwardSubVariation : PipelineVariation
                     VertexShaderStage.BindFlags.Samplers
         };
 
-        var pixelShaderStage = new PixelShaderStage()
+        PixelShaderStage = new PixelShaderStage()
         {
             PixelShader = pixelShader,
             Samplers = pixelSamplers,
@@ -59,8 +59,8 @@ internal sealed class ForwardSubVariation : PipelineVariation
         UseIndexRendering = useIndexedRendering;
 
 
-        _stages = [inputAssembler,
-                   vertexShaderStage,
-                   pixelShaderStage];
+        _stages = [InputAssembler,
+                   VertexShaderStage,
+                   PixelShaderStage];
     }
 }

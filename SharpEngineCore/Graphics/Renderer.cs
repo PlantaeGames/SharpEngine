@@ -8,21 +8,26 @@ internal class Renderer
 
     protected readonly Device _device;
     protected readonly DeviceContext _context;
+
     protected RenderPipeline _pipeline;
+    protected Swapchain _swapchain;
 
-    internal RenderPipeline GetPipeline() => _pipeline;
+    public GraphicsObject CreateGraphicsObject(Material material, Mesh mesh)
+    {
+        return _pipeline.CreateGraphicsObject(_device, material, mesh);
+    }
+
+    public LightObject CreateLightObject(LightData data)
+    {
+        return _pipeline.CreateLightObject(_device, data);
+    }
+
+    public CameraObject CreateCameraObject(CameraConstantData data, Viewport viewport)
+    {
+        return _pipeline.CreateCameraObject(_device, data, viewport);
+    }
+
     internal Device GetDevice() => _device;
-
-    public void SetPipeline(RenderPipeline pipeline)
-    {
-        _pipeline = pipeline;
-        InitializePipeline();
-    }
-
-    public Swapchain CreateSwapchain(Window window)
-    {
-        return Factory.GetInstance().CreateSwapchain(window, _device);
-    }
 
     public void Render()
     {
@@ -31,13 +36,7 @@ internal class Renderer
         _pipeline.Go(_device, _context);
     }
 
-    public Renderer(Adapter adapter)
-    {
-        _device = new Device(adapter);
-        _context = _device.GetContext();
-    }
-
-    public Renderer()
+    public Renderer(Window window)
     {
         var adapters = Factory.GetInstance().GetAdpters();
 
@@ -46,13 +45,10 @@ internal class Renderer
 
         _device = new Device(adapters[DEFAULT_ADAPTER]);
         _context = _device.GetContext();
-    }
 
-    private void InitializePipeline()
-    {
-        if (_pipeline.Initalized)
-            return;
+        _swapchain = Factory.GetInstance().CreateSwapchain(window, _device);
 
+        _pipeline = new DefaultRenderPipeline(_swapchain.GetBackTexture());
         _pipeline.Initialize(_device, _context);
     }
 }

@@ -2,12 +2,9 @@
 
 internal abstract class Pass : PipelineEvents
 {
-    protected List<GraphicsObject> _toAdd = new();
-    private List<GraphicsObject> _toRemove = new();
-    private List<GraphicsObject> _toPause = new();
-    private List<GraphicsObject> _paused = new();
 
-    public List<GraphicsObject> GraphicsObjects { get; private set; }
+    private List<PipelineVariation> _paused = new();
+    protected List<PipelineVariation> _subVariations = new();
 
     public sealed override void Initialize(Device device, DeviceContext context)
     {
@@ -17,7 +14,7 @@ internal abstract class Pass : PipelineEvents
     public sealed override void Ready(Device device, DeviceContext context)
     {
         OnReady(device, context);
-        ClearPendingGraphicsObjects();
+        ClearPendingVariations();
     }
 
     public sealed override void Go(Device device, DeviceContext context)
@@ -25,64 +22,62 @@ internal abstract class Pass : PipelineEvents
         OnGo(device, context);
     }
 
-    private void ClearPendingGraphicsObjects()
+    private void ClearPendingVariations()
     {
         // removing expired
-        foreach (var graphicsObject in GraphicsObjects)
+        var toRemove = new List<int>();
+        for (var i = 0; i < _subVariations.Count; i++)
         {
-            if (graphicsObject.State == State.Active)
+            if (_subVariations[i].State == State.Expired)
+                toRemove.Add(i);
+        }
+        for (var i = 0; i < toRemove.Count; i++)
+        {
+            _subVariations.RemoveAt(toRemove[i]);
+        }
+
+        // getting paused
+        var toPause = new List<int>();
+        for (var i = 0; i < _subVariations.Count; i++)
+        {
+            if (_subVariations[i].State == State.Active)
                 continue;
 
-            if (graphicsObject.State == State.Paused)
+            toPause.Add(i);
+        }
+        for (var i = 0; i < toPause.Count; i++)
+        {
+            _paused.Add(_subVariations[toPause[i]]);
+            _subVariations.RemoveAt(toPause[i]);
+        }
+
+        // resuming active paused
+        var toResume = new List<int>();
+        for (var i = 0; i < _paused.Count; i++)
+        {
+            if (_paused[i].State == State.Active)
             {
-                _toPause.Add(graphicsObject);
-                continue;
+                toResume.Add(i);
             }
-
-            _toRemove.Add(graphicsObject);
         }
-        foreach (var graphicsObject in _toRemove)
+        for (var i = 0; i < toRemove.Count; i++)
         {
-            GraphicsObjects.Remove(graphicsObject);
+            _subVariations.Add(_paused[toResume[i]]);
+            _paused.RemoveAt(toResume[i]);
         }
-        _toRemove.Clear();
 
-        // adding pending
-        foreach(var graphicsObject in _toAdd)
+        // removing paused expired
+        toRemove.Clear();
+        for (var i = 0; i < _paused.Count; i++)
         {
-            GraphicsObjects.Add(graphicsObject);
-        }
-        _toAdd.Clear();
-
-        // pausing newbies
-        foreach(var graphicsObject in _toPause)
-        {
-            _paused.Add(graphicsObject);
-            GraphicsObjects.Remove(graphicsObject);
-        }
-        _toPause.Clear();
-
-        // managing paused'
-        var tempgraphicsObjects = new List<GraphicsObject>();
-        foreach(var graphicsObject in _paused)
-        {
-            if (graphicsObject.State == State.Paused)
-                continue;
-
-            if(graphicsObject.State == State.Active)
+            if (_paused[i].State == State.Expired)
             {
-                _toAdd.Add(graphicsObject);
-                tempgraphicsObjects.Add(graphicsObject);
-
-                continue;
+                toRemove.Add(i);
             }
-
-            _toRemove.Add(graphicsObject);
-            tempgraphicsObjects.Add(graphicsObject);
         }
-        foreach(var graphicsObject in tempgraphicsObjects)
+        for (var i = 0; i < toRemove.Count; i++)
         {
-            _paused.Remove(graphicsObject);
+            _paused.RemoveAt(toRemove[i]);
         }
     }
 

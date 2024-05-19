@@ -3,7 +3,7 @@
 public abstract class Object
 {
     public State State { get; private set; }
-    public readonly Guid Id;
+    public readonly Guid Id = Guid.NewGuid();
 
     protected abstract void OnPause();
     protected abstract void OnResume();
@@ -25,10 +25,5 @@ public abstract class Object
     {
         OnRemove();
         State = State.Expired;
-    }
-
-    protected Object(Guid id)
-    {
-        Id = id;
     }
 }

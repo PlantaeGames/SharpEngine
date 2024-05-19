@@ -5,13 +5,13 @@ internal sealed class ForwardDynamicVariation : PipelineVariation
     public ForwardDynamicVariation(Viewport viewport)
        : base()
     {
-        var rasterizer = new Rasterizer()
+        Rasterizer = new Rasterizer()
         {
             Viewports = [viewport],
 
             Flags = Rasterizer.BindFlags.Viewports
         };
 
-        _stages = [rasterizer];
+        _stages = [Rasterizer];
     }
 }

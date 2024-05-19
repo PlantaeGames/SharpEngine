@@ -20,48 +20,45 @@ internal sealed class ForwardPass : Pass
 
     private readonly Size _resolution;
 
-    private readonly Queue<(Guid id, Material material, Mesh mesh)> _queue = new();
+    private readonly List<CameraObject> _cameraObjects;
+    private readonly Texture2D[] _shadowDepthTextures;
+    private readonly ShaderResourceView[] _shadowSRVS;
 
-    private readonly List<(ConstantBuffer dataBuffer, CameraObject camera)> _cameraDataBuffers;
-
-
-    public Guid CreateNewGraphicsObject(Material material, Mesh mesh)
+    public PipelineVariation CreateSubVariation(
+        Device device, Material material, Mesh mesh)
     {
-        var id = Guid.NewGuid();
-        _queue.Enqueue((id, material, mesh));
-
-        return id;
+        return AddNewSubVariation(device, material, mesh);
     }
 
     public ForwardPass(Size resolution,
         ShaderResourceView lightsResourceView,
-        List<(ConstantBuffer dataBuffer, CameraObject camera)> cameraDataBuffers) :
+        List<CameraObject> cameraObjects,
+        Texture2D[] shadowDepthTextures) :
         base()
     {
         _resolution = resolution;
         _lightsSRV = lightsResourceView;
-        _cameraDataBuffers = cameraDataBuffers;
+        _cameraObjects = cameraObjects;
+        _shadowDepthTextures = shadowDepthTextures;
+        _shadowSRVS = new ShaderResourceView[shadowDepthTextures.Length];
     }
 
     public override void OnGo(Device device, DeviceContext context)
     {
-        foreach (var cameraData in _cameraDataBuffers)
+        foreach (var cameraData in _cameraObjects)
         {
-            if (cameraData.camera.State == State.Paused)
-                continue;
+            _currentCameraCBuffer.Update(cameraData._lastUpdatedData);
 
-            context.CopyResource(cameraData.dataBuffer, _currentCameraCBuffer);
-
-            var dynamicVariation = new ForwardDynamicVariation(cameraData.camera.Viewport);
+            var dynamicVariation = new ForwardDynamicVariation(cameraData.Viewport);
             dynamicVariation.Bind(context);
 
-            foreach (var graphicsObject in GraphicsObjects)
+            foreach (var variation in _subVariations)
             {
-                graphicsObject._variation.Bind(context);
-                if(graphicsObject._variation.UseIndexRendering)
-                    context.DrawIndexed(graphicsObject._variation.IndexCount, 0);
+                variation.Bind(context);
+                if(variation.UseIndexRendering)
+                    context.DrawIndexed(variation.IndexCount, 0);
                 else
-                    context.Draw(graphicsObject._variation.VertexCount, 0);
+                    context.Draw(variation.VertexCount, 0);
             }
         }
     }
@@ -105,7 +102,6 @@ internal sealed class ForwardPass : Pass
         _depthState = device.CreateDepthStencilState(
             new DepthStencilStateInfo()
             {
-
                 DepthEnabled = true,
                 DepthWriteMask = D3D11_DEPTH_WRITE_MASK.D3D11_DEPTH_WRITE_MASK_ALL,
                 DepthComparisionFunc = D3D11_COMPARISON_FUNC.D3D11_COMPARISON_GREATER
@@ -121,6 +117,17 @@ internal sealed class ForwardPass : Pass
                 BindFlags = D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER,
                 CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE
             }));
+
+        for(var i = 0; i < _shadowSRVS.Length; i++)
+        {
+            _shadowSRVS[i] = device.CreateShaderResourceView(
+                _shadowDepthTextures[i],
+                new ViewCreationInfo()
+                { 
+                    Format = _shadowDepthTextures[i].Info.Format,
+                    Size = _shadowDepthTextures[i].Info.Size
+                });
+        }
     }
 
     public override void OnReady(Device device, DeviceContext context)
@@ -132,117 +139,122 @@ internal sealed class ForwardPass : Pass
             Depth = DEPTH_CLEAR_VALUE,
         });
 
-        ClearQueue(device, context);
         _staticVariation.Bind(context);
     }
 
-    private void ClearQueue(Device device, DeviceContext context)
-    {  
-        for(var i = 0; i < _queue.Count; i++)
+    private PipelineVariation AddNewSubVariation(
+        Device device, Material material, Mesh mesh)
+    {
+        var details = (material, mesh);
+
+        var vertexFragments = details.mesh.ToVertexFragments();
+        var verticesSurface = new FSurface(new(vertexFragments.Length, 1));
+        verticesSurface.SetLinearFragments(vertexFragments);
+
+        var indexUnits = details.mesh.ToIndexUnits();
+        var indicesSurface = new USurface(new(indexUnits.Length, 1));
+        indicesSurface.SetLinearUnits(indexUnits);
+
+        var vertexBuffer = Buffer.CreateVertexBuffer(
+            device.CreateBuffer(verticesSurface, typeof(Vertex),
+            new ResourceUsageInfo()
+            {
+                Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE,
+                BindFlags = D3D11_BIND_FLAG.D3D11_BIND_VERTEX_BUFFER
+            }));
+
+        var indexBuffer = Buffer.CreateIndexBuffer(
+            device.CreateBuffer(indicesSurface, typeof(Index),
+            new ResourceUsageInfo()
+            {
+                Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE,
+                BindFlags = D3D11_BIND_FLAG.D3D11_BIND_INDEX_BUFFER
+            }));
+
+        var vertexShader = device.CreateVertexShader(
+            details.material.VertexShader);
+        var pixelShader = device.CreatePixelShader(
+            details.material.PixelShader
+            );
+
+        var inputLayout = device.CreateInputLayout(
+            new InputLayoutInfo()
+            {
+                Topology = details.material.Topology,
+                Layout = new Vertex(),
+                VertexShader = vertexShader
+            });
+
+        var pixelResourceViews = new List<ShaderResourceView>();
+        pixelResourceViews.Add(_lightsSRV);
+        pixelResourceViews.AddRange(_shadowSRVS);
+        for (var x = 0; x < details.material.PixelTextures.Length; x++)
         {
-            var details = _queue.Dequeue();
-
-            var vertexFragments = details.mesh.ToVertexFragments();
-            var verticesSurface = new FSurface(new(vertexFragments.Length, 1));
-            verticesSurface.SetLinearFragments(vertexFragments);
-
-            var indexUnits = details.mesh.ToIndexUnits();
-            var indicesSurface = new USurface(new(indexUnits.Length, 1));
-            indicesSurface.SetLinearUnits(indexUnits);
-
-            var vertexBuffer = Buffer.CreateVertexBuffer(
-                device.CreateBuffer(verticesSurface, typeof(Vertex),
-                new ResourceUsageInfo()
+            pixelResourceViews[x] = device.CreateShaderResourceView(
+                details.material.PixelTextures[x],
+                new ViewCreationInfo()
                 {
-                    Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE,
-                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_VERTEX_BUFFER
-                }));
-
-            var indexBuffer = Buffer.CreateIndexBuffer(
-                device.CreateBuffer(indicesSurface, typeof(Index),
-                new ResourceUsageInfo()
-                {
-                    Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE,
-                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_INDEX_BUFFER
-                }));
-
-            var vertexShader = device.CreateVertexShader(
-                details.material.VertexShader);
-            var pixelShader = device.CreatePixelShader(
-                details.material.PixelShader
-                );
-
-            var inputLayout = device.CreateInputLayout(
-                new InputLayoutInfo()
-                {
-                    Topology = details.material.Topology,
-                    Layout = new Vertex(),
-                    VertexShader = vertexShader
+                    Format = details.material.PixelTextures[x].Info.Format,
+                    Size = details.material.PixelTextures[x].Info.Size
                 });
-
-            var pixelResourceViews = new List<ShaderResourceView>();
-            pixelResourceViews.Add(_lightsSRV);
-            for(var x = 1; x < details.material.PixelBuffers.Length; x++)
-            {
-                pixelResourceViews[x] = device.CreateShaderResourceView(
-                    details.material.PixelBuffers[i],
-                    new ViewCreationInfo()
-                    { 
-                        Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN,
-                        Size = details.material.PixelBuffers[i].Info.Size
-                    });
-            }
-
-            var vertexResourceViews = new List<ShaderResourceView>();
-            for (var x = 1; x < details.material.VertexBuffers.Length; x++)
-            {
-                vertexResourceViews[x] = device.CreateShaderResourceView(
-                    details.material.VertexBuffers[i],
-                    new ViewCreationInfo()
-                    {
-                        Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN,
-                        Size = details.material.VertexBuffers[i].Info.Size
-                    });
-            }
-
-            var transformConstantBuffer = Buffer.CreateConstantBuffer(
-                device.CreateBuffer(
-                    new TransformConstantData().ToSurface(),
-                    typeof(TransformConstantData),
-                    new ResourceUsageInfo()
-                    {
-                        Usage = D3D11_USAGE.D3D11_USAGE_DYNAMIC,
-                        BindFlags = D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER,
-                        CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE
-                    }));
-
-            var vertexConstantBuffers = new List<ConstantBuffer>
-            {
-                transformConstantBuffer,
-                _currentCameraCBuffer
-            };
-
-            vertexConstantBuffers.AddRange(details.material.VertexConstantBuffers);
-
-            var variation = new ForwardSubVariation(
-                inputLayout,
-                vertexBuffer,
-                indexBuffer,
-                vertexShader,
-                details.material.VertexSamplers,
-                vertexConstantBuffers.ToArray(),
-                vertexResourceViews.ToArray(),
-                pixelShader,
-                details.material.PixelSamplers,
-                details.material.PixelConstantBuffers,
-                pixelResourceViews.ToArray(),
-                details.material.UseIndexedRendering
-                );
-
-            var graphicsObject = new GraphicsObject(
-                details.id, transformConstantBuffer, variation);
-
-            _toAdd.Add(graphicsObject);
         }
+        for (var x = 0; x < details.material.PixelBuffers.Length; x++)
+        {
+            pixelResourceViews[x] = device.CreateShaderResourceView(
+                details.material.PixelBuffers[x],
+                new ViewCreationInfo()
+                {
+                    Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN,
+                    Size = details.material.PixelBuffers[x].Info.Size
+                });
+        }
+
+        var vertexResourceViews = new List<ShaderResourceView>();
+        vertexResourceViews.Add(_lightsSRV);
+        for (var x = 0; x < details.material.VertexTextures.Length; x++)
+        {
+            vertexResourceViews[x] = device.CreateShaderResourceView(
+                details.material.VertexTextures[x],
+                new ViewCreationInfo()
+                {
+                    Format = details.material.VertexTextures[x].Info.Format,
+                    Size = details.material.VertexTextures[x].Info.Size
+                });
+        }
+        for (var x = 0; x < details.material.VertexBuffers.Length; x++)
+        {
+            vertexResourceViews[x] = device.CreateShaderResourceView(
+                details.material.VertexBuffers[x],
+                new ViewCreationInfo()
+                {
+                    Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN,
+                    Size = details.material.VertexBuffers[x].Info.Size
+                });
+        }
+
+        var vertexConstantBuffers = new List<ConstantBuffer>
+        {
+            _currentCameraCBuffer
+        };
+
+        vertexConstantBuffers.AddRange(details.material.VertexConstantBuffers);
+
+        var variation = new ForwardSubVariation(
+            inputLayout,
+            vertexBuffer,
+            indexBuffer,
+            vertexShader,
+            details.material.VertexSamplers,
+            vertexConstantBuffers.ToArray(),
+            vertexResourceViews.ToArray(),
+            pixelShader,
+            details.material.PixelSamplers,
+            details.material.PixelConstantBuffers,
+            pixelResourceViews.ToArray(),
+            details.material.UseIndexedRendering
+            );
+
+        _subVariations.Add(variation);
+        return variation;
     }
 }

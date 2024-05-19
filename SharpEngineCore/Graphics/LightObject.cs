@@ -2,7 +2,6 @@
 
 public sealed class LightObject : Object
 {
-    public readonly int Index;
     internal LightData _lastUpdatedData;
 
     public void Update(LightData data)
@@ -14,10 +13,9 @@ public sealed class LightObject : Object
     protected override void OnResume() { }
     protected override void OnRemove() { }
 
-    internal LightObject(LightData data, int index) :
-        base(Guid.NewGuid())
+    internal LightObject(LightData data) :
+        base()
     {
-        Index = index;
         _lastUpdatedData = data;
     }
 }

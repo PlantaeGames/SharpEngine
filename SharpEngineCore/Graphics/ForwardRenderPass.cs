@@ -6,9 +6,6 @@ internal sealed class ForwardRenderPass : RenderPass
 {
     private Texture2D _outputTexture;
 
-    private List<(ConstantBuffer dataBuffer, CameraObject camera)> _cameraObjects;
-    private ShaderResourceView _lightsSRV;
-
     private DepthPass _depthPass;
     private ForwardPass _forwardPass;
     private OutputPass _outputPass;
@@ -16,31 +13,31 @@ internal sealed class ForwardRenderPass : RenderPass
     public ForwardRenderPass(
         Texture2D outputTexture,
         ShaderResourceView lightsResourceView,
-        List<(ConstantBuffer dataBuffer, CameraObject camera)> cameraObjects) :
+        List<LightObject> lightObjects,
+        int maxLightsCount,
+        List<CameraObject> cameraObjects,
+        List<GraphicsObject> graphicsObjects) :
         base()
     {
         _outputTexture = outputTexture;
-        _cameraObjects = cameraObjects;
-        _lightsSRV = lightsResourceView;
 
-        _depthPass = new DepthPass();
+        _depthPass = new DepthPass(lightObjects, maxLightsCount, graphicsObjects);
 
         _forwardPass = new ForwardPass(_outputTexture.Info.Size,
-            _lightsSRV, _cameraObjects);
+            lightsResourceView, cameraObjects, _depthPass.DepthTextures);
 
         _outputPass = new OutputPass(_forwardPass.OutputTexture, _outputTexture);
 
         _passes = [_depthPass, _forwardPass, _outputPass];
     }
 
-    public Guid CreateNewGraphicsObject(Material material, Mesh mesh)
+    public PipelineVariation[] CreateVariations(
+        Device device, Material material, Mesh mesh)
     {
-        return _forwardPass.CreateNewGraphicsObject(material, mesh);
-    }
-
-    public List<GraphicsObject> GetGraphicsObjects()
-    {
-        return _forwardPass.GraphicsObjects;
+        return [
+            _depthPass.CreateSubVariation(device, material, mesh),
+            _forwardPass.CreateSubVariation(device, material, mesh)
+            ];
     }
 
     public override void OnGo(Device device, DeviceContext context)

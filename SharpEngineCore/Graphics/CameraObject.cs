@@ -16,7 +16,7 @@ public sealed class CameraObject : Object
     protected override void OnRemove() { }
 
     internal CameraObject(CameraConstantData data, Viewport viewport) :
-        base(Guid.NewGuid())
+        base()
     {
         Viewport = viewport;
         _lastUpdatedData = data;

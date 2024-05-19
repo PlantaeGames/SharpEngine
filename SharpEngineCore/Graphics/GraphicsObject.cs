@@ -2,26 +2,36 @@
 
 public sealed class GraphicsObject : Object
 {
-    private readonly ConstantBuffer _transformConstantData;
+    private readonly List<PipelineVariation> _variations = new();
 
-    internal readonly PipelineVariation _variation;
-
-    public void Update(TransformConstantData transform)
+    internal void AddVariations(PipelineVariation[] variations)
     {
-        _transformConstantData.Update(transform);
+        _variations.AddRange(variations);
     }
 
     protected override void OnPause()
-    { }
-    protected override void OnResume()
-    { }
-    protected override void OnRemove()
-    { }
-
-    internal GraphicsObject(Guid id, ConstantBuffer transformBuffer, PipelineVariation variation) :
-        base(id)
     {
-        _transformConstantData = transformBuffer;
-        _variation = variation;
+        foreach (var variation in _variations)
+        {
+            variation.State = State.Paused;
+        }
     }
+    protected override void OnResume()
+    {
+        foreach (var variation in _variations)
+        {
+            variation.State = State.Active;
+        }
+    }
+    protected override void OnRemove()
+    {
+        foreach (var variation in _variations)
+        {
+            variation.State = State.Expired;
+        }
+    }
+
+    internal GraphicsObject() :
+        base()
+    {}
 }

@@ -8,7 +8,7 @@ internal sealed class ForwardVariation : PipelineVariation
         : base()
     {
 
-        var outputMerger = new OutputMerger()
+        OutputMerger = new OutputMerger()
         {
             RenderTargetViews = [renderTargetView],
             DepthStencilView = depthStencilView,
@@ -18,6 +18,6 @@ internal sealed class ForwardVariation : PipelineVariation
                     OutputMerger.BindFlags.DepthStencilState
         };
 
-        _stages = [outputMerger];
+        _stages = [OutputMerger];
     }
 }
