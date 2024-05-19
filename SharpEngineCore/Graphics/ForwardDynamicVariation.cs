@@ -1,4 +1,6 @@
-﻿namespace SharpEngineCore.Graphics;
+﻿using System.Diagnostics;
+
+namespace SharpEngineCore.Graphics;
 
 internal sealed class ForwardDynamicVariation : PipelineVariation
 {

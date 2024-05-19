@@ -12,19 +12,17 @@ internal sealed class ForwardRenderPass : RenderPass
 
     public ForwardRenderPass(
         Texture2D outputTexture,
-        ShaderResourceView lightsResourceView,
         List<LightObject> lightObjects,
-        int maxLightsCount,
-        List<CameraObject> cameraObjects,
-        List<GraphicsObject> graphicsObjects) :
+        int maxPerLightsCount,
+        List<CameraObject> cameraObjects) :
         base()
     {
         _outputTexture = outputTexture;
 
-        _depthPass = new DepthPass(lightObjects, maxLightsCount, graphicsObjects);
+        _depthPass = new DepthPass(lightObjects, maxPerLightsCount);
 
-        _forwardPass = new ForwardPass(_outputTexture.Info.Size,
-            lightsResourceView, cameraObjects, _depthPass.DepthTextures);
+        _forwardPass = new ForwardPass(_outputTexture.Info.Size, maxPerLightsCount,
+            lightObjects, cameraObjects, _depthPass.DepthTextures);
 
         _outputPass = new OutputPass(_forwardPass.OutputTexture, _outputTexture);
 

@@ -1,4 +1,8 @@
-﻿using TerraFX.Interop.DirectX;
+﻿using System.Diagnostics;
+
+using TerraFX.Interop.DirectX;
+
+using SharpEngineCore.Utilities;
 
 namespace SharpEngineCore.Graphics;
 internal sealed class ForwardPass : Pass
@@ -12,17 +16,20 @@ internal sealed class ForwardPass : Pass
     private DepthStencilView _depthView;
     private DepthStencilState _depthState;
 
+    private readonly int _maxPerVariationLightsCount;
+    private readonly List<LightObject> _lightObjects;
+    private Buffer _lightsBuffer;
     private ShaderResourceView _lightsSRV;
 
+    private readonly List<CameraObject> _cameraObjects;
     private ConstantBuffer _currentCameraCBuffer;
 
+    private readonly List<Texture2D> _shadowDepthTextures;
+    private readonly List<ShaderResourceView> _shadowSRVS = new();
+    private readonly List<Sampler> _depthSamplers = new();
+
     private PipelineVariation _staticVariation;
-
     private readonly Size _resolution;
-
-    private readonly List<CameraObject> _cameraObjects;
-    private readonly Texture2D[] _shadowDepthTextures;
-    private readonly ShaderResourceView[] _shadowSRVS;
 
     public PipelineVariation CreateSubVariation(
         Device device, Material material, Mesh mesh)
@@ -31,16 +38,17 @@ internal sealed class ForwardPass : Pass
     }
 
     public ForwardPass(Size resolution,
-        ShaderResourceView lightsResourceView,
+        int maxPerVariationLightsCount,
+        List<LightObject> lightObjects,
         List<CameraObject> cameraObjects,
-        Texture2D[] shadowDepthTextures) :
+        List<Texture2D> shadowDepthTextures) :
         base()
     {
         _resolution = resolution;
-        _lightsSRV = lightsResourceView;
+        _maxPerVariationLightsCount = maxPerVariationLightsCount;
+        _lightObjects = lightObjects;
         _cameraObjects = cameraObjects;
         _shadowDepthTextures = shadowDepthTextures;
-        _shadowSRVS = new ShaderResourceView[shadowDepthTextures.Length];
     }
 
     public override void OnGo(Device device, DeviceContext context)
@@ -55,6 +63,17 @@ internal sealed class ForwardPass : Pass
             foreach (var variation in _subVariations)
             {
                 variation.Bind(context);
+
+                // updating affecting lights
+                UpdateLightsBuffer(_lightObjects);
+
+                // updating depthTextures to affecting textures
+                var dynamicSubVariation = new ForwardDynamicSubVariation(
+                    variation.PixelShaderStage,
+                    _shadowSRVS.ToArray(), _depthSamplers.ToArray());
+                dynamicSubVariation.Bind(context);
+
+
                 if(variation.UseIndexRendering)
                     context.DrawIndexed(variation.IndexCount, 0);
                 else
@@ -118,16 +137,24 @@ internal sealed class ForwardPass : Pass
                 CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE
             }));
 
-        for(var i = 0; i < _shadowSRVS.Length; i++)
-        {
-            _shadowSRVS[i] = device.CreateShaderResourceView(
-                _shadowDepthTextures[i],
-                new ViewCreationInfo()
-                { 
-                    Format = _shadowDepthTextures[i].Info.Format,
-                    Size = _shadowDepthTextures[i].Info.Size
-                });
-        }
+        var length = new LightData().GetFragmentsCount() * _maxPerVariationLightsCount;
+        _lightsBuffer = device.CreateBuffer(
+            new FSurface(new(length, 1)), typeof(LightData),
+            new ResourceUsageInfo()
+            {
+                Usage = D3D11_USAGE.D3D11_USAGE_DYNAMIC,
+                BindFlags = D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE,
+                CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE
+            });
+
+        _lightsSRV = device.CreateShaderResourceView(_lightsBuffer,
+            new ViewCreationInfo()
+            {
+                Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN,
+                Size = _lightsBuffer.Info.Size
+            });
+
+        AddShadowSRVS(device, _maxPerVariationLightsCount);
     }
 
     public override void OnReady(Device device, DeviceContext context)
@@ -139,7 +166,96 @@ internal sealed class ForwardPass : Pass
             Depth = DEPTH_CLEAR_VALUE,
         });
 
+        NormalizeDepthTextures(device);
+
         _staticVariation.Bind(context);
+    }
+
+    private void NormalizeDepthTextures(Device device)
+    {
+        // if we r in lights limit 
+        if (_shadowDepthTextures.Count > _maxPerVariationLightsCount == false)
+            return;
+
+        if (_shadowSRVS.Count == _shadowDepthTextures.Count)
+            return;
+
+        // need to add more textures
+        if (_shadowSRVS.Count < _shadowDepthTextures.Count)
+        {
+            var addCount = _shadowDepthTextures.Count - _shadowSRVS.Count;
+            AddShadowSRVS(device, addCount);
+
+            return;
+        }
+
+        var removeCount = _shadowSRVS.Count - _shadowDepthTextures.Count;
+        var newDepthCount = _shadowSRVS.Count - removeCount;
+        var stableCount = newDepthCount < _maxPerVariationLightsCount ?
+                           _maxPerVariationLightsCount - newDepthCount : 0;
+        removeCount -= stableCount;
+
+        RemoveShadowSRVS(device, removeCount);
+    }
+
+    private void AddShadowSRVS(Device device, int count)
+    {
+        var startIndex = _shadowSRVS.Count;
+        for (var i = 0; i < count; i++)
+        {
+            _shadowSRVS.Add(device.CreateShaderResourceView(
+                _shadowDepthTextures[startIndex + i],
+                new ViewCreationInfo()
+                {
+                    Format = _shadowDepthTextures[i].Info.Format,
+                    Size = _shadowDepthTextures[i].Info.Size
+                }));
+
+            _depthSamplers.Add(device.CreateSampler(
+                new SamplerInfo()
+                {
+                    Filter = D3D11_FILTER.D3D11_FILTER_MIN_MAG_MIP_POINT,
+                    AddressMode = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_CLAMP
+                }));
+        }
+    }
+
+    private void RemoveShadowSRVS(Device device, int removeCount)
+    {
+        _shadowSRVS.RemoveRange(_shadowSRVS.Count - removeCount, removeCount);
+        _depthSamplers.RemoveRange(_depthSamplers.Count - removeCount, removeCount);
+    }
+
+    private void UpdateLightsBuffer(List<LightObject> lightObjects)
+    {
+        Debug.Assert(lightObjects.Count <= _maxPerVariationLightsCount,
+            "Ah, more lights have been sent.");
+
+        // filling missing places
+        for(var i = lightObjects.Count; i < _maxPerVariationLightsCount; i++)
+        {
+            lightObjects.Add(new LightObject(new()));
+        }
+
+        var lightsData = new List<LightData>();
+
+        for (var i = 0; i < lightObjects.Count; i++)
+        {
+            lightsData.Add(lightObjects[i]._lastUpdatedData);
+        }
+
+        var length = _lightsBuffer.Info.Size.ToArea();
+        var surface = new FSurface(new(length, 1));
+
+        var fragments = new List<Fragment>();
+        for (var i = 0; i < lightsData.Count; i++)
+        {
+            fragments.AddRange(lightsData[i].ToFragments());
+        }
+
+        surface.SetLinearFragments(fragments.ToArray());
+
+        _lightsBuffer.Update(surface);
     }
 
     private PipelineVariation AddNewSubVariation(
@@ -209,6 +325,10 @@ internal sealed class ForwardPass : Pass
                 });
         }
 
+        var pixelSamplers = new List<Sampler>();
+        pixelSamplers.AddRange(_depthSamplers);
+        pixelSamplers.AddRange(material.PixelSamplers);
+
         var vertexResourceViews = new List<ShaderResourceView>();
         vertexResourceViews.Add(_lightsSRV);
         for (var x = 0; x < details.material.VertexTextures.Length; x++)
@@ -248,7 +368,7 @@ internal sealed class ForwardPass : Pass
             vertexConstantBuffers.ToArray(),
             vertexResourceViews.ToArray(),
             pixelShader,
-            details.material.PixelSamplers,
+            pixelSamplers.ToArray(),
             details.material.PixelConstantBuffers,
             pixelResourceViews.ToArray(),
             details.material.UseIndexedRendering

@@ -11,49 +11,54 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="PIxelShader.hlsl" />
-    <None Remove="VertexShader.hlsl" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="TerraFX.Interop.Windows" Version="10.0.22621.6" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Input\" />
     <Folder Include="ECS\" />
+    <Folder Include="Modals\" />
     <Folder Include="Structures\" />
   </ItemGroup>
-
+	
   <ItemGroup>
-    <PixelShader Include="Shaders\PIxelShader.hlsl">
+    <None Update="Shaders\CamTransformCBuffer.hlsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </PixelShader>
-  </ItemGroup>
-
-  <ItemGroup>
-    <VertexShader Include="Shaders\VertexShader.hlsl">
+    </None>
+    <None Update="Shaders\DepthPixelShader.hlsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </VertexShader>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Modals\cube.obj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Modals\duckModal.obj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Update="Shaders\DepthTextures.hlsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Modals\pyramid.obj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Update="Shaders\DepthVertexShader.hlsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Modals\pyramids.obj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Update="Shaders\LightTransformCBuffer.hlsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Modals\teapotModal.obj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Update="Shaders\PixelInputStruct.hlsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Shaders\PIxelShader.hlsl">
+    <None Update="Shaders\TransformCBuffer.hlsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Shaders\VertexInputStruct.hlsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Shaders\LightsSWBuffer.hlsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Shaders\PhongLighting.hlsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Shaders\PixelShader.hlsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Shaders\ShadowMapping.hlsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Shaders\Transformations.hlsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Shaders\VertexShader.hlsl">

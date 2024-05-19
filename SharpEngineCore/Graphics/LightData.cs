@@ -7,8 +7,10 @@ public struct LightData : IFragmentable, ISurfaceable
 {
     public FColor4 Position;
     public FColor4 Rotation;
+    public FColor4 Scale;
     public FColor4 Color;
     public FColor4 AmbientColor;
+    public FColor4 Intensity;
     public FColor4 LightType;
 
     public int GetFragmentsCount()
@@ -38,6 +40,11 @@ public struct LightData : IFragmentable, ISurfaceable
                 Rotation.b,
                 Rotation.a,
 
+                Scale.r,
+                Scale.g,
+                Scale.b,
+                Scale.a,
+
                 Color.r,
                 Color.g,
                 Color.b,
@@ -47,6 +54,11 @@ public struct LightData : IFragmentable, ISurfaceable
                 AmbientColor.g,
                 AmbientColor.b,
                 AmbientColor.a,
+
+                Intensity.r,
+                Intensity.g,
+                Intensity.b,
+                Intensity.a,
 
                 LightType.r,
                 LightType.g,

@@ -1,42 +1,40 @@
-struct Input
-{
-    float4 position : SV_Position;
-    float4 normal : NORMAL;
-    float4 color : COLOR;
-    float4 textureCoord : TEXCOORD;
-    float4 camPosition : CAMPOSITION;
-    float4 worldPos : WORLDPOS;
-};
+#include "PixelInputStruct.hlsl"
+#include "LightsSWBuffer.hlsl"
+#include "DepthTextures.hlsl"
+#include "PhongLighting.hlsl"
+#include "ShadowMapping.hlsl"
 
-cbuffer Light : register(b0)
-{
-    float4 LightPosition;
-    float4 LightRotation;
-    float4 LightColor;
-    float4 LightAmbient;
-}
-
-float4 main(Input input) : SV_Target
+float4 main(PixelInput input) : SV_Target
 {
     float4 color = input.color;
-
-    float3 n = (float3)input.normal;
-    float3 l = (float3)LightPosition;
-    float3 p = (float3)input.worldPos;
-
-    // diffuse 
-    float3 Lm = normalize(l - p);
-    float Kd = 0.8f;
-    float diffuse = saturate(mul(dot(Lm, n), Kd));
     
-     // specular
-    float3 r = normalize(reflect(-Lm, n));
-    float3 v = normalize((float3) input.camPosition - p);
-    float Ks = 1;
-    float specular = mul(pow(saturate(dot(r, v)), 64), Ks);
+    float4 ambient = 0;
+    float diffuse = 0;
+    float specular = 0;
+    for (int i = 0; i < LIGHTS_COUNT; i++)
+    {
+        float visiblity = 1;
+        float2 lvpPos = float2(input.LVPPositions[i].x, input.LVPPositions[i].y);
+        if (DepthTextures[i].Sample(DepthSamplers[i], lvpPos) < input.LVPPositions[i].z)
+        {
+            visiblity *= 0.5;
+        }
+        
+        LightData data = LightDataBuffer[i];
+        
+        float4 a = CalculateAmbient(data.AmbientColor, data.Intensity.r);
+        float d = CalculateDiffuse(
+                    input.normal, data.Position, input.worldPos, data.Intensity.r);
+        float s = CalculateSpecular(
+                    input.normal, data.Position, input.worldPos, 
+                    input.camPosition, data.Intensity.g, data.Intensity.r);
+        
+        ambient += a * data.Color * visiblity;
+        diffuse += d * data.Color * visiblity;
+        specular += s * data.Color * visiblity;
+    }
     
-    color = 1;
-    color *= diffuse + specular + LightAmbient;
+    color *= ambient + diffuse + specular;
     
     return color;
 }

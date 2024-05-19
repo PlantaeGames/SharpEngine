@@ -50,7 +50,7 @@ internal sealed class PixelShaderStage : IPipelineStage
 
         if (Flags.HasFlag(BindFlags.Samplers))
         {
-            context.PSSetSamplers(Samplers, 0);
+            context.PSSetSamplers(Samplers, 1);
         }
 
         if (Flags.HasFlag(BindFlags.ShaderResourceViews))

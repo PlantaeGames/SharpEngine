@@ -7,7 +7,7 @@ namespace SharpEngineCore.Graphics;
 public static class Graphics
 {
     private static Device Device => Renderer.GetDevice();
-    private readonly static Renderer Renderer;
+    private static Renderer Renderer;
     private static Swapchain Swapchain;
 
     private static bool _Initialized = false;
@@ -32,7 +32,7 @@ public static class Graphics
     public static ConstantBuffer CreateConstantBuffer(ISurfaceable layout, bool mutable = false)
     {
         return Buffer.CreateConstantBuffer(
-            Graphics.CreateBuffer(layout.ToSurface(), layout.GetType()), mutable);
+            Graphics.CreateBuffer(layout.ToSurface(), layout.GetType(), mutable));
     }
 
     public static Texture2D CreateTexture2D(FSurface surface, bool mutable = false)
@@ -77,15 +77,11 @@ public static class Graphics
         Debug.Assert(_Initialized == false,
             "Graphics are already initialized.");
 
-        Swapchain = Renderer.CreateSwapchain(window);
-        Renderer.SetPipeline(
-            new DefaultRenderPipeline(Swapchain.GetBackTexture()));
+        Renderer = new Renderer(window);
 
         _Initialized = true;
     }
 
     static Graphics()
-    {
-        Renderer = new Renderer();
-    }
+    {}
 }

@@ -93,7 +93,7 @@ internal sealed class ShaderCompiler
                         var result = D3DCompile(pData, (uint)bytes.Length,
                                         (sbyte*)IntPtr.Zero,
                                         (D3D_SHADER_MACRO*)IntPtr.Zero,
-                                        (ID3DInclude*)IntPtr.Zero,
+                                        D3D.D3D_COMPILE_STANDARD_FILE_INCLUDE,
                                         (sbyte*)pEntry,
                                         (sbyte*)pProfile,
                                         flags,

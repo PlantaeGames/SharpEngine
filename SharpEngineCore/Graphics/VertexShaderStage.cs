@@ -57,7 +57,7 @@ internal sealed class VertexShaderStage : IPipelineStage
 
         if (Flags.HasFlag(BindFlags.Samplers))
         {
-            context.VSSetSamplers(Samplers, 0);
+            context.VSSetSamplers(Samplers, 1);
         }
     }
 }
