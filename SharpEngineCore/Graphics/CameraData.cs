@@ -7,8 +7,8 @@ public struct CameraConstantData : IFragmentable, ISurfaceable
 {
     public FColor4 Position;
     public FColor4 Rotation;
-    public FColor4 Viewport;
-    public FColor4 W;
+    public FColor4 Scale;
+    public FColor4 Attributes;
 
     public int GetFragmentsCount()
     {
@@ -37,15 +37,15 @@ public struct CameraConstantData : IFragmentable, ISurfaceable
                 Rotation.b,
                 Rotation.a,
 
-                Viewport.r,
-                Viewport.g,
-                Viewport.b,
-                Viewport.a,
+                Scale.r,
+                Scale.g,
+                Scale.b,
+                Scale.a,
 
-                W.r,
-                W.g,
-                W.b,
-                W.a,
+                Attributes.r,
+                Attributes.g,
+                Attributes.b,
+                Attributes.a,
 
             ];
     }

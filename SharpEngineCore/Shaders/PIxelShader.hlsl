@@ -12,15 +12,14 @@ float4 main(PixelInput input) : SV_Target
     float diffuse = 0;
     float specular = 0;
     for (int i = 0; i < LIGHTS_COUNT; i++)
-    {
-        float visiblity = 1;
-        float2 lvpPos = float2(input.LVPPositions[i].x, input.LVPPositions[i].y);
-        if (DepthTextures[i].Sample(DepthSamplers[i], lvpPos) < input.LVPPositions[i].z)
-        {
-            visiblity *= 0.5;
-        }
-        
+    {   
         LightData data = LightDataBuffer[i];
+        
+        Texture2D depthTexture = DepthTextures[i];
+        SamplerState depthSampler = DepthSamplers[i];
+        float visiblity = CalculateShadow(depthTexture, depthSampler,
+                            input.LVPPositions[i], 0.0025, data.Intensity.b);
+        
         
         float4 a = CalculateAmbient(data.AmbientColor, data.Intensity.r);
         float d = CalculateDiffuse(

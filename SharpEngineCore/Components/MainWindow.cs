@@ -12,24 +12,24 @@ namespace SharpEngineCore.Components;
 internal sealed class MainWindow : Window
 {
     private Logger _log;
-    private Renderer _renderer;
-    private Swapchain _swapchain;
+    //private Renderer _renderer;
+    //private Swapchain _swapchain;
 
-    private ForwardPass _forwardPass;
-    private Guid _cubeId;
+    //private ForwardPass _forwardPass;
+    //private Guid _cubeId;
 
-    private float _angle = 0f;
-    private float _angleX = 0f;
-    private float _angleZ = 0;
-    private float _angleY = 0;
-    private float _anglePitch = 0f;
+    //private float _angle = 0f;
+    //private float _angleX = 0f;
+    //private float _angleZ = 0;
+    //private float _angleY = 0;
+    //private float _anglePitch = 0f;
 
-    private float _lastX = 0;
-    private float _lastY = 0;
-    private float _lastZ = 0;
+    //private float _lastX = 0;
+    //private float _lastY = 0;
+    //private float _lastZ = 0;
 
-    private float _speed = 10;
-    private float _deltaTime = 0.016f;
+    //private float _speed = 10;
+    //private float _deltaTime = 0.016f;
 
     public void Update()
     {
@@ -211,6 +211,62 @@ internal sealed class MainWindow : Window
     {
         _log = new();
         Graphics.Graphics.Initialize(this);
+        _log.LogMessage("Initialized.");
+
+
+        var material = new Material();
+
+        var vertex = new ShaderModule("Shaders\\VertexShader.hlsl");
+        var pixel = new ShaderModule("Shaders\\PixelShader.hlsl");
+
+        var transform = Graphics.Graphics.CreateConstantBuffer(
+            new TransformConstantData()
+            {
+                Position = new(),
+                Rotation = new(),
+                Scale = new(1, 1, 1, 1),
+            }, true);
+
+        material.VertexConstantBuffers = [transform];
+        material.Topology = Topology.TriangleList;
+        material.VertexShader = vertex;
+        material.PixelShader = pixel;
+
+        var mesh = Mesh.Cube();
+
+        var light = new LightData()
+        {
+            Position = new(-2, -2, 0, 0),
+            Rotation = new(),
+            Scale = new(1, 1, 1, 1),
+            AmbientColor = new(0.25f, 0.25f, 0.25f, 0.25f),
+            Color = new(1, 1, 1, 1),
+            Intensity = new(1, 1, 1, 1)
+        };
+
+        
+        var viewport = new Viewport()
+        {
+            Info = new TerraFX.Interop.DirectX.D3D11_VIEWPORT()
+            {
+                Height = GetSize().Height,
+                Width = GetSize().Width,
+                MaxDepth = 1f,
+            }
+        };
+
+        var camera = new CameraConstantData()
+        {
+            Position = new(0, 0, -10, 0),
+            Rotation = new(),
+            Scale = new(1, 1, 1, 1),
+            Attributes = new((float)viewport.Info.Height / (float)viewport.Info.Width,
+                            70, 0.03f, 1000f)
+        };
+
+        var cubeObj = Graphics.Graphics.CreateGraphicsObject(material, mesh);
+        var lightObj = Graphics.Graphics.CreateLightObject(light);
+        var cameraObj = Graphics.Graphics.CreateCameraObject(camera, viewport);
     }
 
     protected override LRESULT WndProc(HWND hWND, uint msg, WPARAM wParam, LPARAM lParam)

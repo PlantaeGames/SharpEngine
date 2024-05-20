@@ -28,6 +28,7 @@ internal class Renderer
     }
 
     internal Device GetDevice() => _device;
+    internal Swapchain GetSwapchain() => _swapchain;
 
     public void Render()
     {

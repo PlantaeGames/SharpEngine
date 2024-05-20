@@ -12,6 +12,19 @@ public static class Graphics
 
     private static bool _Initialized = false;
 
+    public static GraphicsObject CreateGraphicsObject(Material material, Mesh mesh)
+    {
+        return Renderer.CreateGraphicsObject(material, mesh);
+    }
+    public static LightObject CreateLightObject(LightData data)
+    {
+        return Renderer.CreateLightObject(data);
+    }
+    public static CameraObject CreateCameraObject(CameraConstantData data, Viewport viewport)
+    {
+        return Renderer.CreateCameraObject(data, viewport);
+    }
+
     public static Buffer CreateBuffer(Surface surface, Type layout, bool mutable = false)
     {
         return Device.CreateBuffer(
@@ -78,6 +91,7 @@ public static class Graphics
             "Graphics are already initialized.");
 
         Renderer = new Renderer(window);
+        Swapchain = Renderer.GetSwapchain();
 
         _Initialized = true;
     }
