@@ -24,7 +24,7 @@ internal sealed class ForwardRenderPass : RenderPass
         _forwardPass = new ForwardPass(_outputTexture.Info.Size, maxPerLightsCount,
             lightObjects, cameraObjects, _depthPass.DepthTextures);
 
-        _outputPass = new OutputPass(_forwardPass.OutputTexture, _outputTexture);
+        _outputPass = new OutputPass(_outputTexture);
 
         _passes = [_depthPass, _forwardPass, _outputPass];
     }
@@ -48,5 +48,6 @@ internal sealed class ForwardRenderPass : RenderPass
 
     public override void OnReady(Device device, DeviceContext context)
     {
+        _outputPass.SetSrcTexture(_forwardPass.OutputTexture);
     }
 }

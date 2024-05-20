@@ -5,7 +5,8 @@ internal sealed class DepthSubVariation : PipelineVariation
     public DepthSubVariation(
         InputLayout inputLayout,
         VertexBuffer vertexBuffer,
-        IndexBuffer indexBuffer)
+        IndexBuffer indexBuffer,
+        bool useIndexedRendering)
     {
         InputAssembler = new InputAssembler()
         {
@@ -17,6 +18,10 @@ internal sealed class DepthSubVariation : PipelineVariation
                     InputAssembler.BindFlags.VertexBuffer |
                     InputAssembler.BindFlags.Layout
         };
+
+        VertexCount = vertexBuffer.VertexCount;
+        IndexCount = indexBuffer.IndexCount;
+        UseIndexRendering = useIndexedRendering;
 
         _stages = [InputAssembler];
     }

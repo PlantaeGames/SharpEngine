@@ -33,6 +33,6 @@ internal sealed class VertexBuffer : Buffer
             System.Reflection.BindingFlags.Instance, Type.DefaultBinder,
             obj, null);
 
-        VertexCount = buffer.Info.Size.ToArea() / count;
+        VertexCount = buffer.Info.SurfaceSize.ToArea() / count;
     }
 }

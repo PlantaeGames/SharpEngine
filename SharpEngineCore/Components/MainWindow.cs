@@ -33,6 +33,8 @@ internal sealed class MainWindow : Window
 
     public void Update()
     {
+        Graphics.Graphics.Render();
+
         //var pitch = GetAsyncKeyState(VK.VK_F2);
         //if (pitch < 0)
         //{
@@ -234,17 +236,6 @@ internal sealed class MainWindow : Window
 
         var mesh = Mesh.Cube();
 
-        var light = new LightData()
-        {
-            Position = new(-2, -2, 0, 0),
-            Rotation = new(),
-            Scale = new(1, 1, 1, 1),
-            AmbientColor = new(0.25f, 0.25f, 0.25f, 0.25f),
-            Color = new(1, 1, 1, 1),
-            Intensity = new(1, 1, 1, 1)
-        };
-
-        
         var viewport = new Viewport()
         {
             Info = new TerraFX.Interop.DirectX.D3D11_VIEWPORT()
@@ -260,9 +251,20 @@ internal sealed class MainWindow : Window
             Position = new(0, 0, -10, 0),
             Rotation = new(),
             Scale = new(1, 1, 1, 1),
-            Attributes = new((float)viewport.Info.Height / (float)viewport.Info.Width,
-                            70, 0.03f, 1000f)
+            Attributes = new(viewport.AspectRatio, 70, 0.03f, 1000f)
         };
+
+        var light = new LightData()
+        {
+            Position = new(-2, -2, 0, 0),
+            Rotation = new(0, 0, -90, 0),
+            Scale = new(1, 1, 1, 1),
+            AmbientColor = new(0.25f, 0.25f, 0.25f, 0.25f),
+            Color = new(1, 1, 1, 1),
+            Intensity = new(1, 32, 1, 1),
+            Attributes =  camera.Attributes
+        };
+
 
         var cubeObj = Graphics.Graphics.CreateGraphicsObject(material, mesh);
         var lightObj = Graphics.Graphics.CreateLightObject(light);

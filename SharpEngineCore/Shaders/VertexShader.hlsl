@@ -24,7 +24,7 @@ PixelInput main(VertexInput input)
     
     output.normal = normalize(normalCoords);
     
-    for (int i = 0; i < LVP_POSITIONS_COUNT; i++)
+    [unroll] for (int i = 0; i < LVP_POSITIONS_COUNT; i++)
     {
         LightData data = LightDataBuffer[i];
         
@@ -33,7 +33,11 @@ PixelInput main(VertexInput input)
         float4 lightViewCoords = TransformLightView(
                                 lightWorldCoords, data.Position, data.Rotation);
    
-        float4 projectionCoords = TransformOrthogonal(lightViewCoords, data.Scale);
+        float4 projectionCoords = TransformPerspective(lightViewCoords,
+                                    data.AspectRatio,
+                                    data.Fov,
+                                    data.NearPlane,
+                                    data.FarPlane);
         
         output.LVPPositions[i] = projectionCoords;
     }

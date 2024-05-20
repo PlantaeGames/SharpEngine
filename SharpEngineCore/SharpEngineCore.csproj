@@ -28,19 +28,10 @@
     <None Update="Shaders\DepthPixelShader.hlsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Shaders\DepthTextures.hlsl">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="Shaders\DepthVertexShader.hlsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Shaders\LightTransformCBuffer.hlsl">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Shaders\PixelInputStruct.hlsl">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Shaders\TransformCBuffer.hlsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Shaders\VertexInputStruct.hlsl">

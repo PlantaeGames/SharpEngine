@@ -37,12 +37,9 @@ internal abstract class RenderPass : PipelineEvents
 
     public sealed override void Ready(Device device, DeviceContext context)
     {
-        OnReady(device, context);
+        context.ClearState();
 
-        foreach (var pass in _passes)
-        {
-            pass.Ready(device, context);
-        }
+        OnReady(device, context);
     }
 
     public sealed override void Go(Device device, DeviceContext context)
@@ -51,6 +48,7 @@ internal abstract class RenderPass : PipelineEvents
 
         foreach (var pass in _passes)
         {
+            pass.Ready(device, context);
             pass.Go(device, context);
         }
     }

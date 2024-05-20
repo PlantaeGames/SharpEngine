@@ -2,12 +2,12 @@
 
 public readonly struct ResourceInfo
 {
-    public readonly Size Size { get; init; }
+    public readonly Size SurfaceSize { get; init; }
     public readonly ResourceUsageInfo UsageInfo { get; init; }
 
     public ResourceInfo(Size size, ResourceUsageInfo usageInfo)
     {
-        Size = size;
+        SurfaceSize = size;
         UsageInfo = usageInfo;
     }
 }

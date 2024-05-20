@@ -2,7 +2,6 @@
 
 public enum State
 {
-    None,
     Active,
     Paused,
     Expired

@@ -1,7 +1,7 @@
 ﻿namespace SharpEngineCore.Graphics;
 
-internal readonly struct ResourceViewInfo
+internal readonly struct RenderTargetViewInfo
 {
-    public readonly Size Size { get; init; }
-    public readonly ResourceInfo ResourceInfo { get; init; }
+    public readonly ViewCreationInfo ViewInfo { get; init; }
+    public readonly ResourceViewInfo ResourceViewInfo { get; init; }
 }

@@ -85,20 +85,19 @@ internal sealed class ForwardPass : Pass
     public override void OnInitialize(Device device, DeviceContext context)
     {
         OutputTexture = device.CreateTexture2D(
-            new FSurface(_resolution),
+            new FSurface(_resolution, Channels.Quad),
             new ResourceUsageInfo()
             {
                 Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
                 BindFlags = D3D11_BIND_FLAG.D3D11_BIND_RENDER_TARGET
             },
-            DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM);
+            DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM);
 
         _outputView = device.CreateRenderTargetView(
             OutputTexture,
             new ViewCreationInfo()
             {
-                Format = OutputTexture.Info.Format,
-                Size = OutputTexture.Info.Size
+                Format = OutputTexture.Info.Format
             });
 
         _depthTexture = device.CreateTexture2D(
@@ -114,8 +113,7 @@ internal sealed class ForwardPass : Pass
             _depthTexture,
             new ViewCreationInfo()
             {
-                Format = _depthTexture.Info.Format,
-                Size = _depthTexture.Info.Size
+                Format = _depthTexture.Info.Format
             });
 
         _depthState = device.CreateDepthStencilState(
@@ -144,14 +142,17 @@ internal sealed class ForwardPass : Pass
             {
                 Usage = D3D11_USAGE.D3D11_USAGE_DYNAMIC,
                 BindFlags = D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE,
-                CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE
+                CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE,
+                MiscFlags = D3D11_RESOURCE_MISC_FLAG.D3D11_RESOURCE_MISC_BUFFER_STRUCTURED
             });
 
         _lightsSRV = device.CreateShaderResourceView(_lightsBuffer,
             new ViewCreationInfo()
             {
                 Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN,
-                Size = _lightsBuffer.Info.Size
+                BufferByteStride = _lightsBuffer.Info.ByteStride,
+                BufferBytesSize = _lightsBuffer.Info.BytesSize,
+                ViewResourceType = ViewResourceType.Buffer
             });
 
         AddShadowSRVS(device, _maxPerVariationLightsCount);
@@ -207,8 +208,8 @@ internal sealed class ForwardPass : Pass
                 _shadowDepthTextures[startIndex + i],
                 new ViewCreationInfo()
                 {
-                    Format = _shadowDepthTextures[i].Info.Format,
-                    Size = _shadowDepthTextures[i].Info.Size
+                    Format = DXGI_FORMAT.DXGI_FORMAT_R32_FLOAT,
+                    ViewResourceType = ViewResourceType.Texture2D
                 }));
 
             _depthSamplers.Add(device.CreateSampler(
@@ -231,20 +232,20 @@ internal sealed class ForwardPass : Pass
         Debug.Assert(lightObjects.Count <= _maxPerVariationLightsCount,
             "Ah, more lights have been sent.");
 
-        // filling missing places
-        for(var i = lightObjects.Count; i < _maxPerVariationLightsCount; i++)
-        {
-            lightObjects.Add(new LightObject(new()));
-        }
-
         var lightsData = new List<LightData>();
 
-        for (var i = 0; i < lightObjects.Count; i++)
+        for (var i = 0; i < _maxPerVariationLightsCount; i++)
         {
+            if(i >= lightObjects.Count)
+            {
+                lightsData.Add(new());
+                continue;
+            }
+
             lightsData.Add(lightObjects[i]._lastUpdatedData);
         }
 
-        var length = _lightsBuffer.Info.Size.ToArea();
+        var length = _lightsBuffer.Info.SurfaceSize.ToArea();
         var surface = new FSurface(new(length, 1));
 
         var fragments = new List<Fragment>();
@@ -311,7 +312,6 @@ internal sealed class ForwardPass : Pass
                 new ViewCreationInfo()
                 {
                     Format = details.material.PixelTextures[x].Info.Format,
-                    Size = details.material.PixelTextures[x].Info.Size
                 });
         }
         for (var x = 0; x < details.material.PixelBuffers.Length; x++)
@@ -321,7 +321,9 @@ internal sealed class ForwardPass : Pass
                 new ViewCreationInfo()
                 {
                     Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN,
-                    Size = details.material.PixelBuffers[x].Info.Size
+                    BufferByteStride = details.material.PixelBuffers[x].Info.ByteStride,
+                    BufferBytesSize = details.material.PixelBuffers[x].Info.BytesSize,
+                    ViewResourceType = ViewResourceType.Buffer
                 });
         }
 
@@ -338,7 +340,6 @@ internal sealed class ForwardPass : Pass
                 new ViewCreationInfo()
                 {
                     Format = details.material.VertexTextures[x].Info.Format,
-                    Size = details.material.VertexTextures[x].Info.Size
                 });
         }
         for (var x = 0; x < details.material.VertexBuffers.Length; x++)
@@ -348,7 +349,9 @@ internal sealed class ForwardPass : Pass
                 new ViewCreationInfo()
                 {
                     Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN,
-                    Size = details.material.VertexBuffers[x].Info.Size
+                    BufferByteStride = details.material.VertexBuffers[x].Info.ByteStride,
+                    BufferBytesSize = details.material.VertexBuffers[x].Info.BytesSize,
+                    ViewResourceType = ViewResourceType.Buffer
                 });
         }
 

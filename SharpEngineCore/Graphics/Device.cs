@@ -22,26 +22,33 @@ internal sealed class Device
 
     private D3D_FEATURE_LEVEL _featureLevel;
 
+    [Obsolete("FAILED, NOT DONE YET.")]
     public UnorderedAccessView CreateUnorderedAccessView(Resource resource,
-    UnorderedAccessViewInfo info)
+                                                         ViewCreationInfo info)
     {
         return new UnorderedAccessView(NativeCreateUnorderedAccessView(),
-            resource, info, this);
+            resource, new UnorderedAccessViewInfo()
+            {
+                ViewInfo = info,
+                ResourceViewInfo = new ResourceViewInfo()
+                {
+                    ResourceInfo = resource.ResourceInfo
+                }
+            }, this);
 
         unsafe ComPtr<ID3D11UnorderedAccessView> NativeCreateUnorderedAccessView()
         {
             var desc = new D3D11_UNORDERED_ACCESS_VIEW_DESC();
             desc.Format = info.Format;
 
-            switch (info.ViewType)
+            switch (info.ViewResourceType)
             {
-                case UnorderedAccessViewInfo.Type.Buffer:
+                case ViewResourceType.Buffer:
                     desc.ViewDimension = D3D11_UAV_DIMENSION.D3D11_UAV_DIMENSION_BUFFER;
-                    desc.Buffer.FirstElement = (uint)info.Size.Height;
-                    desc.Buffer.NumElements = (uint)info.Size.Width;
+                    // TODO: UNSAFE / FAILED.
 
                     break;
-                case UnorderedAccessViewInfo.Type.Texture2D:
+                case ViewResourceType.Texture2D:
                     desc.ViewDimension = D3D11_UAV_DIMENSION.D3D11_UAV_DIMENSION_TEXTURE2D;
                     desc.Texture2D.MipSlice = 0u;
                     break;
@@ -76,9 +83,9 @@ internal sealed class Device
         return new DepthStencilView(NativeCreateDepthStencilView(), resource,
             new DepthStencilViewInfo()
             {
+                ViewInfo = info,
                 ResourceViewInfo = new ResourceViewInfo()
                 {
-                    Size = info.Size,
                     ResourceInfo = resource.ResourceInfo
                 }
             },
@@ -87,14 +94,17 @@ internal sealed class Device
         unsafe ComPtr<ID3D11DepthStencilView> NativeCreateDepthStencilView()
         {
             // TODO: Using the same params as the resource created, at mip map 0.
-            //var desc = new D3D11_DEPTH_STENCIL_VIEW_DESC();
+            var desc = new D3D11_DEPTH_STENCIL_VIEW_DESC();
+            desc.Format = info.Format;
+            desc.ViewDimension = D3D11_DSV_DIMENSION.D3D11_DSV_DIMENSION_TEXTURE2D;
+            desc.Texture2D.MipSlice = 0;
 
             var pView = new ComPtr<ID3D11DepthStencilView>();
             fixed(ID3D11Device** ppDevice = _pDevice)
             {
                 GraphicsException.SetInfoQueue();
                 var result = (*ppDevice)->CreateDepthStencilView(resource.GetNativePtrAsResource(),
-                    (D3D11_DEPTH_STENCIL_VIEW_DESC*)IntPtr.Zero,
+                    &desc,
                     pView.GetAddressOf());
 
                 if(result.FAILED)
@@ -155,9 +165,9 @@ internal sealed class Device
             resource,
             new ShaderResourceViewInfo
             {
+                ViewInfo = info,
                 ResourceViewInfo = new ResourceViewInfo()
                 {
-                    Size = info.Size,
                     ResourceInfo = resource.ResourceInfo
                 }
             },
@@ -165,8 +175,29 @@ internal sealed class Device
 
         unsafe ComPtr<ID3D11ShaderResourceView> NativeCreateShaderResourceView()
         {
-            // TODO: Using the while resource,
-            //var desc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
+            var desc = new D3D11_SHADER_RESOURCE_VIEW_DESC();
+            desc.Format = info.Format;
+
+            var pDesc = &desc;
+
+            switch (info.ViewResourceType)
+            {
+                case ViewResourceType.Buffer:
+                    desc.ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_BUFFER;
+                    desc.Buffer.FirstElement = (uint)0;
+                    desc.Buffer.NumElements = (uint)(info.BufferBytesSize / info.BufferByteStride);
+                    //desc.Buffer.ElementOffset = 0;
+                    //desc.Buffer.ElementWidth = (uint)info.BufferByteStride;
+                    break;
+                case ViewResourceType.Texture2D:
+                    desc.ViewDimension = D3D_SRV_DIMENSION.D3D10_1_SRV_DIMENSION_TEXTURE2D;
+                    desc.Texture2D.MostDetailedMip = 0;
+                    desc.Texture2D.MipLevels = 1;
+                    break;
+                default:
+                    pDesc = (D3D11_SHADER_RESOURCE_VIEW_DESC*)IntPtr.Zero;
+                    break;
+            }
 
             var pView = new ComPtr<ID3D11ShaderResourceView>();
             fixed(ID3D11Device** ppDevice = _pDevice)
@@ -174,7 +205,7 @@ internal sealed class Device
                 GraphicsException.SetInfoQueue();
                 var result = (*ppDevice)->CreateShaderResourceView(
                     resource.GetNativePtrAsResource(),
-                    (D3D11_SHADER_RESOURCE_VIEW_DESC*)IntPtr.Zero, pView.GetAddressOf());
+                    pDesc, pView.GetAddressOf());
 
                 if(result.FAILED)
                 {
@@ -424,11 +455,16 @@ internal sealed class Device
         Debug.Assert(surface.Channels == Channels.Single,
             "Surface used for creating buffer must be single channel.");
 
+        var stride = layout.GetDataTypeSize();
+        var bytesSize = surface.Size.ToArea() * surface.GetPeiceSize();
+
         var ptr = NativeCreateBuffer();
         return new Buffer(ptr, new BufferInfo()
         {
             Layout = layout,
-            Size = surface.Size,
+            SurfaceSize = surface.Size,
+            ByteStride = stride,
+            BytesSize = bytesSize,
             UsageInfo = usageInfo
         },
         this);
@@ -436,9 +472,8 @@ internal sealed class Device
         unsafe ComPtr<ID3D11Buffer> NativeCreateBuffer()
         {
             var desc = new D3D11_BUFFER_DESC();
-            desc.ByteWidth = (uint) (surface.Size.ToArea() *
-                                     surface.GetPeiceSize());
-            desc.StructureByteStride = (uint)layout.GetDataTypeSize();
+            desc.ByteWidth = (uint) bytesSize;
+            desc.StructureByteStride = (uint) stride;
 
             desc.BindFlags = (uint) usageInfo.BindFlags;
             desc.CPUAccessFlags = (uint) usageInfo.CPUAccessFlags;
@@ -481,9 +516,9 @@ internal sealed class Device
         return new RenderTargetView(NativeCreateView(), resource,
         new RenderTargetViewInfo()
         {
+            ViewInfo = info,
             ResourceViewInfo = new ResourceViewInfo()
             {
-                Size = info.Size,
                 ResourceInfo = resource.ResourceInfo
             }
         },

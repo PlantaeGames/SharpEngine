@@ -218,13 +218,13 @@ float4 TransformOrthogonal(float4 viewCoords, float4 lightScale)
     coordinates.w = 1;
 
     row_major matrix orthogonalMatrix = 0;
-    orthogonalMatrix[0][0] = 2 / (xSides.y - xSides.x);
-    orthogonalMatrix[1][1] = 2 / (ySides.y - ySides.y);
-    orthogonalMatrix[2][2] = -2 / (zSides.y - zSides.x);
+    orthogonalMatrix[0][0] = 2 / lightScale.x;
+    orthogonalMatrix[1][1] = 2 / lightScale.y;
+    orthogonalMatrix[2][2] = -2 / lightScale.z;
 
-    orthogonalMatrix[0][3] = - (xSides.y + xSides.x) / (xSides.y - xSides.x);
-    orthogonalMatrix[1][3] = - (ySides.y + ySides.x) / (ySides.y - ySides.x);
-    orthogonalMatrix[2][3] = - (zSides.y + zSides.x) / (zSides.y - zSides.x);
+    orthogonalMatrix[0][3] = - 1 / lightScale.x;
+    orthogonalMatrix[1][3] = - 1 / lightScale.y;
+    orthogonalMatrix[2][3] = - 1 / lightScale.z;
 
     orthogonalMatrix[3][3] = 1;
 

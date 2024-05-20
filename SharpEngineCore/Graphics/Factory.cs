@@ -14,7 +14,14 @@ internal sealed class Factory
 
     public Swapchain CreateSwapchain(Window window, Device device)
     {
-        return new Swapchain(NativeCreateSwapchain(), window, device);
+        var format = DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM;
+
+        return new Swapchain(NativeCreateSwapchain(),
+            new SwapchainInfo()
+            {
+                Format = format
+            },
+            window, device);
 
         unsafe ComPtr<IDXGISwapChain> NativeCreateSwapchain()
         {
@@ -28,7 +35,7 @@ internal sealed class Factory
                 Denominator = 0u,
                 Numerator = 0u
             };
-            desc.BufferDesc.Format = DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM;
+            desc.BufferDesc.Format = format;
             desc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER.DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
             desc.BufferDesc.Scaling = DXGI_MODE_SCALING.DXGI_MODE_SCALING_UNSPECIFIED;
 

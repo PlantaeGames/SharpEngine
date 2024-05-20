@@ -32,7 +32,6 @@ internal class Renderer
 
     public void Render()
     {
-        _context.ClearState();
         _pipeline.Ready(_device, _context);
         _pipeline.Go(_device, _context);
     }

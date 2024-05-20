@@ -5,20 +5,24 @@ namespace SharpEngineCore.Graphics;
 internal sealed class OutputPass : Pass
 {
     private Texture2D _srcTexture;
-    private Texture2D _outputTexture;
+    private readonly Texture2D _outputTexture;
 
-    public OutputPass(Texture2D srcTexture, Texture2D outputTexture)
+    public void SetSrcTexture(Texture2D texture)
     {
-        Debug.Assert(srcTexture.Info.Format == outputTexture.Info.Format,
-            "Textures must have same output to be copied." +
-            "Or used in Output pass.");
+        _srcTexture = texture;
+    }
 
-        _srcTexture = srcTexture;
+    public OutputPass(Texture2D outputTexture)
+    {
         _outputTexture = outputTexture;
     }
 
     public override void OnGo(Device device, DeviceContext context)
     {
+        Debug.Assert(_srcTexture.Info.Format == _outputTexture.Info.Format,
+                    "Textures must have same output to be copied." +
+                     "Or used in Output pass.");
+
         context.CopyResource(_srcTexture, _outputTexture);
     }
 

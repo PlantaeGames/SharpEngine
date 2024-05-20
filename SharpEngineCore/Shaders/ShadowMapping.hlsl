@@ -1,4 +1,4 @@
-float CalculateShadow(Texture2D depthTexture, SamplerState depthSampler, float4 lvpPos,
+float CalculateShadow(Texture2D<float> depthTexture, SamplerState depthSampler, float4 lvpPos,
                       float bias, float k)
 {
     float3 projCoords = (float3) lvpPos / lvpPos.w;

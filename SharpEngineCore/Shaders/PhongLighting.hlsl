@@ -30,6 +30,6 @@ float CalculateSpecular(
     float3 r = normalize(reflect(-lightDir, n));
     float3 v = normalize(eP - p);
     
-    float specular = mul(pow(saturate(dot(r, v)), power), k);
+    float specular = saturate(mul(pow(saturate(dot(r, v)), power), k));
     return specular;
 }

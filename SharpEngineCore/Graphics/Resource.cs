@@ -22,7 +22,7 @@ public abstract class Resource
         Debug.Assert(
             ResourceInfo.UsageInfo.CPUAccessFlags.HasFlag(D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE),
             "Does not have CPU Write access on this buffer.");
-        Debug.Assert(surface.Size.ToArea() == ResourceInfo.Size.ToArea(),
+        Debug.Assert(surface.Size.ToArea() == ResourceInfo.SurfaceSize.ToArea(),
             "Buffer and sent surface to update does not match in size.");
 
         var context = _device.GetContext();
@@ -59,7 +59,7 @@ public abstract class Resource
         Debug.Assert(
             ResourceInfo.UsageInfo.CPUAccessFlags.HasFlag(D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_READ),
             "Does not have CPU Read access on this buffer.");
-        Debug.Assert(surface.Size.ToArea() == ResourceInfo.Size.ToArea(),
+        Debug.Assert(surface.Size.ToArea() == ResourceInfo.SurfaceSize.ToArea(),
             "Buffer and sent surface to update does not match in size.");
 
         var context = _device.GetContext();

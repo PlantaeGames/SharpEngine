@@ -53,7 +53,8 @@ internal sealed class ShaderCompiler
                 {
                     // error here.
                     GraphicsException.ThrowLastGraphicsException(
-                        "Failed to load pre compiled shader.");
+                        "Failed to load pre compiled shader.\n" +
+                        $"{module.Name}");
                 }
             }
 
@@ -121,7 +122,8 @@ internal sealed class ShaderCompiler
                             // error here
                             GraphicsException.ThrowLastGraphicsException(
                                 $"Failed to compile shader.\nError Code: {result}\n\n" +
-                                $"{sb}");
+                                $"{sb}\n" +
+                                $"Module: {module.Name}");
                         }
 
                         return pShaderBlob;

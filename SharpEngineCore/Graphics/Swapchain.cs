@@ -11,6 +11,8 @@ internal sealed class Swapchain
     private Window _window;
     private Texture2D _backTexture;
 
+    public readonly SwapchainInfo Info;
+
     private ComPtr<IDXGISwapChain> _pSwapchain;
 
     public Texture2D GetBackTexture() => _backTexture;
@@ -50,7 +52,14 @@ internal sealed class Swapchain
                     pBackTexture,
                     new() 
                     { 
-                        Size = _window.GetSize()
+                        Format = Info.Format,
+                        Size = _window.GetSize(),
+                        Channels = Channels.Quad,
+                        UsageInfo = new ResourceUsageInfo()
+                        { 
+                            Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
+                            BindFlags = D3D11_BIND_FLAG.D3D11_BIND_RENDER_TARGET
+                        }
                     },
                     _device);
             }
@@ -77,9 +86,14 @@ internal sealed class Swapchain
         }
     }
 
-    public Swapchain(ComPtr<IDXGISwapChain> pSwapchain, Window window, Device device)
+    public Swapchain(ComPtr<IDXGISwapChain> pSwapchain,
+        SwapchainInfo info,
+        Window window, 
+        Device device)
     {
         _pSwapchain = pSwapchain;
+        Info = info;
+
         _device = device;
         _window = window;
 

@@ -3,14 +3,10 @@
 namespace SharpEngineCore.Graphics;
 
 [StructLayout(LayoutKind.Sequential, Pack = 0, Size = 64)]
-public struct LightData : IFragmentable, ISurfaceable
+public struct LightTransformConstantData : IFragmentable, ISurfaceable
 {
     public FColor4 Position;
     public FColor4 Rotation;
-    public FColor4 Scale;
-    public FColor4 Color;
-    public FColor4 AmbientColor;
-    public FColor4 Intensity;
     public FColor4 LightType;
     public FColor4 Attributes;
 
@@ -41,26 +37,6 @@ public struct LightData : IFragmentable, ISurfaceable
                 Rotation.b,
                 Rotation.a,
 
-                Scale.r,
-                Scale.g,
-                Scale.b,
-                Scale.a,
-
-                Color.r,
-                Color.g,
-                Color.b,
-                Color.a,
-
-                AmbientColor.r,
-                AmbientColor.g,
-                AmbientColor.b,
-                AmbientColor.a,
-
-                Intensity.r,
-                Intensity.g,
-                Intensity.b,
-                Intensity.a,
-
                 LightType.r,
                 LightType.g,
                 LightType.b,
@@ -69,7 +45,7 @@ public struct LightData : IFragmentable, ISurfaceable
                 Attributes.r,
                 Attributes.g,
                 Attributes.b,
-                Attributes.a,
+                Attributes.a
             ];
     }
 

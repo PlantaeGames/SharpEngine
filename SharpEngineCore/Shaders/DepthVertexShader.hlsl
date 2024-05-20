@@ -10,7 +10,9 @@ float4 main(VertexInput input) : SV_Position
     float4 lightViewCoords = TransformLightView(
                                 worldCoords, LightPosition, LightRotation);
     
-    float4 projectionCoords = TransformOrthogonal(lightViewCoords, LightScale);
+    float4 projectionCoords = TransformPerspective(lightViewCoords,
+                                    LightAspectRatio, LightFarPlane, LightNearPlane,
+                                    LightFarPlane);
     
     return projectionCoords;
 }

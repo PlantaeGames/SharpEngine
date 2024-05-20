@@ -13,8 +13,8 @@ internal abstract class Pass : PipelineEvents
 
     public sealed override void Ready(Device device, DeviceContext context)
     {
-        OnReady(device, context);
         ClearPendingVariations();
+        OnReady(device, context);
     }
 
     public sealed override void Go(Device device, DeviceContext context)

@@ -5,6 +5,9 @@ namespace SharpEngineCore.Graphics;
 
 internal sealed class DepthPass : Pass
 {
+    public Texture2D OutputTexture { get; private set; }
+    private RenderTargetView _outputView;
+
     private const int SHADOW_MAP_WIDTH = 2048;
     private const int SHADOOW_MAP_HEIGHT = 2048;
     private const float CLEAR_DEPTH_VALUE = 1f;
@@ -41,17 +44,18 @@ internal sealed class DepthPass : Pass
         for (var i = 0; i < _lights.Count; i++)
         {
             var dynamicVariation = new DepthDynamicVariation(
+                _outputView,
                 _depthState,
                 _depthViews[i]);
             dynamicVariation.Bind(context);
 
             _lightPerspectiveBuffer.Update(
-                new TransformConstantData()
+                new LightTransformConstantData()
                 {
                     Position = _lights[i]._lastUpdatedData.Position,
                     Rotation = _lights[i]._lastUpdatedData.Rotation,
-                    Scale = _lights[i]._lastUpdatedData.Scale,
-                    W = _lights[i]._lastUpdatedData.LightType
+                    LightType = _lights[i]._lastUpdatedData.LightType,
+                    Attributes = _lights[i]._lastUpdatedData.Attributes
                 });
 
             foreach (var variation in _subVariations)
@@ -69,7 +73,7 @@ internal sealed class DepthPass : Pass
     {
         _lightPerspectiveBuffer = Buffer.CreateConstantBuffer(
             device.CreateBuffer(
-                new TransformConstantData().ToSurface(), typeof(TransformConstantData),
+                new LightTransformConstantData().ToSurface(), typeof(LightTransformConstantData),
             new ResourceUsageInfo()
             {
                 Usage = D3D11_USAGE.D3D11_USAGE_DYNAMIC,
@@ -105,6 +109,21 @@ internal sealed class DepthPass : Pass
             vertexShader, _lightPerspectiveBuffer, pixelShader, viewport);
 
         AddDepthTextures(device, _maxLightsCount);
+
+        OutputTexture = device.CreateTexture2D(
+            new FSurface(new(SHADOW_MAP_WIDTH, SHADOOW_MAP_HEIGHT), Channels.Quad),
+            new ResourceUsageInfo()
+            {
+                Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
+                BindFlags = D3D11_BIND_FLAG.D3D11_BIND_RENDER_TARGET
+            }, DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM);
+
+        _outputView = device.CreateRenderTargetView(OutputTexture,
+            new ViewCreationInfo()
+            {
+                Format = OutputTexture.Info.Format,
+                ViewResourceType = ViewResourceType.Texture2D
+            });
     }
 
     public override void OnReady(Device device, DeviceContext context)
@@ -160,9 +179,10 @@ internal sealed class DepthPass : Pass
                 new ResourceUsageInfo()
                 {
                     Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
-                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_DEPTH_STENCIL
+                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_DEPTH_STENCIL |
+                                D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE
                 },
-                DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT);
+                DXGI_FORMAT.DXGI_FORMAT_R32_TYPELESS);
 
             DepthTextures.Add(depthTexture);
 
@@ -170,8 +190,7 @@ internal sealed class DepthPass : Pass
                 depthTexture,
                 new ViewCreationInfo()
                 {
-                    Format = depthTexture.Info.Format,
-                    Size = depthTexture.Info.Size
+                    Format = DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT
                 });
 
             _depthViews.Add(depthView);
@@ -222,8 +241,8 @@ internal sealed class DepthPass : Pass
         var variation = new DepthSubVariation(
             inputLayout,
             vertexBuffer,
-            indexBuffer
-            );
+            indexBuffer,
+            material.UseIndexedRendering);
 
         _subVariations.Add(variation);
         return variation;

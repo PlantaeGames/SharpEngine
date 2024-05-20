@@ -25,6 +25,6 @@ internal sealed class IndexBuffer : Buffer
             "Index Buffer must have unitable layout.");
 
      
-        IndexCount = buffer.Info.Size.ToArea() / Info.Layout.GetFields().Length;
+        IndexCount = buffer.Info.SurfaceSize.ToArea() / Info.Layout.GetFields().Length;
     }
 }
