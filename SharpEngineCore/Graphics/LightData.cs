@@ -12,6 +12,7 @@ public struct LightData : IFragmentable, ISurfaceable
     public FColor4 AmbientColor;
     public FColor4 Intensity;
     public FColor4 LightType;
+
     public FColor4 Attributes;
 
     public int GetFragmentsCount()

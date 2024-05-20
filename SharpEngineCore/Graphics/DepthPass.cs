@@ -34,9 +34,9 @@ internal sealed class DepthPass : Pass
     }
 
     public PipelineVariation CreateSubVariation(
-        Device device, Material material, Mesh mesh)
+        Device device, Material material, Mesh mesh, ConstantBuffer transformBuffer)
     {
-        return AddNewSunVariation(device, material, mesh);
+        return AddNewSunVariation(device, material, mesh, transformBuffer);
     }
 
     public override void OnGo(Device device, DeviceContext context)
@@ -106,7 +106,7 @@ internal sealed class DepthPass : Pass
             });
 
         _staticVariation = new DepthVariation(
-            vertexShader, _lightPerspectiveBuffer, pixelShader, viewport);
+            vertexShader, pixelShader, viewport);
 
         AddDepthTextures(device, _maxLightsCount);
 
@@ -204,7 +204,7 @@ internal sealed class DepthPass : Pass
     }
 
     private PipelineVariation AddNewSunVariation(
-        Device device, Material material, Mesh mesh)
+        Device device, Material material, Mesh mesh, ConstantBuffer transformBuffer)
     {
         var vertexShader = _staticVariation.VertexShaderStage.VertexShader;
 
@@ -240,6 +240,7 @@ internal sealed class DepthPass : Pass
 
         var variation = new DepthSubVariation(
             inputLayout,
+            [_lightPerspectiveBuffer, transformBuffer],
             vertexBuffer,
             indexBuffer,
             material.UseIndexedRendering);

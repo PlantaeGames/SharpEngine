@@ -225,7 +225,7 @@ internal sealed class MainWindow : Window
             new TransformConstantData()
             {
                 Position = new(),
-                Rotation = new(),
+                Rotation = new(45, 0, 0, 0),
                 Scale = new(1, 1, 1, 1),
             }, true);
 
@@ -249,15 +249,15 @@ internal sealed class MainWindow : Window
         var camera = new CameraConstantData()
         {
             Position = new(0, 0, -10, 0),
-            Rotation = new(),
+            Rotation = new(0, 0, 0, 0),
             Scale = new(1, 1, 1, 1),
             Attributes = new(viewport.AspectRatio, 70, 0.03f, 1000f)
         };
 
         var light = new LightData()
         {
-            Position = new(-2, -2, 0, 0),
-            Rotation = new(0, 0, -90, 0),
+            Position = new(0, 0, -10, 0),
+            Rotation = new(0, 0, 0, 0),
             Scale = new(1, 1, 1, 1),
             AmbientColor = new(0.25f, 0.25f, 0.25f, 0.25f),
             Color = new(1, 1, 1, 1),

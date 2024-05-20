@@ -3,17 +3,14 @@
 internal sealed class DepthVariation : PipelineVariation
 {
     public DepthVariation(VertexShader vertexShader,
-        ConstantBuffer lightPerspectiveCBuffer,
         PixelShader pixelShader,
         Viewport viewport)
     {
         VertexShaderStage = new VertexShaderStage()
         {
             VertexShader = vertexShader,
-            ConstantBuffers = [lightPerspectiveCBuffer],
 
-            Flags = VertexShaderStage.BindFlags.VertexShader |
-                    VertexShaderStage.BindFlags.ConstantBuffers
+            Flags = VertexShaderStage.BindFlags.VertexShader
         };
 
         PixelShaderStage = new PixelShaderStage()
