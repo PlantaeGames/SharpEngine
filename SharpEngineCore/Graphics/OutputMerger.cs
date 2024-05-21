@@ -32,21 +32,29 @@ internal sealed class OutputMerger : IPipelineStage
 
     public void Bind(DeviceContext context)
     {
-        if(Flags.HasFlag(BindFlags.RenderTargetView) |
-           Flags.HasFlag(BindFlags.DepthStencilState))
+        if(Flags.HasFlag(BindFlags.RenderTargetView))
         {
             context.OMSetRenderTargets(RenderTargetViews,
                 DepthStencilView);
+        }
+
+        if (Flags.HasFlag(BindFlags.DepthStencilState))
+        {
+            context.OMSetDepthStencilState(DepthStencilState);
         }
     }
 
     public void Unbind(DeviceContext context)
     {
-        if (Flags.HasFlag(BindFlags.RenderTargetView) |
-           Flags.HasFlag(BindFlags.DepthStencilState))
+        if (Flags.HasFlag(BindFlags.RenderTargetView))
         {
             context.OMSetRenderTargets(RenderTargetViews,
                 DepthStencilView, true);
+        }
+
+        if (Flags.HasFlag(BindFlags.DepthStencilState))
+        {
+            context.OMSetDepthStencilState(DepthStencilState, true);
         }
     }
 }

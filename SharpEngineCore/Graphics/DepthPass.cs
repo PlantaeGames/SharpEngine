@@ -45,7 +45,6 @@ internal sealed class DepthPass : Pass
         {
             var dynamicVariation = new DepthDynamicVariation(
                 _outputView,
-                _depthState,
                 _depthViews[i]);
             dynamicVariation.Bind(context);
 
@@ -65,6 +64,8 @@ internal sealed class DepthPass : Pass
                     context.DrawIndexed(variation.IndexCount, 0);
                 else
                     context.Draw(variation.VertexCount, 0);
+
+                variation.Unbind(context);
             }
         }
     }
@@ -102,11 +103,11 @@ internal sealed class DepthPass : Pass
             {
                 DepthEnabled = true,
                 DepthWriteMask = D3D11_DEPTH_WRITE_MASK.D3D11_DEPTH_WRITE_MASK_ALL,
-                DepthComparisionFunc = D3D11_COMPARISON_FUNC.D3D11_COMPARISON_GREATER
+                DepthComparisionFunc = D3D11_COMPARISON_FUNC.D3D11_COMPARISON_LESS_EQUAL
             });
 
         _staticVariation = new DepthVariation(
-            vertexShader, pixelShader, viewport);
+            vertexShader, pixelShader, viewport, _depthState);
 
         AddDepthTextures(device, _maxLightsCount);
 
@@ -137,6 +138,8 @@ internal sealed class DepthPass : Pass
                     Depth = CLEAR_DEPTH_VALUE,
                 });
         }
+
+        context.ClearRenderTargetView(_outputView, new());
 
         NormalizeDepthTextures(device);
 

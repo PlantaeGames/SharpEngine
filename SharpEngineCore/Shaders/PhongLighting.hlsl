@@ -5,7 +5,7 @@ float4 CalculateAmbient(float4 ambientColor, float k)
 
 float CalculateDiffuse(float4 normal, float4 lightPos, float4 fragWorldPos, float k)
 {
-    float3 n = (float3) normal;
+    float3 n = normalize((float3) normal);
     float3 l = (float3) lightPos;
     float3 p = (float3) fragWorldPos;
     
@@ -20,7 +20,7 @@ float CalculateSpecular(
         float4 normal, float4 lightPos, float4 fragWorldPos, 
         float4 eyePos, float power, float k)
 {
-    float3 n = (float3) normal;
+    float3 n = normalize((float3) normal);
     float3 l = (float3) lightPos;
     float3 p = (float3) fragWorldPos;
     float3 eP = (float3) eyePos;

@@ -2,7 +2,7 @@
 
 public sealed class Material
 {
-    public readonly bool UseIndexedRendering = false;
+    public bool UseIndexedRendering = false;
 
     public Topology Topology;
 

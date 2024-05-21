@@ -78,6 +78,8 @@ internal sealed class ForwardPass : Pass
                     context.DrawIndexed(variation.IndexCount, 0);
                 else
                     context.Draw(variation.VertexCount, 0);
+
+                variation.Unbind(context);
             }
         }
     }
@@ -121,7 +123,7 @@ internal sealed class ForwardPass : Pass
             {
                 DepthEnabled = true,
                 DepthWriteMask = D3D11_DEPTH_WRITE_MASK.D3D11_DEPTH_WRITE_MASK_ALL,
-                DepthComparisionFunc = D3D11_COMPARISON_FUNC.D3D11_COMPARISON_GREATER
+                DepthComparisionFunc = D3D11_COMPARISON_FUNC.D3D11_COMPARISON_LESS
             });
 
         _staticVariation = new ForwardVariation(_outputView, _depthState, _depthView);

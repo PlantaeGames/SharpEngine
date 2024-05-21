@@ -4,7 +4,8 @@ internal sealed class DepthVariation : PipelineVariation
 {
     public DepthVariation(VertexShader vertexShader,
         PixelShader pixelShader,
-        Viewport viewport)
+        Viewport viewport,
+        DepthStencilState depthState)
     {
         VertexShaderStage = new VertexShaderStage()
         {
@@ -27,6 +28,13 @@ internal sealed class DepthVariation : PipelineVariation
             Flags = Rasterizer.BindFlags.Viewports
         };
 
-        _stages = [VertexShaderStage, PixelShaderStage, Rasterizer];
+        OutputMerger = new OutputMerger()
+        {
+            DepthStencilState = depthState,
+
+            Flags = OutputMerger.BindFlags.DepthStencilState
+        };
+
+        _stages = [VertexShaderStage, PixelShaderStage, Rasterizer, OutputMerger];
     }
 }

@@ -74,7 +74,7 @@ internal abstract partial class DeviceContext
         }
     }
 
-    public void OMSetDepthStencilState(DepthStencilState state)
+    public void OMSetDepthStencilState(DepthStencilState state, bool clear = false)
     {
         NativeOMSetDepthStencilState();
 
@@ -82,8 +82,11 @@ internal abstract partial class DeviceContext
         {
             fixed(ID3D11DeviceContext** ppContext = _pContext)
             {
+                var pState = clear == false ? state.GetNativePtr().Get() :
+                                              (ID3D11DepthStencilState*)IntPtr.Zero;
+
                 GraphicsException.SetInfoQueue();
-                (*ppContext)->OMSetDepthStencilState(state.GetNativePtr(), 1u);
+                (*ppContext)->OMSetDepthStencilState(pState, 1u);
 
                 Debug.Assert(GraphicsException.CheckIfAny() == false,
                     "Error in setting depth stencil state of output merger");

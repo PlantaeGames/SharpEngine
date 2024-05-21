@@ -15,7 +15,7 @@ internal sealed class DepthStencilState
         DepthStencilStateInfo info,
         Device device)
     {
-        _ptr = new(_ptr);
+        _ptr = new(pState);
         _device = device;
         Info = info;
     }

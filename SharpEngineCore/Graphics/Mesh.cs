@@ -43,14 +43,14 @@ public sealed class Mesh
                 new Vertex()
                 {
                     Position = new(-0.5f, -0.5f, 0, 1),
-                    Color = new(0f, 0, 1f, 0),
+                    Color = new(0f, 1, 0, 0),
                     Normal = new (),
                     TexCoord = new()
                 },
                 new Vertex()
                 {
                     Position = new(0.5f, -0.5f, 0, 1),
-                    Color = new(0f, 0, 1f, 0),
+                    Color = new(1, 0, 0, 0),
                     Normal = new (),
                     TexCoord = new()
                 }

@@ -224,8 +224,9 @@ internal sealed class MainWindow : Window
         material.VertexShader = vertex;
         material.PixelShader = pixel;
 
-        var mesh = Mesh.Cube();
+        var cube = Mesh.Cube();
         var plane = Mesh.Plane();
+        var triangle = Mesh.Triangle();
 
         var viewport = new Viewport()
         {
@@ -239,29 +240,29 @@ internal sealed class MainWindow : Window
 
         var camera = new CameraConstantData()
         {
-            Position = new(0, 0, -10, 0),
-            Rotation = new(0, 0, 0, 0),
+            Position = new(-3, 0, 0, 0),
+            Rotation = new(20, 0, 0, 0),
             Scale = new(1, 1, 1, 1),
             Attributes = new(viewport.AspectRatio, 70, 0.03f, 1000f)
         };
 
         var light = new LightData()
         {
-            Position = new(0, 0, -10, 0),
+            Position = new(0, 0, 0, 0),
             Rotation = new(0, 0, 0, 0),
             Scale = new(1, 1, 1, 1),
             AmbientColor = new(0.25f, 0.25f, 0.25f, 0.25f),
             Color = new(1, 1, 1, 1),
-            Intensity = new(1, 32, 1, 1),
+            Intensity = new(1, 32, 1, 0.25f),
             Attributes =  camera.Attributes
         };
 
 
-        var cubeObj = Graphics.Graphics.CreateGraphicsObject(material, mesh);
+        var cubeObj = Graphics.Graphics.CreateGraphicsObject(material, cube);
         cubeObj.UpdateTransform(new TransformConstantData()
         {
-            Position = new(2, 0, 0 , 0),
-            Scale = new (1,1,1,1)
+            Position = new(0, 0, 5, 0),
+            Scale = new(1, 1, 1, 1)
         });
 
         var planeObj = Graphics.Graphics.CreateGraphicsObject(material, plane);
@@ -269,17 +270,23 @@ internal sealed class MainWindow : Window
         planeObj.UpdateTransform(
             new TransformConstantData()
             {
-                Position = new(-2, 0, 0, 0),
-                Rotation = new(0, 0, 0, 0),
-                Scale = new(1, 1, 1, 1)
+                Position = new(0, 0, 10, 0),
+                Rotation = new(0, 0, 180, 0),
+                Scale = new(10, 10, 10, 1)
             });
 
+        var triangleObj = Graphics.Graphics.CreateGraphicsObject(material, triangle);
 
+        triangleObj.UpdateTransform(
+            new TransformConstantData()
+            {
+                Position = new(2, 0, 5, 0),
+                Rotation = new(0, 0, 0, 0),
+                Scale = new(0.3f, 0.3f, 0.3f, 1)
+            });
 
         var lightObj = Graphics.Graphics.CreateLightObject(light);
         var cameraObj = Graphics.Graphics.CreateCameraObject(camera, viewport);
-
-
     }
 
     protected override LRESULT WndProc(HWND hWND, uint msg, WPARAM wParam, LPARAM lParam)

@@ -8,7 +8,7 @@
 PixelInput main(VertexInput input)
 {
     PixelInput output = (PixelInput) 0;
-    output.color = input.color;
+    output.color = input.color; 
     output.camPosition = CamPosition;
     output.textureCoord = input.textureCoord;
     
