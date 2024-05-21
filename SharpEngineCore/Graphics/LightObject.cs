@@ -2,11 +2,11 @@
 
 public sealed class LightObject : Object
 {
-    internal LightData _lastUpdatedData;
+    public LightData Data { get; private set; }
 
     public void Update(LightData data)
     {
-        _lastUpdatedData = data;
+        Data = data;
     }
 
     protected override void OnPause() { }
@@ -16,6 +16,6 @@ public sealed class LightObject : Object
     internal LightObject(LightData data) :
         base()
     {
-        _lastUpdatedData = data;
+        Data = data;
     }
 }

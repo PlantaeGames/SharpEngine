@@ -55,7 +55,7 @@ internal sealed class ForwardPass : Pass
     {
         foreach (var cameraData in _cameraObjects)
         {
-            _currentCameraCBuffer.Update(cameraData._lastUpdatedData);
+            _currentCameraCBuffer.Update(cameraData.Data);
 
             var dynamicVariation = new ForwardDynamicVariation(cameraData.Viewport);
             dynamicVariation.Bind(context);
@@ -242,7 +242,7 @@ internal sealed class ForwardPass : Pass
                 continue;
             }
 
-            lightsData.Add(lightObjects[i]._lastUpdatedData);
+            lightsData.Add(lightObjects[i].Data);
         }
 
         var length = _lightsBuffer.Info.SurfaceSize.ToArea();
@@ -355,9 +355,20 @@ internal sealed class ForwardPass : Pass
                 });
         }
 
+        var transformBuffer = Buffer.CreateConstantBuffer(
+            device.CreateBuffer(new TransformConstantData().ToSurface(),
+            typeof(TransformConstantData),
+            new ResourceUsageInfo()
+            {
+                Usage = D3D11_USAGE.D3D11_USAGE_DYNAMIC,
+                BindFlags = D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER,
+                CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE
+            }));
+
         var vertexConstantBuffers = new List<ConstantBuffer>
         {
-            _currentCameraCBuffer
+            _currentCameraCBuffer,
+            transformBuffer
         };
 
         vertexConstantBuffers.AddRange(details.material.VertexConstantBuffers);

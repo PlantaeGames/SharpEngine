@@ -215,26 +215,17 @@ internal sealed class MainWindow : Window
         Graphics.Graphics.Initialize(this);
         _log.LogMessage("Initialized.");
 
-
         var material = new Material();
 
         var vertex = new ShaderModule("Shaders\\VertexShader.hlsl");
         var pixel = new ShaderModule("Shaders\\PixelShader.hlsl");
 
-        var transform = Graphics.Graphics.CreateConstantBuffer(
-            new TransformConstantData()
-            {
-                Position = new(),
-                Rotation = new(45, 0, 0, 0),
-                Scale = new(1, 1, 1, 1),
-            }, true);
-
-        material.VertexConstantBuffers = [transform];
         material.Topology = Topology.TriangleList;
         material.VertexShader = vertex;
         material.PixelShader = pixel;
 
         var mesh = Mesh.Cube();
+        var plane = Mesh.Plane();
 
         var viewport = new Viewport()
         {
@@ -267,8 +258,28 @@ internal sealed class MainWindow : Window
 
 
         var cubeObj = Graphics.Graphics.CreateGraphicsObject(material, mesh);
+        cubeObj.UpdateTransform(new TransformConstantData()
+        {
+            Position = new(2, 0, 0 , 0),
+            Scale = new (1,1,1,1)
+        });
+
+        var planeObj = Graphics.Graphics.CreateGraphicsObject(material, plane);
+
+        planeObj.UpdateTransform(
+            new TransformConstantData()
+            {
+                Position = new(-2, 0, 0, 0),
+                Rotation = new(0, 0, 0, 0),
+                Scale = new(1, 1, 1, 1)
+            });
+
+
+
         var lightObj = Graphics.Graphics.CreateLightObject(light);
         var cameraObj = Graphics.Graphics.CreateCameraObject(camera, viewport);
+
+
     }
 
     protected override LRESULT WndProc(HWND hWND, uint msg, WPARAM wParam, LPARAM lParam)

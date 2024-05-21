@@ -29,4 +29,12 @@ internal sealed class Rasterizer : IPipelineStage
             context.RSSetViewports(Viewports);
         }
     }
+
+    public void Unbind(DeviceContext context)
+    {
+        if (Flags.HasFlag(BindFlags.Viewports))
+        {
+            context.RSSetViewports(Viewports, true);
+        }
+    }
 }

@@ -21,4 +21,11 @@ internal abstract class PipelineVariation
             stage.Bind(context);
         }
     }
+    public void Unbind(DeviceContext context)
+    {
+        foreach (var stage in _stages)
+        {
+            stage.Unbind(context);
+        }
+    }
 }

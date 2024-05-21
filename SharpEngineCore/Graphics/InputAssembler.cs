@@ -36,6 +36,23 @@ internal sealed class InputAssembler : IPipelineStage
         }
     }
 
+    public void Unbind(DeviceContext context)
+    {
+        if (Flags.HasFlag(BindFlags.Layout))
+        {
+            context.IASetInputLayout(Layout, true);
+            context.IASetTopology(Layout.Info.Topology, true);
+        }
+        if (Flags.HasFlag(BindFlags.VertexBuffer))
+        {
+            context.IASetVertexBuffer([VertexBuffer], 0, true);
+        }
+        if (Flags.HasFlag(BindFlags.IndexBuffer))
+        {
+            context.IASetIndexBuffer(IndexBuffer, true);
+        }
+    }
+
     public InputAssembler(InputLayout layout,
                           VertexBuffer vertexBuffer,
                           IndexBuffer indexBuffer,

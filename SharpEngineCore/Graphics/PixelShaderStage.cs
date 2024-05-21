@@ -58,4 +58,27 @@ internal sealed class PixelShaderStage : IPipelineStage
             context.PSSetShaderResources(ShaderResourceViews, 0);
         }
     }
+
+    public void Unbind(DeviceContext context)
+    {
+        if (Flags.HasFlag(BindFlags.PixelShader))
+        {
+            context.PSSetShader(PixelShader, true);
+        }
+
+        if (Flags.HasFlag(BindFlags.ConstantBuffers))
+        {
+            context.PSSetConstantBuffers(ConstantBuffers, 0, true);
+        }
+
+        if (Flags.HasFlag(BindFlags.Samplers))
+        {
+            context.PSSetSamplers(Samplers, 1, true);
+        }
+
+        if (Flags.HasFlag(BindFlags.ShaderResourceViews))
+        {
+            context.PSSetShaderResources(ShaderResourceViews, 0, true);
+        }
+    }
 }

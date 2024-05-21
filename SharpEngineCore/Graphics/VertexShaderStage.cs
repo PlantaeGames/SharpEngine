@@ -60,4 +60,27 @@ internal sealed class VertexShaderStage : IPipelineStage
             context.VSSetSamplers(Samplers, 1);
         }
     }
+
+    public void Unbind(DeviceContext context)
+    {
+        if (Flags.HasFlag(BindFlags.VertexShader))
+        {
+            context.VSSetShader(VertexShader, true);
+        }
+
+        if (Flags.HasFlag(BindFlags.ConstantBuffers))
+        {
+            context.VSSetConstantBuffers(ConstantBuffers, 0, true);
+        }
+
+        if (Flags.HasFlag(BindFlags.ShaderResourceViews))
+        {
+            context.VSSetShaderResources(ShaderResourceViews, 0, true);
+        }
+
+        if (Flags.HasFlag(BindFlags.Samplers))
+        {
+            context.VSSetSamplers(Samplers, 1, true);
+        }
+    }
 }

@@ -1,14 +1,14 @@
 namespace SharpEngineCore.Graphics;
 public sealed class CameraObject : Object
 {
-    internal CameraConstantData _lastUpdatedData;
+    public CameraConstantData Data { get; private set; }
 
     public readonly Viewport Viewport;
     public float AspectRatio => Viewport.Info.Height / Viewport.Info.Width;
 
     public void UpdateCamera(CameraConstantData data)
     {
-        _lastUpdatedData = data;
+        Data = data;
     }
 
     protected override void OnPause() { }
@@ -19,6 +19,6 @@ public sealed class CameraObject : Object
         base()
     {
         Viewport = viewport;
-        _lastUpdatedData = data;
+        Data = data;
     }
 }

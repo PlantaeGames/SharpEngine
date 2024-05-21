@@ -52,10 +52,10 @@ internal sealed class DepthPass : Pass
             _lightPerspectiveBuffer.Update(
                 new LightTransformConstantData()
                 {
-                    Position = _lights[i]._lastUpdatedData.Position,
-                    Rotation = _lights[i]._lastUpdatedData.Rotation,
-                    LightType = _lights[i]._lastUpdatedData.LightType,
-                    Attributes = _lights[i]._lastUpdatedData.Attributes
+                    Position = _lights[i].Data.Position,
+                    Rotation = _lights[i].Data.Rotation,
+                    LightType = _lights[i].Data.LightType,
+                    Attributes = _lights[i].Data.Attributes
                 });
 
             foreach (var variation in _subVariations)

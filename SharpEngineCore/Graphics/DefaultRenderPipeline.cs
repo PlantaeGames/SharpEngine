@@ -29,11 +29,11 @@ internal sealed class DefaultRenderPipeline : RenderPipeline
     public override GraphicsObject CreateGraphicsObject(
         Device device, Material material, Mesh mesh)
     {
-        var variations = 
+        var data = 
             _forwardRenderPass.CreateVariations(device, material, mesh);
 
-        var graphicsObject = new GraphicsObject();
-        graphicsObject.AddVariations(variations);
+        var graphicsObject = new GraphicsObject(data.transformBuffer);
+        graphicsObject.AddVariations(data.variations);
 
         _graphicsObjects.Add(graphicsObject);
         return graphicsObject;

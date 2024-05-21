@@ -5,6 +5,91 @@ public sealed class Mesh
     public Vertex[] Vertices;
     public Index[] Indices;
 
+    public static Mesh Plane()
+    {
+        var plane = new Mesh();
+        var gen = new NormalGenerator();
+
+        plane.Vertices =
+            [
+                new Vertex()
+                {
+                    Position = new(0.5f, 0.5f, 0, 1),
+                    Color = new(1f, 0, 0, 0),
+                    Normal = new (),
+                    TexCoord = new()
+                },
+                new Vertex()
+                {
+                    Position = new(-0.5f, 0.5f, 0, 1),
+                    Color = new(0f, 1f, 0, 0),
+                    Normal = new (),
+                    TexCoord = new()
+                },
+                new Vertex()
+                {
+                    Position = new(0.5f, -0.5f, 0, 1),
+                    Color = new(0f, 0, 1f, 0),
+                    Normal = new (),
+                    TexCoord = new()
+                },
+                new Vertex()
+                {
+                    Position = new(-0.5f, 0.5f, 0, 1),
+                    Color = new(0f, 0, 1f, 0),
+                    Normal = new (),
+                    TexCoord = new()
+                },
+                new Vertex()
+                {
+                    Position = new(-0.5f, -0.5f, 0, 1),
+                    Color = new(0f, 0, 1f, 0),
+                    Normal = new (),
+                    TexCoord = new()
+                },
+                new Vertex()
+                {
+                    Position = new(0.5f, -0.5f, 0, 1),
+                    Color = new(0f, 0, 1f, 0),
+                    Normal = new (),
+                    TexCoord = new()
+                }
+            ];
+
+        plane.Indices =
+            [
+                new Index()
+                {
+                    Value = new (0)
+                },
+                new Index()
+                {
+                    Value = new (1)
+                },
+                new Index()
+                {
+                    Value = new (2)
+                },
+                new Index()
+                {
+                    Value = new (1)
+                },
+                new Index()
+                {
+                    Value = new (4)
+                },
+                new Index()
+                {
+                    Value = new (2)
+                }
+            ];
+
+        gen.GenerateForTriangles(ref plane.Vertices);
+
+        return plane;
+    }
+
+
     public static Mesh Triangle()
     {
         var triangle = new Mesh();

@@ -3,6 +3,15 @@
 public sealed class GraphicsObject : Object
 {
     private readonly List<PipelineVariation> _variations = new();
+    private readonly ConstantBuffer _transformBuffer;
+
+    public TransformConstantData Transform { get; private set; }
+
+    public void UpdateTransform(TransformConstantData data)
+    {
+        _transformBuffer.Update(data);
+        Transform = data;
+    }
 
     internal void AddVariations(PipelineVariation[] variations)
     {
@@ -31,7 +40,9 @@ public sealed class GraphicsObject : Object
         }
     }
 
-    internal GraphicsObject() :
+    internal GraphicsObject(ConstantBuffer transformBuffer) :
         base()
-    {}
+    {
+        _transformBuffer = transformBuffer;
+    }
 }

@@ -29,14 +29,18 @@ internal sealed class ForwardRenderPass : RenderPass
         _passes = [_depthPass, _forwardPass, _outputPass];
     }
 
-    public PipelineVariation[] CreateVariations(
+    public (PipelineVariation[] variations, 
+            ConstantBuffer transformBuffer) CreateVariations(
         Device device, Material material, Mesh mesh)
     {
         var forwardVariation = _forwardPass.CreateSubVariation(device, material, mesh);
-        var depthVariation = _depthPass.CreateSubVariation(device, material, mesh,
-            forwardVariation.VertexShaderStage.ConstantBuffers[1]);
 
-        return [forwardVariation, depthVariation];
+        var transformBuffer = forwardVariation.VertexShaderStage.ConstantBuffers[1];
+
+        var depthVariation = _depthPass.CreateSubVariation(device, material, mesh,
+            transformBuffer);
+
+        return ([forwardVariation, depthVariation], transformBuffer);
     }
 
     public override void OnGo(Device device, DeviceContext context)

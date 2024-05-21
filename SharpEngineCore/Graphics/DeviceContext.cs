@@ -9,7 +9,7 @@ internal abstract partial class DeviceContext
 {
     protected readonly ComPtr<ID3D11DeviceContext> _pContext;
 
-    public void VSSetSamplers(Sampler[] samplers, int startIndex)
+    public void VSSetSamplers(Sampler[] samplers, int startIndex, bool clear = false)
     {
         NativeVSSetSamplers();
 
@@ -19,6 +19,11 @@ internal abstract partial class DeviceContext
 
             for(var i = 0; i < samplers.Length; i++)
             {
+                if(clear)
+                {
+                    ppSamplers[i] = (ID3D11SamplerState*)IntPtr.Zero;
+                    continue;
+                }
                 ppSamplers[i] = samplers[i].GetNativePtr();
             }
 
@@ -86,7 +91,8 @@ internal abstract partial class DeviceContext
         }
     }
 
-    public void VSSetShaderResources(ShaderResourceView[] views, int startIndex)
+    public void VSSetShaderResources(ShaderResourceView[] views, int startIndex,
+        bool clear = false)
     {
         NativeVSSetShaderResources();
 
@@ -97,6 +103,11 @@ internal abstract partial class DeviceContext
             var pViews = stackalloc ID3D11ShaderResourceView*[count];
             for (var i = 0; i < count; i++)
             {
+                if(clear)
+                {
+                    pViews[i] = (ID3D11ShaderResourceView*)IntPtr.Zero;
+                    continue;
+                }
                 pViews[i] = views[i].GetNativePtr().Get();
             }
 
@@ -111,7 +122,8 @@ internal abstract partial class DeviceContext
         }
     }
 
-    public void VSSetConstantBuffers(ConstantBuffer[] buffers, int startIndex)
+    public void VSSetConstantBuffers(ConstantBuffer[] buffers, int startIndex, 
+        bool clear = false)
     {
         NativeVSConstantBuffers();
 
@@ -122,6 +134,11 @@ internal abstract partial class DeviceContext
             var pBuffers = stackalloc ID3D11Buffer*[count];
             for (var i = 0; i < count; i++)
             {
+                if(clear)
+                {
+                    pBuffers[i] = (ID3D11Buffer*)IntPtr.Zero;
+                    continue;
+                }
                 pBuffers[i] = buffers[i].GetNativePtr().Get();
             }
 
@@ -136,7 +153,8 @@ internal abstract partial class DeviceContext
         }
     }
 
-    public void PSSetConstantBuffers(ConstantBuffer[] buffers, int startIndex)
+    public void PSSetConstantBuffers(ConstantBuffer[] buffers, int startIndex,
+        bool clear = false)
     {
         NativePSSetConstantBuffers();
 
@@ -147,6 +165,11 @@ internal abstract partial class DeviceContext
             var pBuffers = stackalloc ID3D11Buffer*[count];
             for (var i = 0; i < count; i++)
             {
+                if(clear)
+                {
+                    pBuffers[i] = (ID3D11Buffer*)IntPtr.Zero;
+                    continue;
+                }
                 pBuffers[i] = buffers[i].GetNativePtr().Get();
             }
 
@@ -161,7 +184,7 @@ internal abstract partial class DeviceContext
         }
     }
 
-    public void PSSetSamplers(Sampler[] samplers, int startIndex)
+    public void PSSetSamplers(Sampler[] samplers, int startIndex, bool clear = false)
     {
         NativePSSetSamplers();
 
@@ -172,6 +195,11 @@ internal abstract partial class DeviceContext
             var pSamplers = stackalloc ID3D11SamplerState*[count];
             for (var i = 0; i < count; i++)
             {
+                if(clear)
+                {
+                    pSamplers[i] = (ID3D11SamplerState*)IntPtr.Zero;
+                    continue;
+                }
                 pSamplers[i] = samplers[i].GetNativePtr().Get();
             }
 
@@ -186,7 +214,8 @@ internal abstract partial class DeviceContext
         }
     }
 
-    public void PSSetShaderResources(ShaderResourceView[] views, int startIndex)
+    public void PSSetShaderResources(ShaderResourceView[] views, int startIndex,
+        bool clear = false)
     {
         NativePSSetShaderResources();
 
@@ -197,6 +226,10 @@ internal abstract partial class DeviceContext
             var pViews = stackalloc ID3D11ShaderResourceView*[count];
             for(var i = 0; i < count; i++)
             {
+                if(clear)
+                {
+                    pViews[i] = (ID3D11ShaderResourceView*)IntPtr.Zero;
+                }
                 pViews[i] = views[i].GetNativePtr().Get();
             }
 
@@ -318,7 +351,7 @@ internal abstract partial class DeviceContext
     }
 
     public void OMSetRenderTargets(RenderTargetView[] views,
-        DepthStencilView depthStencilView)
+        DepthStencilView depthStencilView, bool clear = false)
     {
         NativeOMSetRenderTargets();
 
@@ -327,14 +360,22 @@ internal abstract partial class DeviceContext
             var ppViews = stackalloc ID3D11RenderTargetView*[views.Length];
             for (var i = 0; i < views.Length; i++)
             {
+                if(clear)
+                {
+                    ppViews[i] = (ID3D11RenderTargetView*)IntPtr.Zero;
+                    continue;
+                }
                 ppViews[i] = views[i].GetNativePtr();
             }
+
+            var pDepthView = clear == false ? depthStencilView.GetNativePtr().Get() :
+                                              (ID3D11DepthStencilView*)IntPtr.Zero;
 
             fixed (ID3D11DeviceContext** ppContext = _pContext)
             {
                 GraphicsException.SetInfoQueue();
                 (*ppContext)->OMSetRenderTargets((uint)views.Length,
-                    ppViews, depthStencilView.GetNativePtr());
+                    ppViews, pDepthView);
 
                 Debug.Assert(GraphicsException.CheckIfAny() == false,
                     "Failed to set render target view to output merger");
@@ -342,7 +383,7 @@ internal abstract partial class DeviceContext
         }
     }
 
-    public void RSSetViewports(Viewport[] ports)
+    public void RSSetViewports(Viewport[] ports, bool clear = false)
     {
         NativeRSSetViewports();
 
@@ -351,6 +392,11 @@ internal abstract partial class DeviceContext
             var rPorts = new D3D11_VIEWPORT[ports.Length];
             for (var i = 0; i < ports.Length; i++)
             {
+                if(clear)
+                {
+                    rPorts[i] = new D3D11_VIEWPORT();
+                    continue;
+                }
                 rPorts[i] = ports[i].Info;
             }
 
@@ -374,13 +420,14 @@ internal abstract partial class DeviceContext
     /// Binds the pixel shader to the pipeline.
     /// </summary>
     /// <param name="shader"></param>
-    public void PSSetShader(PixelShader shader)
+    public void PSSetShader(PixelShader shader, bool clear = false)
     {
         NativePSSetShader();
 
         unsafe void NativePSSetShader()
         {
-            var pShader = shader.GetNativePtr().Get();
+            var pShader = clear == false ? shader.GetNativePtr().Get() :
+                                           (ID3D11PixelShader*)IntPtr.Zero;
 
             fixed (ID3D11DeviceContext** ppDeviceContext = _pContext)
             {
@@ -398,13 +445,14 @@ internal abstract partial class DeviceContext
     /// Binds vertex shader to pipeline
     /// </summary>
     /// <param name="shader">The vertex shader to bind</param>
-    public void VSSetShader(VertexShader shader)
+    public void VSSetShader(VertexShader shader, bool clear = false)
     {
         NativeVSSetShader();
 
         unsafe void NativeVSSetShader()
         {
-            var pShader = shader.GetNativePtr().Get();
+            var pShader = clear == false ? shader.GetNativePtr().Get() :
+                                           (ID3D11VertexShader*)IntPtr.Zero;
 
             fixed (ID3D11DeviceContext** ppDeviceContext = _pContext)
             {
@@ -424,13 +472,15 @@ internal abstract partial class DeviceContext
     /// <param name="vertexBuffers">The vertex buffers to bind.</param>
     /// <param name="startSlot">The slot to start binding from.</param>
     /// <remarks>Valid binding slots are 0 - 15.</remarks>
-    public void IASetIndexBuffer(IndexBuffer buffer)
+    public void IASetIndexBuffer(IndexBuffer buffer, bool clear = false)
     {
         NativeIASetVertexBuffer();
 
         unsafe void NativeIASetVertexBuffer()
         {
-            var pBuffer = buffer.GetNativePtr().Get();
+            var pBuffer = clear == false ? buffer.GetNativePtr().Get() :
+                                            (ID3D11Buffer*)IntPtr.Zero;
+
             var format = DXGI_FORMAT.DXGI_FORMAT_R32_UINT;
             var offset = 0u;
 
@@ -451,7 +501,7 @@ internal abstract partial class DeviceContext
     /// <param name="buffers">The vertex buffers to bind.</param>
     /// <param name="startSlot">The slot to start binding from.</param>
     /// <remarks>Valid binding slots are 0 - 15.</remarks>
-    public void IASetVertexBuffer(VertexBuffer[] buffers, int startSlot)
+    public void IASetVertexBuffer(VertexBuffer[] buffers, int startSlot, bool clear = false)
     {
         Debug.Assert(buffers.Length > 0,
             "Vertex buffers can't be zero to bind to Input Assembler.");
@@ -488,17 +538,20 @@ internal abstract partial class DeviceContext
         }
     }
 
-    public void IASetTopology(Topology topology)
+    public void IASetTopology(Topology topology, bool clear = false)
     {
         NativeIASetTopology();
 
         unsafe void NativeIASetTopology()
         {
+            var logy = clear == false? (D3D_PRIMITIVE_TOPOLOGY)topology :
+                                       (D3D_PRIMITIVE_TOPOLOGY)Topology.None;
+
             fixed (ID3D11DeviceContext** ppContext = _pContext)
             {
                 GraphicsException.SetInfoQueue();
 
-                (*ppContext)->IASetPrimitiveTopology((D3D_PRIMITIVE_TOPOLOGY)topology);
+                (*ppContext)->IASetPrimitiveTopology(logy);
 
                 Debug.Assert(GraphicsException.CheckIfAny() == false,
                     "Error in setting input assembler primitive topology");
@@ -506,7 +559,7 @@ internal abstract partial class DeviceContext
         }
     }
 
-    public void IASetInputLayout(InputLayout inputLayout)
+    public void IASetInputLayout(InputLayout inputLayout, bool clear = false)
     {
         NativeIASetInputLayout();
 
@@ -514,8 +567,11 @@ internal abstract partial class DeviceContext
         {
             fixed (ID3D11DeviceContext** ppContext = _pContext)
             {
+                var pLayout = clear == false ? inputLayout.GetNativePtr().Get() :
+                                      (ID3D11InputLayout*)IntPtr.Zero;
+
                 GraphicsException.SetInfoQueue();
-                (*ppContext)->IASetInputLayout(inputLayout.GetNativePtr());
+                (*ppContext)->IASetInputLayout(pLayout);
 
                 Debug.Assert(GraphicsException.CheckIfAny() == false,
                     "Failed to set Input Assembler Layout.");
