@@ -4,6 +4,11 @@ namespace SharpEngineCore.Graphics;
 
 internal static class TypeExtensions
 {
+    public static bool Match<T>(this Type type)
+    {
+        return typeof(T).FullName == type.FullName;
+    }
+
     /// <summary>
     /// Gets the size in bytes of type.
     /// </summary>

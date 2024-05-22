@@ -565,13 +565,17 @@ internal sealed class Device
     /// <returns>Created 2d texture.</returns>
     /// <exception cref="GraphicsException"></exception>
     /// <remarks>If the format set unknown the format will be taken from surface channels.</remarks>
-    public Texture2D CreateTexture2D(FSurface surface, ResourceUsageInfo usageInfo,
+    public Texture2D CreateTexture2D(Surface surface, ResourceUsageInfo usageInfo,
         DXGI_FORMAT format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN)
     {
-        var formatToUse = format == DXGI_FORMAT.DXGI_FORMAT_UNKNOWN ?
-                                    surface.Channels.ToFFormat() :
-                                    format;
+        bool isF = surface.GetType().Match<FSurface>();
+        bool isU = surface.GetType().Match<USurface>();
+        Debug.Assert(isF || isU,
+            "Unknown / External Surface type is being used.");
 
+        var formatToUse = format == DXGI_FORMAT.DXGI_FORMAT_UNKNOWN ?
+                                    isF? surface.Channels.ToFFormat() : surface.Channels.ToUFormat() :
+                                    format;
 
         return new Texture2D(NativeCreateTexture2D(), new TextureInfo()
         {
