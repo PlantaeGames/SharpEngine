@@ -6,23 +6,27 @@ internal sealed class OutputMerger : IPipelineStage
     {
         None = 0,
         RenderTargetView = 1 << 1,
-        DepthStencilState = 1 << 2
+        DepthStencilState = 1 << 2,
+        UnorderedAccessViews = 1 << 3
     }
 
     public RenderTargetView[] RenderTargetViews { get; init; }
     public DepthStencilState DepthStencilState { get; init; }
     public DepthStencilView DepthStencilView { get; init; }
+    public UnorderedAccessView[] UnorderedAccessViews { get; init; }
 
     public BindFlags Flags { get; init; }
 
     public OutputMerger(RenderTargetView[] renderTargetViews,
         DepthStencilState depthStencilState,
         DepthStencilView depthStencilView,
+        UnorderedAccessView[] unorderedAccessViews,
         BindFlags flags)
     {
         RenderTargetViews = renderTargetViews;
         DepthStencilState = depthStencilState;
         DepthStencilView = depthStencilView;
+        UnorderedAccessViews = unorderedAccessViews;
 
         Flags = flags;
     }
@@ -32,7 +36,8 @@ internal sealed class OutputMerger : IPipelineStage
 
     public void Bind(DeviceContext context)
     {
-        if(Flags.HasFlag(BindFlags.RenderTargetView))
+        if(Flags.HasFlag(BindFlags.RenderTargetView) &&
+          !Flags.HasFlag(BindFlags.UnorderedAccessViews))
         {
             context.OMSetRenderTargets(RenderTargetViews,
                 DepthStencilView);
@@ -42,11 +47,18 @@ internal sealed class OutputMerger : IPipelineStage
         {
             context.OMSetDepthStencilState(DepthStencilState);
         }
+
+        if (Flags.HasFlag(BindFlags.UnorderedAccessViews))
+        {
+            context.OMSetRenderTargetsAndUnorderedAccessViews(
+                RenderTargetViews, DepthStencilView, UnorderedAccessViews, 0);
+        }
     }
 
     public void Unbind(DeviceContext context)
     {
-        if (Flags.HasFlag(BindFlags.RenderTargetView))
+        if (Flags.HasFlag(BindFlags.RenderTargetView) &&
+            !Flags.HasFlag(BindFlags.UnorderedAccessViews))
         {
             context.OMSetRenderTargets(RenderTargetViews,
                 DepthStencilView, true);
@@ -55,6 +67,13 @@ internal sealed class OutputMerger : IPipelineStage
         if (Flags.HasFlag(BindFlags.DepthStencilState))
         {
             context.OMSetDepthStencilState(DepthStencilState, true);
+        }
+
+        if (Flags.HasFlag(BindFlags.UnorderedAccessViews))
+        {
+
+            context.OMSetRenderTargetsAndUnorderedAccessViews(
+                RenderTargetViews, DepthStencilView, UnorderedAccessViews, 0, true);
         }
     }
 }

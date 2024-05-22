@@ -5,11 +5,11 @@ internal sealed class PixelShaderStage : IPipelineStage
     [Flags]
     public enum BindFlags
     {
-        None = 0,
-        PixelShader = 1 << 1,
-        ConstantBuffers = 1 << 2,
-        Samplers = 1 << 3,
-        ShaderResourceViews = 1 << 4
+        None                    = 0,
+        PixelShader             = 1 << 1,
+        ConstantBuffers         = 1 << 2,
+        Samplers                = 1 << 3,
+        ShaderResourceViews     = 1 << 4
     }
     public PixelShader PixelShader { get; init; }
     public ConstantBuffer[] ConstantBuffers { get; init; }
