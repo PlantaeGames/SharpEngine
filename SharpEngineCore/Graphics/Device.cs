@@ -22,7 +22,6 @@ internal sealed class Device
 
     private D3D_FEATURE_LEVEL _featureLevel;
 
-    [Obsolete("FAILED, NOT DONE YET.")]
     public UnorderedAccessView CreateUnorderedAccessView(Resource resource,
                                                          ViewCreationInfo info)
     {
@@ -45,8 +44,8 @@ internal sealed class Device
             {
                 case ViewResourceType.Buffer:
                     desc.ViewDimension = D3D11_UAV_DIMENSION.D3D11_UAV_DIMENSION_BUFFER;
-                    // TODO: UNSAFE / FAILED.
-
+                    desc.Buffer.NumElements = (uint)(info.BufferBytesSize / info.BufferByteStride);
+                    desc.Buffer.FirstElement = 0;
                     break;
                 case ViewResourceType.Texture2D:
                     desc.ViewDimension = D3D11_UAV_DIMENSION.D3D11_UAV_DIMENSION_TEXTURE2D;

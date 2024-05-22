@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Data.SqlTypes;
+using System.Diagnostics;
 
 using TerraFX.Interop.DirectX;
 using TerraFX.Interop.Windows;
@@ -8,6 +9,54 @@ namespace SharpEngineCore.Graphics;
 internal abstract partial class DeviceContext
 {
     protected readonly ComPtr<ID3D11DeviceContext> _pContext;
+
+    public void OMSetRenderTargetsAndUnorderedAccessViews(RenderTargetView[] renderTargetViews,
+        DepthStencilView depthStencilView,
+        UnorderedAccessView[] unorderedAccessViews, int uavStartSlot, bool clear = false)
+    {
+        NativeOMSetRenderTargetsAndUnorderedAccessViews();
+
+        unsafe void NativeOMSetRenderTargetsAndUnorderedAccessViews()
+        {
+            var pDepthView = clear == false ? depthStencilView.GetNativePtr().Get() :
+                                             (ID3D11DepthStencilView*)IntPtr.Zero;
+
+            var ppUAVViews = stackalloc ID3D11UnorderedAccessView*[unorderedAccessViews.Length];
+            var ppTargetViews = stackalloc ID3D11RenderTargetView*[unorderedAccessViews.Length];
+
+            for (var i = 0; i < unorderedAccessViews.Length; i++)
+            {
+                if(clear)
+                {
+                    ppUAVViews[i] = (ID3D11UnorderedAccessView*)IntPtr.Zero;
+                    continue;
+                }
+            }
+
+            for(var i =0; i < renderTargetViews.Length; i++)
+            {
+                if(clear)
+                {
+                    ppTargetViews[i] = (ID3D11RenderTargetView*)IntPtr.Zero;
+                    continue;
+                }
+            }
+
+            fixed (ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+                (*ppContext)->OMSetRenderTargetsAndUnorderedAccessViews(
+                    (uint)renderTargetViews.Length, ppTargetViews,
+                    pDepthView,
+                    (uint)uavStartSlot, (uint)unorderedAccessViews.Length,
+                    ppUAVViews, (uint*)IntPtr.Zero);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Errors in setting render targets and unordered " +
+                    "access views to output merger.");
+            }
+        }
+    }
 
     public void VSSetSamplers(Sampler[] samplers, int startIndex, bool clear = false)
     {

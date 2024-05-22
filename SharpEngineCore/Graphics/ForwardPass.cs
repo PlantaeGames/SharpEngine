@@ -86,6 +86,21 @@ internal sealed class ForwardPass : Pass
 
     public override void OnInitialize(Device device, DeviceContext context)
     {
+        var testBuffer = device.CreateBuffer(new FSurface(new Size(16, 1)),
+            typeof(FColor1), new ResourceUsageInfo()
+            {
+                Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
+                BindFlags = D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE
+            });
+        var testUAV = device.CreateUnorderedAccessView(testBuffer,
+            new ViewCreationInfo()
+            {
+                BufferBytesSize = testBuffer.Info.BytesSize,
+                BufferByteStride = testBuffer.Info.ByteStride,
+                ViewResourceType = ViewResourceType.Buffer,
+                Format = DXGI_FORMAT.DXGI_FORMAT_R32_FLOAT
+            });
+
         OutputTexture = device.CreateTexture2D(
             new FSurface(_resolution, Channels.Quad),
             new ResourceUsageInfo()
