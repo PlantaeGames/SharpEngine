@@ -309,16 +309,16 @@ internal sealed class ForwardPass : Pass
         pixelResourceViews.AddRange(_shadowSRVS);
         for (var x = 0; x < details.material.PixelTextures.Length; x++)
         {
-            pixelResourceViews[x] = device.CreateShaderResourceView(
+            pixelResourceViews.Add(device.CreateShaderResourceView(
                 details.material.PixelTextures[x],
                 new ViewCreationInfo()
                 {
                     Format = details.material.PixelTextures[x].Info.Format,
-                });
+                }));
         }
         for (var x = 0; x < details.material.PixelBuffers.Length; x++)
         {
-            pixelResourceViews[x] = device.CreateShaderResourceView(
+            pixelResourceViews.Add(device.CreateShaderResourceView(
                 details.material.PixelBuffers[x],
                 new ViewCreationInfo()
                 {
@@ -326,7 +326,7 @@ internal sealed class ForwardPass : Pass
                     BufferByteStride = details.material.PixelBuffers[x].Info.ByteStride,
                     BufferBytesSize = details.material.PixelBuffers[x].Info.BytesSize,
                     ViewResourceType = ViewResourceType.Buffer
-                });
+                }));
         }
 
         var pixelSamplers = new List<Sampler>();
@@ -337,16 +337,16 @@ internal sealed class ForwardPass : Pass
         vertexResourceViews.Add(_lightsSRV);
         for (var x = 0; x < details.material.VertexTextures.Length; x++)
         {
-            vertexResourceViews[x] = device.CreateShaderResourceView(
+            vertexResourceViews.Add(device.CreateShaderResourceView(
                 details.material.VertexTextures[x],
                 new ViewCreationInfo()
                 {
                     Format = details.material.VertexTextures[x].Info.Format,
-                });
+                }));
         }
         for (var x = 0; x < details.material.VertexBuffers.Length; x++)
         {
-            vertexResourceViews[x] = device.CreateShaderResourceView(
+            vertexResourceViews.Add(device.CreateShaderResourceView(
                 details.material.VertexBuffers[x],
                 new ViewCreationInfo()
                 {
@@ -354,7 +354,7 @@ internal sealed class ForwardPass : Pass
                     BufferByteStride = details.material.VertexBuffers[x].Info.ByteStride,
                     BufferBytesSize = details.material.VertexBuffers[x].Info.BytesSize,
                     ViewResourceType = ViewResourceType.Buffer
-                });
+                }));
         }
 
         var transformBuffer = Buffer.CreateConstantBuffer(

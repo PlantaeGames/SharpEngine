@@ -232,6 +232,7 @@ internal sealed class Device
             desc.AddressW = info.AddressMode;
             desc.BorderColor = new D3D11_SAMPLER_DESC._BorderColor_e__FixedBuffer()
                                 { e0 = info.BorderColor.r };
+            desc.ComparisonFunc = info.ComparisionFunc;
 
             var pSampler = new ComPtr<ID3D11SamplerState>();
             fixed(ID3D11Device** ppDevice = _pDevice)

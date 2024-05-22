@@ -42,7 +42,7 @@ public sealed class FSurface : Surface
         Debug.Assert(size.IsEmpty == false,
             "Surface can't have width or height 0.");
 
-        switch (Channels)
+        switch (channels)
         {
             case Channels.Single:
                 _unitFragment = new SharpEngineCore.Graphics.FColor1();
@@ -119,9 +119,11 @@ public sealed class FSurface : Surface
 
     public void SetFragment(Point point, IFragmentable fragmentable)
     {
-        Debug.Assert(point.X + fragmentable.GetFragmentsCount() <= Size.Width &&
-                     point.Y + fragmentable.GetFragmentsCount() <= Size.Height,
+        Debug.Assert(point.X <= Size.Width &&
+                     point.Y <= Size.Height,
             "Coordinates can't exceed surface dimensions.");
+        Debug.Assert(fragmentable.GetFragmentsCount() <= (int)Channels,
+            "Desired operation will write memory outside bounds.");
 
         NativeSetColor();
 

@@ -4,10 +4,14 @@
 #include "PhongLighting.hlsl"
 #include "ShadowMapping.hlsl"
 
+Texture2D<float4> Albedo : register(t9);
+SamplerState AlbedoSampler : register(s9);
+
+
 float4 main(PixelInput input) : SV_Target
 {
     float4 color = input.color;
-    //color = 0.3;
+    color = Albedo.Sample(AlbedoSampler, (float2)input.textureCoord);
     //return color;
     
     float4 ambient = 0;

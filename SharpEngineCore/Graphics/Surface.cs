@@ -1,6 +1,7 @@
-﻿using SharpEngineCore.Utilities;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
+
+using SharpEngineCore.Utilities;
 
 namespace SharpEngineCore.Graphics;
 

@@ -223,6 +223,12 @@ internal sealed class MainWindow : Window
         Graphics.Graphics.Initialize(this);
         _log.LogMessage("Initialized.");
 
+        var surface = new FSurface( new(256, 256), Channels.Quad);
+        surface.Clear(new FColor4(0.4f, 0f, 0f, 1f));
+
+        var albedo = Graphics.Graphics.CreateTexture2D(surface);
+        var sampler = Graphics.Graphics.CreateSampler(true);
+
         var material = new Material();
 
         var vertex = new ShaderModule("Shaders\\VertexShader.hlsl");
@@ -231,6 +237,9 @@ internal sealed class MainWindow : Window
         material.Topology = Topology.TriangleList;
         material.VertexShader = vertex;
         material.PixelShader = pixel;
+
+        material.PixelTextures = [albedo];
+        material.PixelSamplers = [sampler];
 
         var cube = Mesh.Cube();
         var plane = Mesh.Plane();

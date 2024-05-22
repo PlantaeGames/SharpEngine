@@ -2,7 +2,7 @@
 
 public enum Channels
 {
-    Single,
+    Single = 1,
     Double,
     Triple,
     Quad

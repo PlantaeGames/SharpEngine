@@ -72,7 +72,7 @@ public static class Graphics
             new SamplerInfo()
             {
                 AddressMode = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_CLAMP,
-                Filter = pointFiltering? D3D11_FILTER.D3D11_FILTER_COMPARISON_MIN_MAG_MIP_POINT :
+                Filter = pointFiltering? D3D11_FILTER.D3D11_FILTER_MIN_MAG_MIP_POINT :
                                          D3D11_FILTER.D3D11_FILTER_ANISOTROPIC
             });
     }
