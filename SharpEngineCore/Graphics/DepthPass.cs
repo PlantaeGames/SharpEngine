@@ -112,12 +112,16 @@ internal sealed class DepthPass : Pass
         AddDepthTextures(device, _maxLightsCount);
 
         OutputTexture = device.CreateTexture2D(
-            new FSurface(new(SHADOW_MAP_WIDTH, SHADOOW_MAP_HEIGHT), Channels.Quad),
-            new ResourceUsageInfo()
+            [new FSurface(new(SHADOW_MAP_WIDTH, SHADOOW_MAP_HEIGHT), Channels.Quad)],
+            new TextureCreationInfo()
             {
-                Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
-                BindFlags = D3D11_BIND_FLAG.D3D11_BIND_RENDER_TARGET
-            }, DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM);
+                Format = DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM,
+                Usage = new ResourceUsageInfo()
+                {
+                    Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
+                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_RENDER_TARGET
+                }
+            });
 
         _outputView = device.CreateRenderTargetView(OutputTexture,
             new ViewCreationInfo()
@@ -178,14 +182,17 @@ internal sealed class DepthPass : Pass
         for (var i = 0; i < count; i++)
         {
             var depthTexture = device.CreateTexture2D(
-                new FSurface(new(SHADOW_MAP_WIDTH, SHADOOW_MAP_HEIGHT)),
-                new ResourceUsageInfo()
+                [new FSurface(new(SHADOW_MAP_WIDTH, SHADOOW_MAP_HEIGHT))],
+                new TextureCreationInfo()
                 {
-                    Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
-                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_DEPTH_STENCIL |
+                    Format = DXGI_FORMAT.DXGI_FORMAT_R32_TYPELESS,
+                    Usage = new ResourceUsageInfo()
+                    {
+                        Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
+                        BindFlags = D3D11_BIND_FLAG.D3D11_BIND_DEPTH_STENCIL |
                                 D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE
-                },
-                DXGI_FORMAT.DXGI_FORMAT_R32_TYPELESS);
+                    }
+                });
 
             DepthTextures.Add(depthTexture);
 

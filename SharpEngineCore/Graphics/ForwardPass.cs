@@ -87,13 +87,16 @@ internal sealed class ForwardPass : Pass
     public override void OnInitialize(Device device, DeviceContext context)
     {
         OutputTexture = device.CreateTexture2D(
-            new FSurface(_resolution, Channels.Quad),
-            new ResourceUsageInfo()
-            {
-                Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
-                BindFlags = D3D11_BIND_FLAG.D3D11_BIND_RENDER_TARGET
-            },
-            DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM);
+            [new FSurface(_resolution, Channels.Quad)],
+            new TextureCreationInfo()
+            { 
+                Format = DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM,
+                Usage = new ResourceUsageInfo()
+                {
+                    Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
+                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_RENDER_TARGET
+                }
+            });
 
         _outputView = device.CreateRenderTargetView(
             OutputTexture,
@@ -103,13 +106,16 @@ internal sealed class ForwardPass : Pass
             });
 
         _depthTexture = device.CreateTexture2D(
-            new FSurface(_resolution),
-            new ResourceUsageInfo()
+            [new FSurface(_resolution)],
+            new TextureCreationInfo()
             {
-                Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
-                BindFlags = D3D11_BIND_FLAG.D3D11_BIND_DEPTH_STENCIL
-            },
-            DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT);
+                Format = DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT,
+                Usage = new ResourceUsageInfo()
+                {
+                    Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
+                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_DEPTH_STENCIL
+                }
+            });
 
         _depthView = device.CreateDepthStencilView(
             _depthTexture,

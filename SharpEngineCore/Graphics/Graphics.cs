@@ -57,18 +57,21 @@ public static class Graphics
 
     public static Texture2D CreateTexture2D(FSurface surface, bool mutable = false)
     {
-        return Device.CreateTexture2D(surface,
-            new ResourceUsageInfo()
+        return Device.CreateTexture2D([surface],
+            new TextureCreationInfo()
             {
-                CPUAccessFlags = mutable? 
-                D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_READ |
-                D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE :
-                0,
+                Usage = new ResourceUsageInfo()
+                {
+                    CPUAccessFlags = mutable ?
+                        D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_READ |
+                        D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE :
+                        0,
 
-                BindFlags = D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE,
+                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE,
 
-                Usage = mutable ? D3D11_USAGE.D3D11_USAGE_DYNAMIC :
+                    Usage = mutable ? D3D11_USAGE.D3D11_USAGE_DYNAMIC :
                                  D3D11_USAGE.D3D11_USAGE_IMMUTABLE
+                }
             });
     }
 

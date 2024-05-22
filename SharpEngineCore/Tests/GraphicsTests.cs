@@ -96,11 +96,14 @@ internal sealed class GraphicsTests
         // creating test texture 2d
         using var surface = new FSurface(new Size(256, 256));
         _logger.LogHeader($"Creating test texture of {surface.Size}");
-        var texture = _device.CreateTexture2D(surface,
-            new ResourceUsageInfo()
+        var texture = _device.CreateTexture2D([surface],
+            new TextureCreationInfo()
             {
-                Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE,
-                BindFlags = D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE,
+                Usage = new ResourceUsageInfo()
+                {
+                    Usage = D3D11_USAGE.D3D11_USAGE_IMMUTABLE,
+                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE,
+                }
             });
 
         _logger.LogMessage("Test Texture Created.");

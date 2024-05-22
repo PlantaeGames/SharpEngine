@@ -185,13 +185,20 @@ internal sealed class Device
                     desc.ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_BUFFER;
                     desc.Buffer.FirstElement = (uint)0;
                     desc.Buffer.NumElements = (uint)(info.BufferBytesSize / info.BufferByteStride);
-                    //desc.Buffer.ElementOffset = 0;
-                    //desc.Buffer.ElementWidth = (uint)info.BufferByteStride;
                     break;
                 case ViewResourceType.Texture2D:
-                    desc.ViewDimension = D3D_SRV_DIMENSION.D3D10_1_SRV_DIMENSION_TEXTURE2D;
+                    desc.ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_TEXTURE2D;
                     desc.Texture2D.MostDetailedMip = 0;
-                    desc.Texture2D.MipLevels = 1;
+                    desc.Texture2D.MipLevels = (uint)info.TextureMipLevels;
+                    unchecked
+                    {
+                        desc.Texture2D.MipLevels = (uint)-1;
+                    }
+                    break;
+                case ViewResourceType.CubeMap:
+                    desc.ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_TEXTURECUBE;
+                    desc.TextureCube.MostDetailedMip = 0;
+                    desc.TextureCube.MipLevels = (uint)info.TextureMipLevels;
                     break;
                 default:
                     pDesc = (D3D11_SHADER_RESOURCE_VIEW_DESC*)IntPtr.Zero;
@@ -565,48 +572,78 @@ internal sealed class Device
     /// <returns>Created 2d texture.</returns>
     /// <exception cref="GraphicsException"></exception>
     /// <remarks>If the format set unknown the format will be taken from surface channels.</remarks>
-    public Texture2D CreateTexture2D(Surface surface, ResourceUsageInfo usageInfo,
-        DXGI_FORMAT format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN)
+    public Texture2D CreateTexture2D(Surface[] surfaces, TextureCreationInfo info)
     {
-        bool isF = surface.GetType().Match<FSurface>();
-        bool isU = surface.GetType().Match<USurface>();
+        Debug.Assert(surfaces.Length > 0,
+            "Given surfaces to make textures are 0.");
+        // validating surface types and sizes
+        bool isF = surfaces[0].GetType().Match<FSurface>();
+        bool isU = surfaces[0].GetType().Match<USurface>();
+        var size = surfaces[0].Size;
+        var channels = surfaces[0].Channels;
+#if DEBUG
+        for(var i = 1; i < surfaces.Length; i++)
+        {
+            bool f = surfaces[0].GetType().Match<FSurface>();
+            bool u = surfaces[0].GetType().Match<USurface>();
+            var dim = surfaces[0].Size;
+            var chans = surfaces[0].Channels;
+
+            Debug.Assert(isF == f,
+                "Surfaces types does not match with each other.");
+            Debug.Assert(isU == u,
+                "Surfaces types does not match with each other.");
+            Debug.Assert(size == dim,
+                "Surfaces sizes does not match with each other.");
+            Debug.Assert(channels == chans,
+                "Surfaces channels does not match with each other.");
+        }
+#endif
+
         Debug.Assert(isF || isU,
             "Unknown / External Surface type is being used.");
-
-        var formatToUse = format == DXGI_FORMAT.DXGI_FORMAT_UNKNOWN ?
-                                    isF? surface.Channels.ToFFormat() : surface.Channels.ToUFormat() :
-                                    format;
+    
+        var formatToUse = info.Format == DXGI_FORMAT.DXGI_FORMAT_UNKNOWN ?
+                                                isF? surfaces[0].Channels.ToFFormat() : 
+                                                     surfaces[0].Channels.ToUFormat() :
+                                         info.Format;
 
         return new Texture2D(NativeCreateTexture2D(), new TextureInfo()
         {
-            Size = surface.Size,
-            Channels = surface.Channels,
+            SubtexturesCount = surfaces.Length,
+            MipLevels = info.MipLevels,
+            Size = size,
+            Channels = channels,
             Format = formatToUse,
-            UsageInfo = usageInfo
+            UsageInfo = info.Usage
         },
         this);
 
         unsafe ComPtr<ID3D11Texture2D> NativeCreateTexture2D()
         {
             var desc = new D3D11_TEXTURE2D_DESC();
-            desc.Width = (uint)surface.Size.Width;
-            desc.Height = (uint)surface.Size.Height;
-            desc.MipLevels = 1u;
-            desc.ArraySize = 1u;
+            desc.Width = (uint)size.Width;
+            desc.Height = (uint)size.Height;
+            desc.MipLevels = (uint)info.MipLevels;
+            desc.ArraySize = (uint)surfaces.Length;
             desc.SampleDesc = new DXGI_SAMPLE_DESC
             {
                 Quality = 0u,
                 Count = 1u
             };
-            desc.MiscFlags = (uint)usageInfo.MiscFlags;
+            desc.MiscFlags = (uint)info.Usage.MiscFlags;
             desc.Format = formatToUse;
-            desc.Usage = usageInfo.Usage;
-            desc.BindFlags = (uint)usageInfo.BindFlags;
-            desc.CPUAccessFlags = (uint)usageInfo.CPUAccessFlags;
+            desc.Usage = info.Usage.Usage;
+            desc.BindFlags = (uint)info.Usage.BindFlags;
+            desc.CPUAccessFlags = (uint)info.Usage.CPUAccessFlags;
 
-            var initialData = new D3D11_SUBRESOURCE_DATA();
-            initialData.pSysMem = surface.GetNativePointer().ToPointer();
-            initialData.SysMemPitch = (uint)surface.GetSliceSize();
+            var pInitialData = stackalloc D3D11_SUBRESOURCE_DATA[surfaces.Length];
+            for (var i = 0; i < surfaces.Length; i++)
+            {
+                pInitialData[i] = new D3D11_SUBRESOURCE_DATA();
+                pInitialData[i].pSysMem = surfaces[i].GetNativePointer().ToPointer();
+                pInitialData[i].SysMemPitch = (uint)surfaces[i].GetSliceSize();
+            }
 
             fixed (ID3D11Device** ppDevice = _pDevice)
             {
@@ -615,7 +652,7 @@ internal sealed class Device
                 {
                     GraphicsException.SetInfoQueue();
                     var result = (*ppDevice)->CreateTexture2D(&desc, 
-                        &initialData, ppTexture2D);
+                        pInitialData, ppTexture2D);
 
                     if(result.FAILED)
                     {

@@ -4,5 +4,6 @@ public enum ViewResourceType
 {
     None,
     Buffer,
-    Texture2D
+    Texture2D,
+    CubeMap
 }

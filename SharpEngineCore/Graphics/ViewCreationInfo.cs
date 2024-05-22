@@ -4,6 +4,7 @@ namespace SharpEngineCore.Graphics;
 
 internal readonly struct ViewCreationInfo
 {
+    public readonly int TextureMipLevels { get; init; }
     public readonly int BufferByteStride { get; init; }
     public readonly int BufferBytesSize { get; init; }
     public readonly ViewResourceType ViewResourceType { get; init; }
