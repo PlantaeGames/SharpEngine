@@ -25,7 +25,9 @@ public static class Graphics
         return Renderer.CreateCameraObject(data, viewport);
     }
 
-    public static Buffer CreateBuffer(Surface surface, Type layout, bool constant = false,
+    public static Buffer CreateBuffer(Surface surface, Type layout, 
+            bool constant = false,
+            bool structured = true,
             bool mutable = false)
     {
         return Device.CreateBuffer(
@@ -33,13 +35,17 @@ public static class Graphics
                 layout,
                 new ResourceUsageInfo()
                 {
-                    CPUAccessFlags = mutable? D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE :
+                    CPUAccessFlags = mutable ? D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE :
                                               0,
 
                     BindFlags = constant ? D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER :
                                            D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE,
-                    Usage = mutable? D3D11_USAGE.D3D11_USAGE_DYNAMIC :
-                                     D3D11_USAGE.D3D11_USAGE_IMMUTABLE
+                    Usage = mutable ? D3D11_USAGE.D3D11_USAGE_DYNAMIC :
+                                     D3D11_USAGE.D3D11_USAGE_IMMUTABLE,
+
+                    MiscFlags = structured && !constant?
+                                    D3D11_RESOURCE_MISC_FLAG.D3D11_RESOURCE_MISC_BUFFER_STRUCTURED :
+                                    0
                 });
     }
 
