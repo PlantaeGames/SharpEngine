@@ -230,6 +230,8 @@ internal sealed class Device
             desc.AddressU = info.AddressMode;
             desc.AddressV = info.AddressMode;
             desc.AddressW = info.AddressMode;
+            desc.BorderColor = new D3D11_SAMPLER_DESC._BorderColor_e__FixedBuffer()
+                                { e0 = info.BorderColor.r };
 
             var pSampler = new ComPtr<ID3D11SamplerState>();
             fixed(ID3D11Device** ppDevice = _pDevice)

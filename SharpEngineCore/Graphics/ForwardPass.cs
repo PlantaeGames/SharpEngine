@@ -218,7 +218,7 @@ internal sealed class ForwardPass : Pass
                 new SamplerInfo()
                 {
                     Filter = D3D11_FILTER.D3D11_FILTER_MIN_MAG_MIP_POINT,
-                    AddressMode = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_CLAMP
+                    AddressMode = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_BORDER
                 }));
         }
     }

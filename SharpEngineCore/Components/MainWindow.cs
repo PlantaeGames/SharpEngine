@@ -22,30 +22,38 @@ internal sealed class MainWindow : Window
     //private float _angleX = 0f;
     //private float _angleZ = 0;
     //private float _angleY = 0;
-    //private float _anglePitch = 0f;
+    private float _anglePitch = 0f;
 
     //private float _lastX = 0;
     //private float _lastY = 0;
     //private float _lastZ = 0;
 
-    //private float _speed = 10;
-    //private float _deltaTime = 0.016f;
+    private float _speed = 10;
+    private float _deltaTime = 0.016f;
+
+    private GraphicsObject _cube;
 
     public void Update()
     {
         Graphics.Graphics.Render();
 
-        //var pitch = GetAsyncKeyState(VK.VK_F2);
-        //if (pitch < 0)
-        //{
-        //    _anglePitch -= _deltaTime * _speed * 5;
-        //}
+        var pitch = GetAsyncKeyState(VK.VK_F2);
+        if (pitch < 0)
+        {
+            _anglePitch -= _deltaTime * _speed;
+        }
 
-        //var pitch2 = GetAsyncKeyState(VK.VK_F1);
-        //if (pitch2 < 0)
-        //{
-        //    _anglePitch += _deltaTime * _speed * 5;
-        //}
+        var pitch2 = GetAsyncKeyState(VK.VK_F1);
+        if (pitch2 < 0)
+        {
+            _anglePitch += _deltaTime * _speed;
+        }
+
+        _cube.UpdateTransform(new TransformConstantData()
+        {
+            Position = new(0, 0, _anglePitch, 0),
+            Scale = new(1, 1, 1, 1)
+        });
 
         //var transform = _forwardPass
         //                     .PerspectiveCamera
@@ -248,7 +256,7 @@ internal sealed class MainWindow : Window
 
         var light = new LightData()
         {
-            Position = new(0, 0, 0, 0),
+            Position = new(0, 0, -5f, 0),
             Rotation = new(0, 0, 0, 0),
             Scale = new(1, 1, 1, 1),
             AmbientColor = new(0.25f, 0.25f, 0.25f, 0.25f),
@@ -258,8 +266,8 @@ internal sealed class MainWindow : Window
         };
 
 
-        var cubeObj = Graphics.Graphics.CreateGraphicsObject(material, cube);
-        cubeObj.UpdateTransform(new TransformConstantData()
+        _cube = Graphics.Graphics.CreateGraphicsObject(material, cube);
+        _cube.UpdateTransform(new TransformConstantData()
         {
             Position = new(0, 0, 5, 0),
             Scale = new(1, 1, 1, 1)
@@ -270,7 +278,7 @@ internal sealed class MainWindow : Window
         planeObj.UpdateTransform(
             new TransformConstantData()
             {
-                Position = new(0, 0, 10, 0),
+                Position = new(0, 0, 20, 0),
                 Rotation = new(0, 0, 180, 0),
                 Scale = new(10, 10, 10, 1)
             });
