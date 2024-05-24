@@ -134,9 +134,9 @@ internal sealed class SkyboxPass : Pass
                 CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE
             }));
 
-        var cubeMapSurfaceSize = new Size(1024, 1024);
-        var _0 = new FSurface(cubeMapSurfaceSize, Channels.Quad);
-        _0.Clear(new FColor4(1, 0, 0, 0));
+        var cubeMapSurfaceSize = new Size(512, 512);
+        var _0 = FSurface.FromFile("Textures\\Sample1.bmp");
+       // _0.Clear(new FColor4(1, 0, 0, 0));
 
         var _1 = new FSurface(cubeMapSurfaceSize, Channels.Quad);
         _1.Clear(new FColor4(0, 1, 0, 0));
