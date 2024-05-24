@@ -7,8 +7,8 @@ internal sealed class ForwardRenderPass : RenderPass
     private Texture2D _outputTexture;
 
     private DepthPass _depthPass;
+    private SkyboxPass _skyboxPass;
     private ForwardPass _forwardPass;
-    private OutputPass _outputPass;
 
     public ForwardRenderPass(
         Texture2D outputTexture,
@@ -20,13 +20,12 @@ internal sealed class ForwardRenderPass : RenderPass
         _outputTexture = outputTexture;
 
         _depthPass = new DepthPass(lightObjects, maxPerLightsCount);
+        _skyboxPass = new SkyboxPass(_outputTexture, cameraObjects);
 
-        _forwardPass = new ForwardPass(_outputTexture.Info.Size, maxPerLightsCount,
+        _forwardPass = new ForwardPass(_outputTexture, maxPerLightsCount,
             lightObjects, cameraObjects, _depthPass.DepthTextures);
 
-        _outputPass = new OutputPass(_outputTexture);
-
-        _passes = [_depthPass, _forwardPass, _outputPass];
+        _passes = [_depthPass, _skyboxPass, _forwardPass];
     }
 
     public (PipelineVariation[] variations, 
@@ -52,7 +51,5 @@ internal sealed class ForwardRenderPass : RenderPass
     }
 
     public override void OnReady(Device device, DeviceContext context)
-    {
-        _outputPass.SetSrcTexture(_forwardPass.OutputTexture);
-    }
+    {}
 }

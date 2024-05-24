@@ -30,6 +30,7 @@ internal sealed class ForwardDynamicSubVariation : PipelineVariation
             ConstantBuffers = subvariationPixelStage.ConstantBuffers,
             PixelShader = subvariationPixelStage.PixelShader,
             Samplers = samplers.ToArray(),
+            SamplerStartIndex = 1,
             ShaderResourceViews = views.ToArray(),
 
             Flags = subvariationPixelStage.Flags

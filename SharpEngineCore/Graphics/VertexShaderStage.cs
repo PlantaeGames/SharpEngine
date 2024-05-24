@@ -16,6 +16,7 @@ internal sealed class VertexShaderStage : IPipelineStage
     public VertexShader VertexShader { get; init; }
     public ConstantBuffer[] ConstantBuffers { get; init; }
     public Sampler[] Samplers {get; init;}
+    public int SamplerStartIndex { get; init; }
     public ShaderResourceView[] ShaderResourceViews { get; init; }
 
     public BindFlags Flags { get; init; }
@@ -23,6 +24,7 @@ internal sealed class VertexShaderStage : IPipelineStage
     public VertexShaderStage(
         VertexShader vertexShader,
         Sampler[] samplers,
+        int samplerStartIndex,
         ConstantBuffer[] constantBuffers,
         ShaderResourceView[] shaderResourceViews,
         BindFlags flags)
@@ -30,6 +32,7 @@ internal sealed class VertexShaderStage : IPipelineStage
         VertexShader = vertexShader;
         ConstantBuffers = constantBuffers;
         Samplers = samplers;
+        SamplerStartIndex = samplerStartIndex;
         ShaderResourceViews = shaderResourceViews;
 
         Flags = flags;
@@ -57,7 +60,7 @@ internal sealed class VertexShaderStage : IPipelineStage
 
         if (Flags.HasFlag(BindFlags.Samplers))
         {
-            context.VSSetSamplers(Samplers, 1);
+            context.VSSetSamplers(Samplers, SamplerStartIndex);
         }
     }
 
@@ -80,7 +83,7 @@ internal sealed class VertexShaderStage : IPipelineStage
 
         if (Flags.HasFlag(BindFlags.Samplers))
         {
-            context.VSSetSamplers(Samplers, 1, true);
+            context.VSSetSamplers(Samplers, SamplerStartIndex, true);
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace SharpEngineCore.Graphics;
 
-[StructLayout(LayoutKind.Sequential, Pack = 0, Size = 64)]
+[StructLayout(LayoutKind.Sequential, Pack = 0, Size = 112)]
 public struct LightData : IFragmentable, ISurfaceable
 {
     public FColor4 Position;

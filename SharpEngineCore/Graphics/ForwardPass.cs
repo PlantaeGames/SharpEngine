@@ -9,7 +9,7 @@ internal sealed class ForwardPass : Pass
 {
     private const float DEPTH_CLEAR_VALUE = 1f;
 
-    public Texture2D OutputTexture { get; private set; }
+    private readonly Texture2D _outputTexture;
     private RenderTargetView _outputView;
 
     private Texture2D _depthTexture;
@@ -29,7 +29,6 @@ internal sealed class ForwardPass : Pass
     private readonly List<Sampler> _depthSamplers = new();
 
     private PipelineVariation _staticVariation;
-    private readonly Size _resolution;
 
     public PipelineVariation CreateSubVariation(
         Device device, Material material, Mesh mesh)
@@ -37,14 +36,14 @@ internal sealed class ForwardPass : Pass
         return AddNewSubVariation(device, material, mesh);
     }
 
-    public ForwardPass(Size resolution,
+    public ForwardPass(Texture2D outputTexture,
         int maxPerVariationLightsCount,
         List<LightObject> lightObjects,
         List<CameraObject> cameraObjects,
         List<Texture2D> shadowDepthTextures) :
         base()
     {
-        _resolution = resolution;
+        _outputTexture = outputTexture;
         _maxPerVariationLightsCount = maxPerVariationLightsCount;
         _lightObjects = lightObjects;
         _cameraObjects = cameraObjects;
@@ -86,27 +85,15 @@ internal sealed class ForwardPass : Pass
 
     public override void OnInitialize(Device device, DeviceContext context)
     {
-        OutputTexture = device.CreateTexture2D(
-            [new FSurface(_resolution, Channels.Quad)],
-            new TextureCreationInfo()
-            { 
-                Format = DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM,
-                Usage = new ResourceUsageInfo()
-                {
-                    Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
-                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_RENDER_TARGET
-                }
-            });
-
         _outputView = device.CreateRenderTargetView(
-            OutputTexture,
+            _outputTexture,
             new ViewCreationInfo()
             {
-                Format = OutputTexture.Info.Format
+                Format = _outputTexture.Info.Format
             });
 
         _depthTexture = device.CreateTexture2D(
-            [new FSurface(_resolution)],
+            [new FSurface(_outputTexture.Info.Size)],
             new TextureCreationInfo()
             {
                 Format = DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT,
@@ -168,7 +155,6 @@ internal sealed class ForwardPass : Pass
 
     public override void OnReady(Device device, DeviceContext context)
     {
-        context.ClearRenderTargetView(_outputView, new());
         context.ClearDepthStencilView(_depthView, new DepthStencilClearInfo()
         {
             ClearFlags = D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH,

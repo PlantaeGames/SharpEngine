@@ -12,8 +12,31 @@ namespace SharpEngineCore.Graphics;
 public sealed class FSurface : Surface
 {
     private readonly IFragmentable _unitFragment;
-
     public override int SubDivisionCount => _unitFragment.GetFragmentsCount();
+
+    public static FSurface FromFile(string name)
+    {
+        Debug.Assert(name != string.Empty && name != null,
+            "Invalid name to create fsurface from.");
+
+        Debug.Assert(File.Exists(name),
+            "Given file to create fsurface does not exists.");
+
+        var bitmap = new Bitmap(name);
+        var surface = new FSurface(bitmap.Size, Channels.Quad);
+
+        for(var y = 0; y < bitmap.Height; y++)
+        {
+            for(var x = 0; x < bitmap.Width; x++)
+            {
+                var pixel = bitmap.GetPixel(x, y);
+                surface.SetFragment(new(x, y), new FColor4
+                    ((float)pixel.R / 255f, (float)pixel.G / 255f, (float)pixel.B / 255f, 1));
+            }
+        }
+
+        return surface;
+    }
 
     /// <summary>
     /// Gets the size of single unit of that surface in bytes.

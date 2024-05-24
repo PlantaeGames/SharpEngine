@@ -11,16 +11,17 @@ public abstract class Texture :
     public readonly TextureInfo Info;
 
     internal Texture(TextureInfo info, ComPtr<ID3D11Resource> pResource,
-        Device device) : base(pResource, new (info.Size, info.UsageInfo) ,device)
+        Device device) :
+        base(pResource, new (info.SubtexturesCount, info.Size, info.UsageInfo) ,device)
     {
         Info = info;
     }
 
-    public void Update(Surface surface)
+    public void Update(Surface surface, int subresourceIndex)
     {
         Debug.Assert(surface.Channels == Info.Channels,
             "Surface and Textures Channels Does not match.");
 
-        Write(surface, 0);
+        Write(surface, subresourceIndex);
     }
 }

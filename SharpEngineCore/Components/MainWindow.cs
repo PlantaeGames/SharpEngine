@@ -32,6 +32,7 @@ internal sealed class MainWindow : Window
     private float _deltaTime = 0.016f;
 
     private GraphicsObject _cube;
+    private CameraObject _camera;
 
     public void Update()
     {
@@ -49,10 +50,12 @@ internal sealed class MainWindow : Window
             _anglePitch += _deltaTime * _speed;
         }
 
-        _cube.UpdateTransform(new TransformConstantData()
+        _camera.UpdateCamera(new CameraConstantData()
         {
-            Position = new(0, 0, _anglePitch, 0),
-            Scale = new(1, 1, 1, 1)
+            Position = _camera.Data.Position,
+            Rotation = new FColor4(_anglePitch, 0, 0, 0),
+            Scale = _camera.Data.Scale,
+            Attributes = _camera.Data.Attributes,
         });
 
         //var transform = _forwardPass
@@ -294,7 +297,7 @@ internal sealed class MainWindow : Window
             });
 
         var lightObj = Graphics.Graphics.CreateLightObject(light);
-        var cameraObj = Graphics.Graphics.CreateCameraObject(camera, viewport);
+        _camera = Graphics.Graphics.CreateCameraObject(camera, viewport);
     }
 
     protected override LRESULT WndProc(HWND hWND, uint msg, WPARAM wParam, LPARAM lParam)

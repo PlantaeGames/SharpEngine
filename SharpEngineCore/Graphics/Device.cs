@@ -262,6 +262,7 @@ internal sealed class Device
     {
         var type = info.Layout.GetType();
         var feilds = type.GetFields();;
+        
 
         var count = feilds.Length;
 
@@ -272,30 +273,10 @@ internal sealed class Device
 
         unsafe ComPtr<ID3D11InputLayout> NativeCreateInputLayout()
         {
-            var format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
-            switch (info.Layout.GetFragmentsCount())
-            {
-                case 4:
-                    format = DXGI_FORMAT.DXGI_FORMAT_R32_FLOAT;
-                    break;
-                case 8:
-                    format = DXGI_FORMAT.DXGI_FORMAT_R32G32_FLOAT;
-                    break;
-                case 12:
-                    format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT;
-                    break;
-                case 16:
-                    format = DXGI_FORMAT.DXGI_FORMAT_R32G32B32A32_FLOAT;
-                    break;
-                default:
-                    Debug.Assert(false,
-                        "Input Layout can only have 4,8,12,16 fragments.");
-                    break;
-            }
-
             var pDesc = stackalloc D3D11_INPUT_ELEMENT_DESC[count];
 
             var pNames = new nint[count];
+            var formats = new DXGI_FORMAT[count];
             for (var i = 0; i < count; i++)
             {
                 var nameBytes = Encoding.ASCII.GetBytes(feilds[i].Name);
@@ -319,13 +300,37 @@ internal sealed class Device
                 *((byte*)pName + (sizeof(byte) * nameBytes.Length)) = 0;
 
                 pNames[i] = pName;
+
+                var size = feilds[i].FieldType.GetDataTypeSize();
+                Debug.Assert(size > 0,
+                    "The size of memebers of input struct must be greater than 1.");
+
+                switch (size)
+                {
+                    case 4:
+                        formats[i] = DXGI_FORMAT.DXGI_FORMAT_R32_FLOAT;
+                        break;
+                    case 8:
+                        formats[i] = DXGI_FORMAT.DXGI_FORMAT_R32G32_FLOAT;
+                        break;
+                    case 12:
+                        formats[i] = DXGI_FORMAT.DXGI_FORMAT_R32G32B32_FLOAT;
+                        break;
+                    case 16:
+                        formats[i] = DXGI_FORMAT.DXGI_FORMAT_R32G32B32A32_FLOAT;
+                        break;
+                    default:
+                        Debug.Assert(false,
+                            "Input Layout can only have 4,8,12,16 fragments.");
+                        break;
+                }
             }
 
             for (var i = 0; i < count; i++)
             {
                 pDesc[i].SemanticName = (sbyte*)pNames[i];
                 pDesc[i].SemanticIndex = 0u;
-                pDesc[i].Format = format;
+                pDesc[i].Format = formats[i];
                 pDesc[i].AlignedByteOffset = D3D11.D3D11_APPEND_ALIGNED_ELEMENT;
                 pDesc[i].InstanceDataStepRate = 0u;
                 pDesc[i].InputSlot = 0u;
@@ -580,10 +585,14 @@ internal sealed class Device
         bool isF = surfaces[0].GetType().Match<FSurface>();
         bool isU = surfaces[0].GetType().Match<USurface>();
         var size = surfaces[0].Size;
+
         var channels = surfaces[0].Channels;
 #if DEBUG
         for(var i = 1; i < surfaces.Length; i++)
         {
+            Debug.Assert(size.Width == size.Height,
+                "For Texture arrays the width and height of the textures must be equal.");
+
             bool f = surfaces[0].GetType().Match<FSurface>();
             bool u = surfaces[0].GetType().Match<USurface>();
             var dim = surfaces[0].Size;

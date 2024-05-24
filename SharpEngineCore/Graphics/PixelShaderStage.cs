@@ -13,7 +13,8 @@ internal sealed class PixelShaderStage : IPipelineStage
     }
     public PixelShader PixelShader { get; init; }
     public ConstantBuffer[] ConstantBuffers { get; init; }
-    public Sampler[] Samplers { get; init; } 
+    public Sampler[] Samplers { get; init; }
+    public int SamplerStartIndex { get; init; }
     public ShaderResourceView[] ShaderResourceViews { get; init; }
 
     public BindFlags Flags { get; init; }
@@ -22,12 +23,14 @@ internal sealed class PixelShaderStage : IPipelineStage
         PixelShader pixelShader,
         ConstantBuffer[] constantBuffers,
         Sampler[] samplers,
+        int samplerStartIndex,
         ShaderResourceView[] shaderResourceViews,
         BindFlags flags)
     {
         PixelShader = pixelShader;
         ConstantBuffers = constantBuffers;
         Samplers = samplers;
+        SamplerStartIndex = samplerStartIndex;
         ShaderResourceViews = shaderResourceViews;
 
         Flags = flags;
@@ -50,7 +53,7 @@ internal sealed class PixelShaderStage : IPipelineStage
 
         if (Flags.HasFlag(BindFlags.Samplers))
         {
-            context.PSSetSamplers(Samplers, 1);
+            context.PSSetSamplers(Samplers, SamplerStartIndex);
         }
 
         if (Flags.HasFlag(BindFlags.ShaderResourceViews))
@@ -73,7 +76,7 @@ internal sealed class PixelShaderStage : IPipelineStage
 
         if (Flags.HasFlag(BindFlags.Samplers))
         {
-            context.PSSetSamplers(Samplers, 1, true);
+            context.PSSetSamplers(Samplers, SamplerStartIndex, true);
         }
 
         if (Flags.HasFlag(BindFlags.ShaderResourceViews))

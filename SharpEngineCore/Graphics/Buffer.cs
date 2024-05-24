@@ -46,7 +46,7 @@ public class Buffer : Resource
 
     internal Buffer(ComPtr<ID3D11Buffer> pBuffer, BufferInfo info,
         Device device) : base(ComUtilities.ToResourceNativePtr(ref pBuffer), 
-            new (info.SurfaceSize, info.UsageInfo), device)
+            new (1, info.SurfaceSize, info.UsageInfo), device)
     {
         Info = info;
         _ptr = new(pBuffer);

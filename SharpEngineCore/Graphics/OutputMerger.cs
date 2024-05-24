@@ -71,7 +71,6 @@ internal sealed class OutputMerger : IPipelineStage
 
         if (Flags.HasFlag(BindFlags.UnorderedAccessViews))
         {
-
             context.OMSetRenderTargetsAndUnorderedAccessViews(
                 RenderTargetViews, DepthStencilView, UnorderedAccessViews, 0, true);
         }
