@@ -6,6 +6,7 @@ using static TerraFX.Interop.Windows.Windows;
 
 using SharpEngineCore.Graphics;
 using SharpEngineCore.Utilities;
+using System.Diagnostics;
 
 namespace SharpEngineCore.Components;
 
@@ -34,8 +35,12 @@ internal sealed class MainWindow : Window
     private GraphicsObject _cube;
     private CameraObject _camera;
 
+    private Stopwatch _watch = new();
+
     public void Update()
     {
+        _watch.Start();
+
         Graphics.Graphics.Render();
 
         var pitch = GetAsyncKeyState(VK.VK_F2);
@@ -50,13 +55,20 @@ internal sealed class MainWindow : Window
             _anglePitch += _deltaTime * _speed;
         }
 
-        _camera.UpdateCamera(new CameraConstantData()
-        {
-            Position = _camera.Data.Position,
-            Rotation = new FColor4(_anglePitch, 0, 0, 0),
-            Scale = _camera.Data.Scale,
-            Attributes = _camera.Data.Attributes,
-        });
+        //_camera.UpdateCamera(new CameraConstantData()
+        //{
+        //    Position = _camera.Data.Position,
+        //    Rotation = new FColor4(_anglePitch, 0, 0, 0),
+        //    Scale = _camera.Data.Scale,
+        //    Attributes = _camera.Data.Attributes,
+        //});
+
+        _watch.Stop();
+        var time = _watch.Elapsed.TotalSeconds;
+
+        _log.LogHeader($"FPS: {1 / time}", true);
+
+        _watch.Reset();
 
         //var transform = _forwardPass
         //                     .PerspectiveCamera
@@ -254,17 +266,17 @@ internal sealed class MainWindow : Window
             Position = new(-3, 0, 0, 0),
             Rotation = new(20, 0, 0, 0),
             Scale = new(1, 1, 1, 1),
-            Attributes = new(viewport.AspectRatio, 70, 0.03f, 1000f)
+            Attributes = new(viewport.AspectRatio, 60, 0.03f, 1000f)
         };
 
         var light = new LightData()
         {
-            Position = new(0, 0, -5f, 0),
+            Position = new(0, 0, 0f, 0),
             Rotation = new(0, 0, 0, 0),
             Scale = new(1, 1, 1, 1),
-            AmbientColor = new(0.25f, 0.25f, 0.25f, 0.25f),
-            Color = new(1, 1, 1, 1),
-            Intensity = new(1, 32, 1, 0.25f),
+            AmbientColor = new(0.35f, 0.35f, 0.35f, 0.35f),
+            Color = new(1f, 1f, 1f, 1f),
+            Intensity = new(1f, 128, 1, 0.25f),
             Attributes =  camera.Attributes
         };
 
@@ -273,7 +285,7 @@ internal sealed class MainWindow : Window
         _cube.UpdateTransform(new TransformConstantData()
         {
             Position = new(0, 0, 5, 0),
-            Scale = new(1, 1, 1, 1)
+            Scale = new(1f, 1f, 1f, 1)
         });
 
         var planeObj = Graphics.Graphics.CreateGraphicsObject(material, plane);
@@ -284,16 +296,6 @@ internal sealed class MainWindow : Window
                 Position = new(0, 0, 20, 0),
                 Rotation = new(0, 0, 180, 0),
                 Scale = new(10, 10, 10, 1)
-            });
-
-        var triangleObj = Graphics.Graphics.CreateGraphicsObject(material, triangle);
-
-        triangleObj.UpdateTransform(
-            new TransformConstantData()
-            {
-                Position = new(2, 0, 5, 0),
-                Rotation = new(0, 0, 0, 0),
-                Scale = new(0.3f, 0.3f, 0.3f, 1)
             });
 
         var lightObj = Graphics.Graphics.CreateLightObject(light);

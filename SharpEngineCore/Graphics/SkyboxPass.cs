@@ -34,7 +34,8 @@ internal sealed class SkyboxPass : Pass
             _transformBuffer.Update(
                 new SkyboxTransformConstantData()
                 {
-                    Rotation = camera.Data.Rotation
+                    Rotation = camera.Data.Rotation,
+                    Attributes = camera.Data.Attributes
                 });
 
             var dynamicVariation = new SkyboxDynamicVariation(camera.Viewport);
@@ -135,23 +136,23 @@ internal sealed class SkyboxPass : Pass
             }));
 
         var cubeMapSurfaceSize = new Size(512, 512);
-        var _0 = FSurface.FromFile("Textures\\Sample1.bmp");
+        var _0 = FSurface.FromFile("Textures\\Skybox\\left.bmp");
        // _0.Clear(new FColor4(1, 0, 0, 0));
 
-        var _1 = new FSurface(cubeMapSurfaceSize, Channels.Quad);
-        _1.Clear(new FColor4(0, 1, 0, 0));
+        var _1 = FSurface.FromFile("Textures\\Skybox\\right.bmp");
+        //_1.Clear(new FColor4(0, 1, 0, 0));
 
-        var _2 = new FSurface(cubeMapSurfaceSize, Channels.Quad);
-        _2.Clear(new FColor4(0, 0, 1, 0));
+        var _2 = FSurface.FromFile("Textures\\Skybox\\up_invert.bmp");
+        //_2.Clear(new FColor4(0, 0, 1, 0));
 
-        var _3 = new FSurface(cubeMapSurfaceSize, Channels.Quad);
-        _3.Clear(new FColor4(1, 1, 0, 0));
+        var _3 = FSurface.FromFile("Textures\\Skybox\\down.bmp");
+        //_3.Clear(new FColor4(1, 1, 0, 0));
 
-        var _4 = new FSurface(cubeMapSurfaceSize, Channels.Quad);
-        _4.Clear(new FColor4(1, 1, 1, 0));
+        var _4 = FSurface.FromFile("Textures\\Skybox\\front.bmp");
+        //_4.Clear(new FColor4(1, 1, 1, 0));
 
-        var _5 = new FSurface(cubeMapSurfaceSize, Channels.Quad);
-        _5.Clear(new FColor4(1, 0, 1, 0));
+        var _5 = FSurface.FromFile("Textures\\Skybox\\back.bmp");
+        //_5.Clear(new FColor4(1, 0, 1, 0));
 
         FSurface[] cubeMapSurfaces = 
             [
@@ -190,6 +191,14 @@ internal sealed class SkyboxPass : Pass
                 Filter = D3D11_FILTER.D3D11_FILTER_MIN_MAG_MIP_POINT
             });
 
+        var rasterizerState = device.CreateRasterizerState(
+            new RasterizerStateInfo()
+            {
+                FillMode = D3D11_FILL_MODE.D3D11_FILL_SOLID,
+                CullMode = D3D11_CULL_MODE.D3D11_CULL_NONE,
+                FrontFaceCounterClockwise = true
+            });
+
         _staticVariation = new SkyboxVariation(
             inputLayout,
             vertexBuffer,
@@ -200,7 +209,8 @@ internal sealed class SkyboxPass : Pass
             cubeMapView,
             cubeMapSampler,
             _renderTargetView,
-            _depthView
+            _depthView,
+            rasterizerState
             );
     }
 

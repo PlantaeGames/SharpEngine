@@ -22,6 +22,39 @@ internal sealed class Device
 
     private D3D_FEATURE_LEVEL _featureLevel;
 
+    public RasterizerState CreateRasterizerState(RasterizerStateInfo info, bool clear = false)
+    {
+        return new RasterizerState(NativeCreateRasterizerState(), info,
+            this);
+
+        unsafe ComPtr<ID3D11RasterizerState> NativeCreateRasterizerState()
+        {
+            var desc = new D3D11_RASTERIZER_DESC();
+
+            desc.FillMode = info.FillMode;
+            desc.CullMode = info.CullMode;
+            desc.DepthClipEnable = info.DepthClippingEnabled;
+            desc.FrontCounterClockwise = info.FrontFaceCounterClockwise;
+
+            var pState = new ComPtr<ID3D11RasterizerState>();
+            fixed (ID3D11Device** ppDevice = _pDevice)
+            {
+                GraphicsException.SetInfoQueue();
+                var result = (*ppDevice)->CreateRasterizerState(&desc,
+                    pState.GetAddressOf());
+
+                if(result.FAILED)
+                {
+                    // error here
+                    GraphicsException.ThrowLastGraphicsException(
+                        $"Failed to Create Rasterizer State\nError Code: {result}");
+                }
+            }
+
+            return pState;
+        }
+    }
+
     public UnorderedAccessView CreateUnorderedAccessView(Resource resource,
                                                          ViewCreationInfo info)
     {

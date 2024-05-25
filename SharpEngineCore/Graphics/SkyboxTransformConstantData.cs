@@ -2,10 +2,11 @@
 
 using System.Runtime.InteropServices;
 
-[StructLayout(LayoutKind.Sequential, Pack = 0, Size = 16)]
+[StructLayout(LayoutKind.Sequential, Pack = 0, Size = 32)]
 public struct SkyboxTransformConstantData : IFragmentable, ISurfaceable
 {
     public FColor4 Rotation;
+    public FColor4 Attributes;
 
     public int GetFragmentsCount()
     {
@@ -27,7 +28,12 @@ public struct SkyboxTransformConstantData : IFragmentable, ISurfaceable
                 Rotation.r,
                 Rotation.g,
                 Rotation.b,
-                Rotation.a
+                Rotation.a,
+
+                Attributes.r,
+                Attributes.g,
+                Attributes.b,
+                Attributes.a
             ];
     }
 

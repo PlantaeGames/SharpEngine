@@ -12,7 +12,8 @@ internal sealed class SkyboxVariation : PipelineVariation
         ShaderResourceView cubeMapView,
         Sampler cubeMapSampler,
         RenderTargetView renderTargetView,
-        DepthStencilView depthView)
+        DepthStencilView depthView,
+        RasterizerState rasterizerState)
     {
         InputAssembler = new InputAssembler()
         {
@@ -46,6 +47,13 @@ internal sealed class SkyboxVariation : PipelineVariation
                     PixelShaderStage.BindFlags.Samplers
         };
 
+        Rasterizer = new Rasterizer()
+        {
+            RasterizerState = rasterizerState,
+
+            Flags = Rasterizer.BindFlags.RasterizerState
+        };
+
         OutputMerger = new OutputMerger()
         {
             DepthStencilView = depthView,
@@ -58,6 +66,11 @@ internal sealed class SkyboxVariation : PipelineVariation
         IndexCount = indexBuffer.IndexCount;
         UseIndexRendering = false;
 
-        _stages = [InputAssembler, VertexShaderStage, PixelShaderStage, OutputMerger];
+        _stages = [
+            InputAssembler,
+            VertexShaderStage, 
+            PixelShaderStage,
+            OutputMerger,
+            Rasterizer];
     }
 }

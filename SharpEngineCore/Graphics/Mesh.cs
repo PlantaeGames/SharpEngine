@@ -15,42 +15,42 @@ public sealed class Mesh
                 new Vertex()
                 {
                     Position = new(0.5f, 0.5f, 0, 1),
-                    Color = new(1f, 0, 0, 0),
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                     Normal = new (),
                     TexCoord = new()
                 },
                 new Vertex()
                 {
                     Position = new(-0.5f, 0.5f, 0, 1),
-                    Color = new(0f, 1f, 0, 0),
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                     Normal = new (),
                     TexCoord = new()
                 },
                 new Vertex()
                 {
                     Position = new(0.5f, -0.5f, 0, 1),
-                    Color = new(0f, 0, 1f, 0),
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                     Normal = new (),
                     TexCoord = new()
                 },
                 new Vertex()
                 {
                     Position = new(-0.5f, 0.5f, 0, 1),
-                    Color = new(0f, 0, 1f, 0),
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                     Normal = new (),
                     TexCoord = new()
                 },
                 new Vertex()
                 {
                     Position = new(-0.5f, -0.5f, 0, 1),
-                    Color = new(0f, 1, 0, 0),
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                     Normal = new (),
                     TexCoord = new()
                 },
                 new Vertex()
                 {
                     Position = new(0.5f, -0.5f, 0, 1),
-                    Color = new(1, 0, 0, 0),
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                     Normal = new (),
                     TexCoord = new()
                 }
@@ -100,21 +100,21 @@ public sealed class Mesh
                 new Vertex()
                 {
                     Position = new(0f, 0.5f, 0, 1),
-                    Color = new(1f, 0, 0, 0),
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                     Normal = new (),
                     TexCoord = new()
                 },
                 new Vertex()
                 {
                     Position = new(0.5f, -0.5f, 0, 1),
-                    Color = new(0f, 1f, 0, 0),
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                     Normal = new (),
                     TexCoord = new()
                 },
                 new Vertex()
                 {
                     Position = new(-0.5f, -0.5f, 0, 1),
-                    Color = new(0f, 0, 1f, 0),
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                     Normal = new (),
                     TexCoord = new()
                 }
@@ -152,133 +152,133 @@ public sealed class Mesh
                 new ()
                 {
                     Position = new(-0.5f, 0.5f, -0.5f, 0),
-                    Color = new (1, 0, 0, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 },
                 new ()
                 {
                     Position = new(0.5f, -0.5f, -0.5f, 0),
-                    Color = new (1, 0, 0, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 },
                 new ()
                 {
                     Position = new(-0.5f, -0.5f, -0.5f, 0),
-                    Color = new (1, 0, 0, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 },
                 new ()
                 {
                     Position = new(0.5f, 0.5f, -0.5f, 0),
-                    Color = new (1, 0, 0, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 }
            // 2
                 ,
                 new ()
                 {
                     Position = new(0.5f, -0.5f, -0.5f, 0),
-                    Color = new (0, 1, 0, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 },
                 new ()
                 {
                     Position = new(0.5f, 0.5f, 0.5f, 0),
-                    Color = new (0, 1, 0, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 },
                 new ()
                 {
                     Position = new(0.5f, -0.5f, 0.5f, 0),
-                    Color = new (0, 1, 0, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 },
                 new ()
                 {
                     Position = new(0.5f, 0.5f, -0.5f, 0),
-                    Color = new (0, 1, 0, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 }
             // 3
                 ,
                 new ()
                 {
                     Position = new(-0.5f, 0.5f, 0.5f, 0),
-                    Color = new (0, 1, 0, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 },
                 new ()
                 {
                     Position = new(-0.5f, -0.5f, -0.5f, 0),
-                    Color = new (0, 1, 0, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 },
                 new ()
                 {
                     Position = new(-0.5f, -0.5f, 0.5f, 0),
-                    Color = new (0, 1, 0, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 },
                 new ()
                 {
                     Position = new(-0.5f, 0.5f, -0.5f, 0),
-                    Color = new (0, 1, 0, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 }
             // 4
                 ,
                 new ()
                 {
                     Position = new(0.5f, 0.5f, 0.5f, 0),
-                    Color = new (0, 0, 1, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 },
                 new ()
                 {
                     Position = new(-0.5f, -0.5f, 0.5f, 0),
-                    Color = new (0, 0, 1, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 },
                 new ()
                 {
                     Position = new(0.5f, -0.5f, 0.5f, 0),
-                    Color = new (0, 0, 1, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 },
                 new ()
                 {
                     Position = new(-0.5f, 0.5f, 0.5f, 0),
-                    Color = new (0, 0, 1, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 }
             // 5
                 ,
                 new ()
                 {
                     Position = new(-0.5f, 0.5f, -0.5f, 0),
-                    Color = new (1, 0, 1, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 },
                 new ()
                 {
                     Position = new(0.5f, 0.5f, 0.5f, 0),
-                    Color = new (1, 0, 1, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 },
                 new ()
                 {
                     Position = new(0.5f, 0.5f, -0.5f, 0),
-                    Color = new (1, 0, 1, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 },
                 new ()
                 {
                     Position = new(-0.5f, 0.5f, 0.5f, 0),
-                    Color = new (1, 0, 1, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 }
             // 6
                 ,
                 new ()
                 {
                     Position = new(0.5f, -0.5f, 0.5f, 0),
-                    Color = new (0, 1, 1, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 },
                 new ()
                 {
                     Position = new(-0.5f, -0.5f, -0.5f, 0),
-                    Color = new (0, 1, 1, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 },
                 new ()
                 {
                     Position = new(0.5f, -0.5f, -0.5f, 0),
-                    Color = new (0, 1, 1, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 }
                 ,
                 new ()
                 {
                     Position = new(-0.5f, -0.5f, 0.5f, 0),
-                    Color = new (0, 1, 1, 1)
+                    Color = new(0.8f, 0.8f, 0.8f, 1f),
                 }
             ];
 

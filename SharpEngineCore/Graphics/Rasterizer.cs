@@ -6,14 +6,19 @@ internal sealed class Rasterizer : IPipelineStage
     public enum BindFlags
     {
         None = 0,
-        Viewports = 1 << 1
+        Viewports = 1 << 1,
+        RasterizerState = 1 << 2
     }
 
+    public RasterizerState RasterizerState { get; init; }
     public Viewport[] Viewports { get; init; }
     public BindFlags Flags { get; init; }
 
-    public Rasterizer(Viewport[] viewports, BindFlags flags)
+    public Rasterizer(
+        RasterizerState rasterizerState,
+        Viewport[] viewports, BindFlags flags)
     {
+        RasterizerState = rasterizerState;
         Viewports = viewports;
         Flags = flags;
     }
@@ -28,6 +33,11 @@ internal sealed class Rasterizer : IPipelineStage
         {
             context.RSSetViewports(Viewports);
         }
+
+        if (Flags.HasFlag(BindFlags.RasterizerState))
+        {
+            context.RSSetState(RasterizerState);
+        }
     }
 
     public void Unbind(DeviceContext context)
@@ -35,6 +45,11 @@ internal sealed class Rasterizer : IPipelineStage
         if (Flags.HasFlag(BindFlags.Viewports))
         {
             context.RSSetViewports(Viewports, true);
+        }
+
+        if (Flags.HasFlag(BindFlags.RasterizerState))
+        {
+            context.RSSetState(RasterizerState, true);
         }
     }
 }

@@ -1,14 +1,35 @@
-﻿using System.Data.SqlTypes;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 using TerraFX.Interop.DirectX;
 using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
 
-internal abstract partial class DeviceContext
+internal abstract class DeviceContext
 {
     protected readonly ComPtr<ID3D11DeviceContext> _pContext;
+
+    public void RSSetState(RasterizerState state, bool clear = false)
+    {
+        NativeRSSetState();
+
+        unsafe void NativeRSSetState()
+        {
+            var pState = state.GetNativePtr().Get();
+            if (clear)
+                pState = (ID3D11RasterizerState*)IntPtr.Zero;
+
+            fixed (ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+
+                (*ppContext)->RSSetState(pState);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    "Error in setting rasterizer state.");
+            }
+        }
+    }
 
     public void OMSetRenderTargetsAndUnorderedAccessViews(RenderTargetView[] renderTargetViews,
         DepthStencilView depthStencilView,
