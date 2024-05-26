@@ -125,18 +125,44 @@ internal sealed class Device
 
         unsafe ComPtr<ID3D11DepthStencilView> NativeCreateDepthStencilView()
         {
-            // TODO: Using the same params as the resource created, at mip map 0.
             var desc = new D3D11_DEPTH_STENCIL_VIEW_DESC();
             desc.Format = info.Format;
-            desc.ViewDimension = D3D11_DSV_DIMENSION.D3D11_DSV_DIMENSION_TEXTURE2D;
-            desc.Texture2D.MipSlice = 0;
+
+            var pDesc = &desc;
+
+            switch (info.ViewResourceType)
+            {
+                case ViewResourceType.Buffer:
+                    desc.ViewDimension = D3D11_DSV_DIMENSION.D3D11_DSV_DIMENSION_TEXTURE1D;
+                    desc.Texture1D.MipSlice = (uint)info.TextureMipIndex;
+                    break;
+                case ViewResourceType.Texture2D:
+                    desc.ViewDimension = D3D11_DSV_DIMENSION.D3D11_DSV_DIMENSION_TEXTURE2D;
+                    desc.Texture2D.MipSlice = (uint)info.TextureMipIndex;
+                    break;
+                case ViewResourceType.CubeMap:
+                    desc.ViewDimension = D3D11_DSV_DIMENSION.D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+                    desc.Texture2DArray.MipSlice = (uint)info.TextureMipIndex;
+                    desc.Texture2DArray.ArraySize = (uint)info.TextureSliceCount;
+                    desc.Texture2DArray.FirstArraySlice = (uint)info.TextureSliceIndex;
+                    break;
+                case ViewResourceType.Texture2DArray:
+                    desc.ViewDimension = D3D11_DSV_DIMENSION.D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+                    desc.Texture2DArray.MipSlice = (uint)info.TextureMipIndex;
+                    desc.Texture2DArray.ArraySize = (uint)info.TextureSliceCount;
+                    desc.Texture2DArray.FirstArraySlice = (uint)info.TextureSliceIndex;
+                    break;
+                default:
+                    pDesc = (D3D11_DEPTH_STENCIL_VIEW_DESC*)IntPtr.Zero;
+                    break;
+            }
 
             var pView = new ComPtr<ID3D11DepthStencilView>();
             fixed(ID3D11Device** ppDevice = _pDevice)
             {
                 GraphicsException.SetInfoQueue();
                 var result = (*ppDevice)->CreateDepthStencilView(resource.GetNativePtrAsResource(),
-                    &desc,
+                    pDesc,
                     pView.GetAddressOf());
 
                 if(result.FAILED)

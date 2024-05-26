@@ -5,5 +5,6 @@ public enum ViewResourceType
     None,
     Buffer,
     Texture2D,
-    CubeMap
+    CubeMap,
+    Texture2DArray
 }

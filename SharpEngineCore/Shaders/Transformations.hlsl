@@ -208,23 +208,19 @@ float4 TransformNormal(float4 normal,
     return coordinates;
 }
 
-float4 TransformOrthogonal(float4 viewCoords, float4 lightScale)
+float4 TransformOrthogonal(float4 viewCoords, float4 scale)
 {
-    float2 xSides = float2(lightScale.x, lightScale.x);
-    float2 ySides = float2(lightScale.y, lightScale.y);
-    float2 zSides = float2(lightScale.z, lightScale.z);
-    
     float4 coordinates = viewCoords;
     coordinates.w = 1;
 
     row_major matrix orthogonalMatrix = 0;
-    orthogonalMatrix[0][0] = 2 / lightScale.x;
-    orthogonalMatrix[1][1] = 2 / lightScale.y;
-    orthogonalMatrix[2][2] = -2 / lightScale.z;
+    orthogonalMatrix[0][0] = 2 / scale.x;
+    orthogonalMatrix[1][1] = 2 / scale.y;
+    orthogonalMatrix[2][2] = -2 / scale.z;
 
-    orthogonalMatrix[0][3] = - 1 / lightScale.x;
-    orthogonalMatrix[1][3] = - 1 / lightScale.y;
-    orthogonalMatrix[2][3] = - 1 / lightScale.z;
+    orthogonalMatrix[0][3] = - 1 / scale.x;
+    orthogonalMatrix[1][3] = - 1 / scale.y;
+    orthogonalMatrix[2][3] = - 1 / scale.z;
 
     orthogonalMatrix[3][3] = 1;
 
