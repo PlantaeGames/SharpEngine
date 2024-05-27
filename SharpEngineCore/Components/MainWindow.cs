@@ -274,22 +274,31 @@ internal sealed class MainWindow : Window
         {
             Position = new(0, 0, -100f, 0),
             Rotation = new(0, 0, 0, 0),
-            Scale = new(1, 1, 1, 1),
-            AmbientColor = new(0.4f, 0.4f, 0.4f, 0.4f),
+            Scale = new(20, 20, 1000, 1),
+            AmbientColor = new(0.45f, 0.45f, 0.4f, 0.45f),
             Color = new(1f, 1f, 1f, 1f),
             Intensity = new(1f, 128, 1, 0.25f),
-            Attributes =  camera.Attributes
+            Attributes =  camera.Attributes,
+            LightType = Light.Directional
         };
 
 
-        _cube = Graphics.Graphics.CreateGraphicsObject(material, cube);
+        _cube = Graphics.Graphics.CreateGraphicsObject(new() 
+        {
+            material = material,
+            mesh = cube 
+        });
         _cube.UpdateTransform(new TransformConstantData()
         {
             Position = new(0, 0, 5, 0),
             Scale = new(1f, 1f, 1f, 1)
         });
 
-        var planeObj = Graphics.Graphics.CreateGraphicsObject(material, plane);
+        var planeObj = Graphics.Graphics.CreateGraphicsObject(new()
+        {
+            material = material, 
+            mesh = plane
+        });
 
         planeObj.UpdateTransform(
             new TransformConstantData()
@@ -299,8 +308,15 @@ internal sealed class MainWindow : Window
                 Scale = new(10, 10, 10, 1)
             });
 
-        var lightObj = Graphics.Graphics.CreateLightObject(light);
-        _camera = Graphics.Graphics.CreateCameraObject(camera, viewport);
+        var lightObj = Graphics.Graphics.CreateLightObject(new()
+        { 
+            data = light
+        });
+        _camera = Graphics.Graphics.CreateCameraObject(new()
+        {
+            cameraTransform = camera,
+            viewport = viewport
+        });
     }
 
     protected override LRESULT WndProc(HWND hWND, uint msg, WPARAM wParam, LPARAM lParam)

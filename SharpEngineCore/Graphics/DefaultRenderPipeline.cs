@@ -17,44 +17,45 @@ internal sealed class DefaultRenderPipeline : RenderPipeline
         base(outputTexture)
     { }
 
-    public override CameraObject CreateCameraObject(
-        Device device, CameraConstantData data, Viewport viewport)
-    {
-        var cameraObject = new CameraObject(data, viewport);
-        _cameraObjects.Add(cameraObject);
+    public override void OnCameraAdd(CameraObject camera, Device device)
+    {}
 
-        return cameraObject;
-    }
+    public override void OnCameraPause(CameraObject camera, Device device)
+    {}
 
-    public override GraphicsObject CreateGraphicsObject(
-        Device device, Material material, Mesh mesh)
-    {
-        var data = 
-            _forwardRenderPass.CreateVariations(device, material, mesh);
+    public override void OnCameraRemove(CameraObject camera, Device device)
+    {}
 
-        var graphicsObject = new GraphicsObject(data.transformBuffer);
-        graphicsObject.AddVariations(data.variations);
-
-        _graphicsObjects.Add(graphicsObject);
-        return graphicsObject;
-    }
-
-    public override LightObject CreateLightObject(
-        Device device, LightData data)
-    {
-        var lightObject = new LightObject(data);
-        _lightObjects.Add(lightObject);
-
-        return lightObject;
-    }
-
-    public override List<GraphicsObject> GetGraphicsObjects()
-    {
-        return _graphicsObjects;
-    }
+    public override void OnCameraResume(CameraObject camera, Device device)
+    {}
 
     public override void OnGo(Device device, DeviceContext context)
     { }
+
+    public override void OnGraphicsAdd(GraphicsObject graphics, Device device)
+    {
+        var transformBuffer = Buffer.CreateConstantBuffer(device.CreateBuffer(
+                                 new TransformConstantData().ToSurface(),
+                                 typeof(TransformConstantData),
+                                 new ResourceUsageInfo()
+                                 {       
+                                     Usage = D3D11_USAGE.D3D11_USAGE_DYNAMIC,
+                                     CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE,
+                                     BindFlags = D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER
+
+                                 }));
+
+        graphics.SetTransformBuffer(transformBuffer);
+    }
+
+    public override void OnGraphicsPause(GraphicsObject graphics, Device device)
+    {}
+
+    public override void OnGraphicsRemove(GraphicsObject graphics, Device device)
+    {}
+
+    public override void OnGraphicsResume(GraphicsObject graphics, Device device)
+    {}
 
     public override void OnInitialize(Device device, DeviceContext context)
     {
@@ -65,6 +66,21 @@ internal sealed class DefaultRenderPipeline : RenderPipeline
         _renderPasses = [_forwardRenderPass];
     }
 
+    public override void OnLightAdd(LightObject light, Device device)
+    {}
+
+    public override void OnLightPause(LightObject light, Device device)
+    {}
+
+    public override void OnLightRemove(LightObject light, Device device)
+    {}
+
+    public override void OnLightResume(LightObject light, Device device)
+    {}
+
     public override void OnReady(Device device, DeviceContext context)
+    {}
+
+    public override void OnSkyboxSet(CubemapInfo info, Device device)
     {}
 }

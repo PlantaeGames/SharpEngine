@@ -20,6 +20,10 @@ internal sealed class SkyboxPass : Pass
 
     private PipelineVariation _staticVariation;
 
+    private Texture2D _currentSkybox;
+    private ShaderResourceView _skyboxView;
+    private Sampler _skyboxSampler;
+
     public SkyboxPass(Texture2D outputTexture,
         List<CameraObject> cameras)
     {
@@ -38,7 +42,11 @@ internal sealed class SkyboxPass : Pass
                     Attributes = camera.Data.Attributes
                 });
 
-            var dynamicVariation = new SkyboxDynamicVariation(camera.Viewport);
+            var dynamicVariation = new SkyboxDynamicVariation(
+                _skyboxView,
+                _skyboxSampler,
+                camera.Viewport);
+
             dynamicVariation.Bind(context);
 
             if (_staticVariation.UseIndexRendering)
@@ -55,7 +63,7 @@ internal sealed class SkyboxPass : Pass
             new TextureCreationInfo()
             {
                 Format = DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT,
-                Usage = new ResourceUsageInfo()
+                UsageInfo = new ResourceUsageInfo()
                 {
                     Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
                     BindFlags = D3D11_BIND_FLAG.D3D11_BIND_DEPTH_STENCIL
@@ -135,56 +143,7 @@ internal sealed class SkyboxPass : Pass
                 CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE
             }));
 
-        var cubeMapSurfaceSize = new Size(512, 512);
-        var _0 = FSurface.FromFile("Textures\\Skybox\\left.bmp");
-       // _0.Clear(new FColor4(1, 0, 0, 0));
-
-        var _1 = FSurface.FromFile("Textures\\Skybox\\right.bmp");
-        //_1.Clear(new FColor4(0, 1, 0, 0));
-
-        var _2 = FSurface.FromFile("Textures\\Skybox\\up_invert.bmp");
-        //_2.Clear(new FColor4(0, 0, 1, 0));
-
-        var _3 = FSurface.FromFile("Textures\\Skybox\\down.bmp");
-        //_3.Clear(new FColor4(1, 1, 0, 0));
-
-        var _4 = FSurface.FromFile("Textures\\Skybox\\front.bmp");
-        //_4.Clear(new FColor4(1, 1, 1, 0));
-
-        var _5 = FSurface.FromFile("Textures\\Skybox\\back.bmp");
-        //_5.Clear(new FColor4(1, 0, 1, 0));
-
-        FSurface[] cubeMapSurfaces = 
-            [
-                _0,
-                _1,
-                _2,
-                _3,
-                _4,
-                _5
-            ];
-
-        var cubeMapTexture = device.CreateTexture2D(
-            cubeMapSurfaces,
-            new TextureCreationInfo()
-            { 
-                Usage = new ResourceUsageInfo()
-                {
-                    Usage  = D3D11_USAGE.D3D11_USAGE_DEFAULT,
-                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE,
-                    MiscFlags = D3D11_RESOURCE_MISC_FLAG.D3D11_RESOURCE_MISC_TEXTURECUBE
-                }
-            });
-
-        var cubeMapView = device.CreateShaderResourceView(cubeMapTexture,
-            new ViewCreationInfo()
-            {
-                Format = cubeMapTexture.Info.Format,
-                TextureMipLevels = cubeMapTexture.Info.MipLevels,
-                ViewResourceType = ViewResourceType.CubeMap
-            });
-
-        var cubeMapSampler = device.CreateSampler(
+        _skyboxSampler = device.CreateSampler(
             new SamplerInfo()
             {
                 AddressMode = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_CLAMP,
@@ -206,12 +165,52 @@ internal sealed class SkyboxPass : Pass
             vertexShader,
             _transformBuffer,
             pixelShader,
-            cubeMapView,
-            cubeMapSampler,
             _renderTargetView,
             _depthView,
             rasterizerState
             );
+
+        CreateAndSetSkybox(new(), device);
+    }
+
+    private void CreateAndSetSkybox(CubemapInfo info, Device device)
+    {
+        var _0 = FSurface.FromFile(info.Left);
+        var _1 = FSurface.FromFile(info.Right);
+        var _2 = FSurface.FromFile(info.Up);
+        var _3 = FSurface.FromFile(info.Down);
+        var _4 = FSurface.FromFile(info.Front);
+        var _5 = FSurface.FromFile(info.Back);
+
+        FSurface[] cubeMapSurfaces =
+            [
+                _0,
+                _1,
+                _2,
+                _3,
+                _4,
+                _5
+            ];
+
+        _currentSkybox = device.CreateTexture2D(
+            cubeMapSurfaces,
+            new TextureCreationInfo()
+            {
+                UsageInfo = new ResourceUsageInfo()
+                {
+                    Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
+                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE,
+                    MiscFlags = D3D11_RESOURCE_MISC_FLAG.D3D11_RESOURCE_MISC_TEXTURECUBE
+                }
+            });
+
+        _skyboxView = device.CreateShaderResourceView(_currentSkybox,
+            new ViewCreationInfo()
+            {
+                Format = _currentSkybox.Info.Format,
+                TextureMipLevels = _currentSkybox.Info.MipLevels,
+                ViewResourceType = ViewResourceType.CubeMap
+            });
     }
 
     public override void OnReady(Device device, DeviceContext context)
@@ -224,5 +223,58 @@ internal sealed class SkyboxPass : Pass
         });
 
         _staticVariation.Bind(context);
+    }
+
+    public override void OnLightAdd(LightObject light, Device device)
+    {
+    }
+
+    public override void OnLightRemove(LightObject light, Device device)
+    {
+    }
+
+    public override void OnLightPause(LightObject light, Device device)
+    {
+    }
+
+    public override void OnLightResume(LightObject light, Device device)
+    {
+    }
+
+    public override void OnCameraAdd(CameraObject camera, Device device)
+    {
+    }
+
+    public override void OnCameraPause(CameraObject camera, Device device)
+    {
+    }
+
+    public override void OnCameraResume(CameraObject camera, Device device)
+    {
+    }
+
+    public override void OnCameraRemove(CameraObject camera, Device device)
+    {
+    }
+
+    public override void OnGraphicsAdd(GraphicsObject graphics, Device device)
+    {
+    }
+
+    public override void OnGraphicsRemove(GraphicsObject graphics, Device device)
+    {
+    }
+
+    public override void OnGraphicsPause(GraphicsObject graphics, Device device)
+    {
+    }
+
+    public override void OnGraphicsResume(GraphicsObject graphics, Device device)
+    {
+    }
+
+    public override void OnSkyboxSet(CubemapInfo info, Device device)
+    {
+        CreateAndSetSkybox(info, device);
     }
 }

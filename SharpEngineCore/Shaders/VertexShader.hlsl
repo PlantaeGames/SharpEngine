@@ -4,6 +4,7 @@
 #include "CamTransformCBuffer.hlsl"
 #include "Transformations.hlsl"
 #include "LightsSWBuffer.hlsl"
+#include "LightTypeIds.hlsl"
 
 PixelInput main(VertexInput input)
 {
@@ -33,11 +34,19 @@ PixelInput main(VertexInput input)
         float4 lightViewCoords = TransformLightView(
                                 lightWorldCoords, data.Position, data.Rotation);
    
-        float4 projectionCoords = TransformPerspective(lightViewCoords,
+        float4 projectionCoords = 0;
+        if(data.Type.r == DIRECTIONAL_LIGHT_ID)
+        {
+            projectionCoords = TransformOrthogonal(lightViewCoords, data.Scale);
+        }
+        if(data.Type.r == POINT_LIGHT_ID)
+        {
+            projectionCoords = TransformPerspective(lightViewCoords,
                                     data.AspectRatio,
                                     data.Fov,
                                     data.NearPlane,
                                     data.FarPlane);
+        }
         
         output.LVPPositions[i] = projectionCoords;
     }

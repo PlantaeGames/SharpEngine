@@ -12,17 +12,17 @@ public static class Graphics
 
     private static bool _Initialized = false;
 
-    public static GraphicsObject CreateGraphicsObject(Material material, Mesh mesh)
+    public static GraphicsObject CreateGraphicsObject(GraphicsInfo info)
     {
-        return Renderer.CreateGraphicsObject(material, mesh);
+        return Renderer.CreateGraphicsObject(info);
     }
-    public static LightObject CreateLightObject(LightData data)
+    public static LightObject CreateLightObject(LightInfo info)
     {
-        return Renderer.CreateLightObject(data);
+        return Renderer.CreateLightObject(info);
     }
-    public static CameraObject CreateCameraObject(CameraConstantData data, Viewport viewport)
+    public static CameraObject CreateCameraObject(CameraInfo info)
     {
-        return Renderer.CreateCameraObject(data, viewport);
+        return Renderer.CreateCameraObject(info);
     }
 
     public static Buffer CreateBuffer(Surface surface, Type layout, 
@@ -60,7 +60,7 @@ public static class Graphics
         return Device.CreateTexture2D([surface],
             new TextureCreationInfo()
             {
-                Usage = new ResourceUsageInfo()
+                UsageInfo = new ResourceUsageInfo()
                 {
                     CPUAccessFlags = mutable ?
                         D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_READ |

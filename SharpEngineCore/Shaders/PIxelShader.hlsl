@@ -23,12 +23,12 @@ float4 main(PixelInput input) : SV_Target
                     input.normal, data.Position, input.worldPos, 
                     input.camPosition, data.Intensity.g, data.Intensity.r);
         
-        Texture2D<float> depthTexture = DepthTextures[i];
+        Texture2DArray<float> depthTexture = DepthTextures[i];
         SamplerState depthSampler = DepthSamplers[i];
         
         float bias = max(0.05 * (1.0 - d), 0.005);    
         float visiblity = CalculateShadow(depthTexture, depthSampler,
-                            input.LVPPositions[i],
+                            input.LVPPositions[i], data.Type.r,
                             data.NearPlane, data.FarPlane,
                             bias, data.Intensity.b, data.Intensity.a);
         

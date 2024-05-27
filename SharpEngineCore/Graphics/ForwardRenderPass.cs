@@ -23,26 +23,44 @@ internal sealed class ForwardRenderPass : RenderPass
         _skyboxPass = new SkyboxPass(_outputTexture, cameraObjects);
 
         _forwardPass = new ForwardPass(_outputTexture, maxPerLightsCount,
-            lightObjects, cameraObjects, _depthPass.DepthTextures);
+            lightObjects, cameraObjects, _depthPass.DepthShaderViews, _depthPass.DepthSamplers);
 
         _passes = [_depthPass, _skyboxPass, _forwardPass];
     }
 
-    public (PipelineVariation[] variations, 
-            ConstantBuffer transformBuffer) CreateVariations(
-        Device device, Material material, Mesh mesh)
+    public override void OnCameraAdd(CameraObject camera, Device device)
     {
-        var forwardVariation = _forwardPass.CreateSubVariation(device, material, mesh);
+    }
 
-        var transformBuffer = forwardVariation.VertexShaderStage.ConstantBuffers[1];
+    public override void OnCameraPause(CameraObject camera, Device device)
+    {
+    }
 
-        var depthVariation = _depthPass.CreateSubVariation(device, material, mesh,
-            transformBuffer);
+    public override void OnCameraRemove(CameraObject camera, Device device)
+    {
+    }
 
-        return ([forwardVariation, depthVariation], transformBuffer);
+    public override void OnCameraResume(CameraObject camera, Device device)
+    {
     }
 
     public override void OnGo(Device device, DeviceContext context)
+    {
+    }
+
+    public override void OnGraphicsAdd(GraphicsObject graphics, Device device)
+    {
+    }
+
+    public override void OnGraphicsPause(GraphicsObject graphics, Device device)
+    {
+    }
+
+    public override void OnGraphicsRemove(GraphicsObject graphics, Device device)
+    {
+    }
+
+    public override void OnGraphicsResume(GraphicsObject graphics, Device device)
     {
     }
 
@@ -50,6 +68,26 @@ internal sealed class ForwardRenderPass : RenderPass
     {
     }
 
+    public override void OnLightAdd(LightObject light, Device device)
+    {
+    }
+
+    public override void OnLightPause(LightObject light, Device device)
+    {
+    }
+
+    public override void OnLightRemove(LightObject light, Device device)
+    {
+    }
+
+    public override void OnLightResume(LightObject light, Device device)
+    {
+    }
+
     public override void OnReady(Device device, DeviceContext context)
     {}
+
+    public override void OnSkyboxSet(CubemapInfo info, Device device)
+    {
+    }
 }

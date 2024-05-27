@@ -2,8 +2,20 @@
 
 internal sealed class SkyboxDynamicVariation : PipelineVariation
 {
-    public SkyboxDynamicVariation(Viewport viewport)
+    public SkyboxDynamicVariation(
+        ShaderResourceView skyboxView,
+        Sampler skyboxSampler,
+        Viewport viewport)
     {
+        PixelShaderStage = new PixelShaderStage()
+        {
+            ShaderResourceViews = [skyboxView],
+            Samplers = [skyboxSampler],
+
+            Flags = PixelShaderStage.BindFlags.ShaderResourceViews |
+                    PixelShaderStage.BindFlags.Samplers
+        };
+
         Rasterizer = new Rasterizer()
         {
             Viewports = [viewport],
@@ -11,6 +23,6 @@ internal sealed class SkyboxDynamicVariation : PipelineVariation
             Flags = Rasterizer.BindFlags.Viewports
         };
 
-        _stages = [Rasterizer];
+        _stages = [PixelShaderStage, Rasterizer];
     }
 }

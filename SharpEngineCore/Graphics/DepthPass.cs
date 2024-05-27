@@ -1,4 +1,5 @@
-﻿using TerraFX.Interop.DirectX;
+﻿using System;
+using TerraFX.Interop.DirectX;
 using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
@@ -17,8 +18,10 @@ internal sealed class DepthPass : Pass
 
     private ConstantBuffer _lightPerspectiveBuffer;
 
-    public readonly List<Texture2D> DepthTextures = new();
-    private readonly List<DepthStencilView> _depthViews = new();
+    public List<Texture2D> DepthTextures => _data.DepthTextures;
+    public List<ShaderResourceView> DepthShaderViews => _data.ShaderViews;
+    public List<Sampler> DepthSamplers => _data.DepthSamplers;
+    private readonly DepthPassData _data;
 
     private readonly List<LightObject> _lights;
     private readonly int _maxLightsCount;
@@ -31,41 +34,55 @@ internal sealed class DepthPass : Pass
     {
         _lights = lights;
         _maxLightsCount = maxLightsCount;
-    }
 
-    public PipelineVariation CreateSubVariation(
-        Device device, Material material, Mesh mesh, ConstantBuffer transformBuffer)
-    {
-        return AddNewSunVariation(device, material, mesh, transformBuffer);
+        _data = new(maxLightsCount);
     }
 
     public override void OnGo(Device device, DeviceContext context)
     {
         for (var i = 0; i < _lights.Count; i++)
         {
-            var dynamicVariation = new DepthDynamicVariation(
-                _outputView,
-                _depthViews[i]);
-            dynamicVariation.Bind(context);
+            var data = _data.Get(_lights[i].Id);
+            if (data.active == false)
+                continue;
 
-            _lightPerspectiveBuffer.Update(
-                new LightTransformConstantData()
-                {
-                    Position = _lights[i].Data.Position,
-                    Rotation = _lights[i].Data.Rotation,
-                    LightType = _lights[i].Data.LightType,
-                    Attributes = _lights[i].Data.Attributes
-                });
-
-            foreach (var variation in _subVariations)
+            for (var x = 0; x < data.texture.Info.SubtexturesCount; x++)
             {
-                variation.Bind(context);
-                if (variation.UseIndexRendering)
-                    context.DrawIndexed(variation.IndexCount, 0);
-                else
-                    context.Draw(variation.VertexCount, 0);
+                var dynamicVariation = new DepthDynamicVariation(
+                    _outputView,
+                    data.views[x]);
+                dynamicVariation.Bind(context);
 
-                variation.Unbind(context);
+                var rotation = _lights[i].Data.Rotation;
+
+                if (_lights[i].Data.LightType == Light.Point)
+                {
+                    // change rotation
+                    rotation = Utilities.Utilities.CubeFaceIndexToAngle(x);
+                }
+
+                _lightPerspectiveBuffer.Update(
+                    new LightTransformConstantData()
+                    {
+                        Position = _lights[i].Data.Position,
+                        Rotation = rotation,
+                        Scale = _lights[i].Data.Scale,
+                        LightType = _lights[i].Data.LightType,
+                        Attributes = _lights[i].Data.Attributes
+                    });
+
+                foreach (var variation in _subVariations)
+                {
+
+
+                    variation.Bind(context);
+                    if (variation.UseIndexRendering)
+                        context.DrawIndexed(variation.IndexCount, 0);
+                    else
+                        context.Draw(variation.VertexCount, 0);
+
+                    variation.Unbind(context);
+                }
             }
         }
     }
@@ -109,14 +126,12 @@ internal sealed class DepthPass : Pass
         _staticVariation = new DepthVariation(
             vertexShader, pixelShader, viewport, _depthState);
 
-        AddDepthTextures(device, _maxLightsCount);
-
         OutputTexture = device.CreateTexture2D(
             [new FSurface(new(SHADOW_MAP_WIDTH, SHADOOW_MAP_HEIGHT), Channels.Quad)],
             new TextureCreationInfo()
             {
                 Format = DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM,
-                Usage = new ResourceUsageInfo()
+                UsageInfo = new ResourceUsageInfo()
                 {
                     Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
                     BindFlags = D3D11_BIND_FLAG.D3D11_BIND_RENDER_TARGET
@@ -129,91 +144,44 @@ internal sealed class DepthPass : Pass
                 Format = OutputTexture.Info.Format,
                 ViewResourceType = ViewResourceType.Texture2D
             });
+
+        var samplers = new Sampler[_maxLightsCount];
+        for (var i = 0; i < _maxLightsCount; i++)
+        {
+            var sampler = device.CreateSampler(new()
+            {
+                AddressMode = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_CLAMP,
+                Filter = D3D11_FILTER.D3D11_FILTER_MIN_MAG_MIP_POINT
+            });
+
+            samplers[i] = sampler;
+        }
+
+        _data.SetSamplers(samplers);
     }
 
     public override void OnReady(Device device, DeviceContext context)
     {
-        foreach (var view in _depthViews)
+        foreach (var value in _data)
         {
-            context.ClearDepthStencilView(view,
-                new DepthStencilClearInfo()
-                {
-                    ClearFlags = D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH,
-                    Depth = CLEAR_DEPTH_VALUE,
-                });
+            if (value.texture.IsValid() == false)
+                continue;
+
+            foreach (var view in value.views)
+            {
+                context.ClearDepthStencilView(view,
+                    new DepthStencilClearInfo()
+                    {
+                        ClearFlags = D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH,
+                        Depth = CLEAR_DEPTH_VALUE,
+                    });
+            }
         }
 
         context.ClearRenderTargetView(_outputView, new());
 
-        NormalizeDepthTextures(device);
-
         _staticVariation.Bind(context);
     }
-
-    private void NormalizeDepthTextures(Device device)
-    {
-        // if we r in lights limit 
-        if(_lights.Count > _maxLightsCount == false)
-            return;
-
-        if (DepthTextures.Count == _lights.Count)
-            return;
-
-        // need to add more textures
-        if (DepthTextures.Count < _lights.Count)
-        {
-            var addCount = _lights.Count - DepthTextures.Count;
-            AddDepthTextures(device, addCount);
-
-            return;
-        }
-
-        var removeCount = DepthTextures.Count - _lights.Count;
-        var newDepthCount = DepthTextures.Count - removeCount;
-        var stableCount = newDepthCount < _maxLightsCount ?
-                           _maxLightsCount - newDepthCount : 0;
-        removeCount -= stableCount;
-
-        RemoveDepthTextures(device, removeCount);
-    }
-
-    private void AddDepthTextures(Device device, int count)
-    {
-        for (var i = 0; i < count; i++)
-        {
-            var depthTexture = device.CreateTexture2D(
-                [new FSurface(new(SHADOW_MAP_WIDTH, SHADOOW_MAP_HEIGHT))],
-                new TextureCreationInfo()
-                {
-                    Format = DXGI_FORMAT.DXGI_FORMAT_R32_TYPELESS,
-                    Usage = new ResourceUsageInfo()
-                    {
-                        Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
-                        BindFlags = D3D11_BIND_FLAG.D3D11_BIND_DEPTH_STENCIL |
-                                    D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE
-                    }
-                });
-
-            DepthTextures.Add(depthTexture);
-
-            var depthView = device.CreateDepthStencilView(
-                depthTexture,
-                new ViewCreationInfo()
-                {
-                    Format = DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT,
-                    ViewResourceType = ViewResourceType.Texture2D
-                });
-
-            _depthViews.Add(depthView);
-        }
-    }
-
-    private void RemoveDepthTextures(Device device, int removeCount)
-    {
-        DepthTextures.RemoveRange(DepthTextures.Count - removeCount, removeCount);
-        _depthViews.RemoveRange(_depthViews.Count - removeCount, removeCount);
-    }
-
     private PipelineVariation AddNewSunVariation(
         Device device, Material material, Mesh mesh, ConstantBuffer transformBuffer)
     {
@@ -258,5 +226,117 @@ internal sealed class DepthPass : Pass
 
         _subVariations.Add(variation);
         return variation;
+    }
+
+    public override void OnLightAdd(LightObject light, Device device)
+    {
+        var surfaces = new List<FSurface>();
+        if(light.Data.LightType == Light.Point)
+        {
+            for(var i = 0; i < 6; i ++)
+            {
+                surfaces.Add(new FSurface(new(SHADOW_MAP_WIDTH, SHADOOW_MAP_HEIGHT)));
+            }
+        }
+        if(light.Data.LightType == Light.Directional)
+        {
+            surfaces.Add(new FSurface(new(SHADOW_MAP_WIDTH, SHADOOW_MAP_HEIGHT)));
+        }
+
+        var texture = device.CreateTexture2D(
+            surfaces.ToArray(),
+            new TextureCreationInfo()
+            {
+                UsageInfo = new ResourceUsageInfo()
+                {
+                    Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
+                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_DEPTH_STENCIL |
+                                D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE                    
+                },
+                Format = DXGI_FORMAT.DXGI_FORMAT_R32_TYPELESS
+            });
+
+        var views = new List<DepthStencilView>();
+        for(var i = 0; i < texture.Info.SubtexturesCount; i++)
+        {
+            var view = device.CreateDepthStencilView(texture,
+                new ViewCreationInfo()
+                {
+                    Format = DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT,
+
+                    TextureSliceIndex = i,
+                    TextureSliceCount = 1,
+                    ViewResourceType = ViewResourceType.Texture2DArray
+                }); ;
+
+            views.Add(view);
+        }
+
+        var srv = device.CreateShaderResourceView(
+            texture,
+            new ViewCreationInfo()
+            {
+                Format = DXGI_FORMAT.DXGI_FORMAT_R32_FLOAT,
+
+                TextureSliceCount = texture.Info.SubtexturesCount,
+                ViewResourceType = ViewResourceType.Texture2DArray
+            });
+
+        _data.Add(light.Id, texture, views, srv);
+    }
+
+    public override void OnLightRemove(LightObject light, Device device)
+    {
+        _data.Remove(light.Id);
+    }
+
+    public override void OnLightPause(LightObject light, Device device)
+    {
+        _data.Pause(light.Id);
+    }
+
+    public override void OnLightResume(LightObject light, Device device)
+    {
+        _data.Resume(light.Id);
+    }
+
+    public override void OnCameraAdd(CameraObject camera, Device device)
+    {
+    }
+
+    public override void OnCameraPause(CameraObject camera, Device device)
+    { 
+    }
+
+    public override void OnCameraResume(CameraObject camera, Device device)
+    {
+    }
+
+    public override void OnCameraRemove(CameraObject camera, Device device)
+    {
+    }
+
+    public override void OnGraphicsAdd(GraphicsObject graphics, Device device)
+    {
+        var variation = AddNewSunVariation(
+            device, graphics.Info.material, graphics.Info.mesh, graphics.GetTransformBuffer());
+
+        graphics.AddVariation(variation);
+    }
+
+    public override void OnGraphicsRemove(GraphicsObject graphics, Device device)
+    {
+    }
+
+    public override void OnGraphicsPause(GraphicsObject graphics, Device device)
+    {
+    }
+
+    public override void OnGraphicsResume(GraphicsObject graphics, Device device)
+    {
+    }
+
+    public override void OnSkyboxSet(CubemapInfo info, Device device)
+    {
     }
 }

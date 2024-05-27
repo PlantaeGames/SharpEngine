@@ -3,9 +3,11 @@
 internal abstract class ResourceView
 {
     public readonly ResourceViewInfo ResourceViewInfo;
-
+    
     private readonly Resource _resource;
     private readonly Device _device;
+
+    public bool IsValid => _resource.IsValid();
 
     protected ResourceView(Resource resource,
         ResourceViewInfo resourceViewInfo,

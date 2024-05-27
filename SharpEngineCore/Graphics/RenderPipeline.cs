@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using TerraFX.Interop.DirectX;
+using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
 
@@ -15,12 +17,129 @@ internal abstract class RenderPipeline : PipelineEvents
     private List<LightObject> _pausedLightObjects = new();
     private List<CameraObject> _pausedCameraObjects = new();
 
-    public abstract GraphicsObject CreateGraphicsObject(Device device, Material material,
-                                                        Mesh mesh);
-    public abstract CameraObject CreateCameraObject(Device device, 
-                                           CameraConstantData data, Viewport viewport);
-    public abstract LightObject CreateLightObject(Device device, LightData data);
-    public abstract List<GraphicsObject> GetGraphicsObjects();
+    public sealed override void AddGraphics(GraphicsInfo info, Device device, 
+                                            ref GraphicsObject graphics)
+    {
+        _graphicsObjects.Add(graphics);
+
+        OnGraphicsAdd(graphics, device);
+
+        foreach(var renderPass in _renderPasses)
+            renderPass.AddGraphics(info, device, ref graphics);
+    }
+
+    public sealed override void PauseGraphics(GraphicsObject graphics, Device device)
+    {
+        graphics.SetState(State.Paused);
+
+        OnGraphicsPause(graphics, device);
+
+        foreach (var renderPass in _renderPasses)
+            renderPass.PauseGraphics(graphics, device);
+    }
+
+    public sealed override void ResumeGraphics(GraphicsObject graphics, Device device)
+    {
+        graphics.SetState(State.Active);
+
+        OnGraphicsResume(graphics, device);
+
+        foreach (var renderPass in _renderPasses)
+            renderPass.ResumeGraphics(graphics, device);
+    }
+
+    public sealed override void RemoveGraphics(GraphicsObject graphics, Device device)
+    {
+        graphics.SetState(State.Expired);
+
+        OnGraphicsRemove(graphics, device);
+
+        foreach (var renderPass in _renderPasses)
+            renderPass.RemoveGraphics(graphics, device);
+    }
+
+    public sealed override void AddLight(LightInfo info, Device device,
+                                            ref LightObject light)
+    {
+        _lightObjects.Add(light);
+
+        OnLightAdd(light, device);
+
+        foreach (var renderPass in _renderPasses)
+            renderPass.AddLight(info, device, ref light);
+    }
+    public sealed override void RemoveLight(LightObject light, Device device)
+    {
+        light.SetState(State.Expired);
+
+        OnLightRemove(light, device);
+
+        foreach (var renderPass in _renderPasses)
+            renderPass.RemoveLight(light, device);
+    }
+    public sealed override void PauseLight(LightObject light, Device device)
+    {
+        light.SetState(State.Paused);
+
+        OnLightPause(light, device);
+
+        foreach (var renderPass in _renderPasses)
+            renderPass.PauseLight(light, device);
+    }
+    public sealed override void ResumeLight(LightObject light, Device device)
+    {
+        light.SetState(State.Active);
+
+        OnLightResume(light, device);
+
+        foreach (var renderPass in _renderPasses)
+            renderPass.ResumeLight(light, device);
+    }
+    public sealed override void AddCamera(CameraInfo info, Device device,
+                                                ref CameraObject camera)
+    {
+        _cameraObjects.Add(camera);
+
+        OnCameraAdd(camera, device);
+
+        foreach (var renderPass in _renderPasses)
+            renderPass.AddCamera(info, device, ref camera);
+    }
+    public sealed override void RemoveCamera(CameraObject camera, Device device)
+    {
+        camera.SetState(State.Expired);
+
+        OnCameraRemove(camera, device);
+
+        foreach (var renderPass in _renderPasses)
+            renderPass.RemoveCamera(camera, device);
+    }
+    public sealed override void PauseCamera(CameraObject camera, Device device)
+    {
+        camera.SetState(State.Paused);
+
+        OnCameraPause(camera, device);
+
+        foreach (var renderPass in _renderPasses)
+            renderPass.PauseCamera(camera, device);
+    }
+    public sealed override void ResumeCamera(CameraObject camera, Device device)
+    {
+        camera.SetState(State.Active);
+
+        OnCameraResume(camera, device);
+
+        foreach (var renderPass in _renderPasses)
+            renderPass.ResumeCamera(camera, device);
+    }
+
+    public sealed override void SetSkybox(CubemapInfo info, Device device)
+    {
+        OnSkyboxSet(info, device);
+
+        foreach (var renderPass in _renderPasses)
+            renderPass.SetSkybox(info, device);
+    }
 
 #nullable enable
     protected T? Get<T>()
@@ -118,6 +237,7 @@ internal abstract class RenderPipeline : PipelineEvents
             for(var i = 0; i < toRemove.Count; i++)
             {
                 _lightObjects.Add(_pausedLightObjects[toResume[i]]);
+
                 _pausedLightObjects.RemoveAt(toResume[i]);
             }
 

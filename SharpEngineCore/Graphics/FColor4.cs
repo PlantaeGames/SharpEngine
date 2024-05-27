@@ -1,4 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
+using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
 
@@ -44,5 +46,30 @@ public struct FColor4 : IFragmentable
     public int GetFragmentsCount()
     {
         return ToFragments().Length;
+    }
+
+    public static bool operator ==(FColor4 a, FColor4 b)
+    {
+        return (
+            a.r == b.r &&
+            a.g == b.g &&
+            a.b == b.b &&
+            a.a == b.a
+            );
+    }
+
+    public static bool operator !=(FColor4 a, FColor4 b)
+    {
+        return !(a == b);
+    }
+
+    public override bool Equals([NotNullWhen(true)] object obj)
+    {
+        return base.Equals(obj);
+    }
+
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
     }
 }

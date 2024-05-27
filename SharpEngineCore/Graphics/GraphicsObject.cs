@@ -2,8 +2,10 @@
 
 public sealed class GraphicsObject : Object
 {
+    public readonly GraphicsInfo Info;
+
     private readonly List<PipelineVariation> _variations = new();
-    private readonly ConstantBuffer _transformBuffer;
+    private ConstantBuffer _transformBuffer;
 
     public TransformConstantData Transform { get; private set; }
 
@@ -13,9 +15,16 @@ public sealed class GraphicsObject : Object
         Transform = data;
     }
 
-    internal void AddVariations(PipelineVariation[] variations)
+    internal void SetTransformBuffer(ConstantBuffer transformBuffer)
     {
-        _variations.AddRange(variations);
+        _transformBuffer = transformBuffer;
+    }
+
+    internal ConstantBuffer GetTransformBuffer() => _transformBuffer;
+
+    internal void AddVariation(PipelineVariation variation)
+    {
+        _variations.Add(variation);
     }
 
     protected override void OnPause()
@@ -40,9 +49,9 @@ public sealed class GraphicsObject : Object
         }
     }
 
-    internal GraphicsObject(ConstantBuffer transformBuffer) :
+    internal GraphicsObject(GraphicsInfo info) :
         base()
     {
-        _transformBuffer = transformBuffer;
+        Info = info;
     }
 }

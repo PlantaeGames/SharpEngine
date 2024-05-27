@@ -247,17 +247,29 @@ internal sealed class Device
                     break;
                 case ViewResourceType.Texture2D:
                     desc.ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_TEXTURE2D;
-                    desc.Texture2D.MostDetailedMip = 0;
-                    desc.Texture2D.MipLevels = (uint)info.TextureMipLevels;
                     unchecked
                     {
-                        desc.Texture2D.MipLevels = (uint)-1;
+                        desc.Texture2D.MostDetailedMip = (uint)info.TextureMipIndex;
+                        desc.Texture2D.MipLevels = (uint)info.TextureMipLevels;
                     }
                     break;
                 case ViewResourceType.CubeMap:
                     desc.ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_TEXTURECUBE;
-                    desc.TextureCube.MostDetailedMip = 0;
-                    desc.TextureCube.MipLevels = (uint)info.TextureMipLevels;
+                    unchecked
+                    {
+                        desc.TextureCube.MostDetailedMip = (uint)info.TextureMipIndex;
+                        desc.TextureCube.MipLevels = (uint)info.TextureMipLevels;
+                    }
+                    break;
+                case ViewResourceType.Texture2DArray:
+                    desc.ViewDimension = D3D_SRV_DIMENSION.D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+                    unchecked
+                    {
+                        desc.Texture2DArray.MostDetailedMip = (uint)info.TextureMipIndex;
+                        desc.Texture2DArray.ArraySize = (uint)info.TextureSliceCount;
+                        desc.Texture2DArray.FirstArraySlice = (uint)info.TextureSliceIndex;
+                        desc.Texture2DArray.MipLevels = (uint)info.TextureMipLevels;
+                    }
                     break;
                 default:
                     pDesc = (D3D11_SHADER_RESOURCE_VIEW_DESC*)IntPtr.Zero;
@@ -683,7 +695,7 @@ internal sealed class Device
             Size = size,
             Channels = channels,
             Format = formatToUse,
-            UsageInfo = info.Usage
+            UsageInfo = info.UsageInfo
         },
         this);
 
@@ -699,11 +711,11 @@ internal sealed class Device
                 Quality = 0u,
                 Count = 1u
             };
-            desc.MiscFlags = (uint)info.Usage.MiscFlags;
+            desc.MiscFlags = (uint)info.UsageInfo.MiscFlags;
             desc.Format = formatToUse;
-            desc.Usage = info.Usage.Usage;
-            desc.BindFlags = (uint)info.Usage.BindFlags;
-            desc.CPUAccessFlags = (uint)info.Usage.CPUAccessFlags;
+            desc.Usage = info.UsageInfo.Usage;
+            desc.BindFlags = (uint)info.UsageInfo.BindFlags;
+            desc.CPUAccessFlags = (uint)info.UsageInfo.CPUAccessFlags;
 
             var pInitialData = stackalloc D3D11_SUBRESOURCE_DATA[surfaces.Length];
             for (var i = 0; i < surfaces.Length; i++)

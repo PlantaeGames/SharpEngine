@@ -9,8 +9,6 @@ internal sealed class SkyboxVariation : PipelineVariation
         VertexShader vertexShader,
         ConstantBuffer vertexTransformBuffer,
         PixelShader pixelShader,
-        ShaderResourceView cubeMapView,
-        Sampler cubeMapSampler,
         RenderTargetView renderTargetView,
         DepthStencilView depthView,
         RasterizerState rasterizerState)
@@ -38,13 +36,8 @@ internal sealed class SkyboxVariation : PipelineVariation
         PixelShaderStage = new PixelShaderStage()
         {
             PixelShader = pixelShader,
-            ShaderResourceViews = [cubeMapView],
-            Samplers = [cubeMapSampler],
-            SamplerStartIndex = 0,
 
-            Flags = PixelShaderStage.BindFlags.PixelShader |
-                    PixelShaderStage.BindFlags.ShaderResourceViews |
-                    PixelShaderStage.BindFlags.Samplers
+            Flags = PixelShaderStage.BindFlags.PixelShader
         };
 
         Rasterizer = new Rasterizer()

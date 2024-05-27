@@ -2,7 +2,7 @@
 
 namespace SharpEngineCore.Graphics;
 
-[StructLayout(LayoutKind.Sequential, Pack = 0, Size = 112)]
+[StructLayout(LayoutKind.Sequential, Pack = 0, Size = 128)]
 public struct LightData : IFragmentable, ISurfaceable
 {
     public FColor4 Position;
@@ -11,8 +11,7 @@ public struct LightData : IFragmentable, ISurfaceable
     public FColor4 Color;
     public FColor4 AmbientColor;
     public FColor4 Intensity;
-    public FColor4 LightType;
-
+    public readonly FColor4 LightType { get; init; }
     public FColor4 Attributes;
 
     public int GetFragmentsCount()

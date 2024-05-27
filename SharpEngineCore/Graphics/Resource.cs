@@ -14,6 +14,14 @@ public abstract class Resource
     private readonly ComPtr<ID3D11Resource> _pResource;
     private protected readonly Device _device;
 
+    public bool IsValid()
+    {
+        unsafe
+        {
+            return _pResource.Get() != (ID3D11Resource*)IntPtr.Zero;
+        }
+    }
+
     private protected void Write(Surface surface, int subIndex)
     {
         Debug.Assert(ResourceInfo.UsageInfo.Usage == D3D11_USAGE.D3D11_USAGE_DYNAMIC ||

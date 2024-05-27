@@ -24,30 +24,25 @@ internal sealed class ForwardPass : Pass
     private readonly List<CameraObject> _cameraObjects;
     private ConstantBuffer _currentCameraCBuffer;
 
-    private readonly List<Texture2D> _shadowDepthTextures;
     private readonly List<ShaderResourceView> _shadowSRVS = new();
     private readonly List<Sampler> _depthSamplers = new();
 
     private PipelineVariation _staticVariation;
 
-    public PipelineVariation CreateSubVariation(
-        Device device, Material material, Mesh mesh)
-    {
-        return AddNewSubVariation(device, material, mesh);
-    }
-
     public ForwardPass(Texture2D outputTexture,
         int maxPerVariationLightsCount,
         List<LightObject> lightObjects,
         List<CameraObject> cameraObjects,
-        List<Texture2D> shadowDepthTextures) :
+        List<ShaderResourceView> depthSRVs,
+        List<Sampler> depthSamplers) :
         base()
     {
         _outputTexture = outputTexture;
         _maxPerVariationLightsCount = maxPerVariationLightsCount;
         _lightObjects = lightObjects;
         _cameraObjects = cameraObjects;
-        _shadowDepthTextures = shadowDepthTextures;
+        _shadowSRVS = depthSRVs;
+        _depthSamplers = depthSamplers;
     }
 
     public override void OnGo(Device device, DeviceContext context)
@@ -63,13 +58,14 @@ internal sealed class ForwardPass : Pass
             {
                 variation.Bind(context);
 
+                // TODO: NEED CULLING HERE
                 // updating affecting lights
                 UpdateLightsBuffer(_lightObjects);
 
+                // TODO: NEED CULLING HERE
                 // updating depthTextures to affecting textures
                 var dynamicSubVariation = new ForwardDynamicSubVariation(
-                    variation.PixelShaderStage,
-                    _shadowSRVS.ToArray(), _depthSamplers.ToArray());
+                    variation.PixelShaderStage, _shadowSRVS.ToArray());
                 dynamicSubVariation.Bind(context);
 
 
@@ -97,7 +93,7 @@ internal sealed class ForwardPass : Pass
             new TextureCreationInfo()
             {
                 Format = DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT,
-                Usage = new ResourceUsageInfo()
+                UsageInfo = new ResourceUsageInfo()
                 {
                     Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
                     BindFlags = D3D11_BIND_FLAG.D3D11_BIND_DEPTH_STENCIL
@@ -149,8 +145,6 @@ internal sealed class ForwardPass : Pass
                 BufferBytesSize = _lightsBuffer.Info.BytesSize,
                 ViewResourceType = ViewResourceType.Buffer
             });
-
-        AddShadowSRVS(device, _maxPerVariationLightsCount);
     }
 
     public override void OnReady(Device device, DeviceContext context)
@@ -161,64 +155,7 @@ internal sealed class ForwardPass : Pass
             Depth = DEPTH_CLEAR_VALUE,
         });
 
-        NormalizeDepthTextures(device);
-
         _staticVariation.Bind(context);
-    }
-
-    private void NormalizeDepthTextures(Device device)
-    {
-        // if we r in lights limit 
-        if (_shadowDepthTextures.Count > _maxPerVariationLightsCount == false)
-            return;
-
-        if (_shadowSRVS.Count == _shadowDepthTextures.Count)
-            return;
-
-        // need to add more textures
-        if (_shadowSRVS.Count < _shadowDepthTextures.Count)
-        {
-            var addCount = _shadowDepthTextures.Count - _shadowSRVS.Count;
-            AddShadowSRVS(device, addCount);
-
-            return;
-        }
-
-        var removeCount = _shadowSRVS.Count - _shadowDepthTextures.Count;
-        var newDepthCount = _shadowSRVS.Count - removeCount;
-        var stableCount = newDepthCount < _maxPerVariationLightsCount ?
-                           _maxPerVariationLightsCount - newDepthCount : 0;
-        removeCount -= stableCount;
-
-        RemoveShadowSRVS(device, removeCount);
-    }
-
-    private void AddShadowSRVS(Device device, int count)
-    {
-        var startIndex = _shadowSRVS.Count;
-        for (var i = 0; i < count; i++)
-        {
-            _shadowSRVS.Add(device.CreateShaderResourceView(
-                _shadowDepthTextures[startIndex + i],
-                new ViewCreationInfo()
-                {
-                    Format = DXGI_FORMAT.DXGI_FORMAT_R32_FLOAT,
-                    ViewResourceType = ViewResourceType.Texture2D
-                }));
-
-            _depthSamplers.Add(device.CreateSampler(
-                new SamplerInfo()
-                {
-                    Filter = D3D11_FILTER.D3D11_FILTER_MIN_MAG_MIP_POINT,
-                    AddressMode = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_BORDER
-                }));
-        }
-    }
-
-    private void RemoveShadowSRVS(Device device, int removeCount)
-    {
-        _shadowSRVS.RemoveRange(_shadowSRVS.Count - removeCount, removeCount);
-        _depthSamplers.RemoveRange(_depthSamplers.Count - removeCount, removeCount);
     }
 
     private void UpdateLightsBuffer(List<LightObject> lightObjects)
@@ -254,7 +191,7 @@ internal sealed class ForwardPass : Pass
     }
 
     private PipelineVariation AddNewSubVariation(
-        Device device, Material material, Mesh mesh)
+        Device device, Material material, Mesh mesh, ConstantBuffer transformBuffer)
     {
         var details = (material, mesh);
 
@@ -349,15 +286,15 @@ internal sealed class ForwardPass : Pass
                 }));
         }
 
-        var transformBuffer = Buffer.CreateConstantBuffer(
-            device.CreateBuffer(new TransformConstantData().ToSurface(),
-            typeof(TransformConstantData),
-            new ResourceUsageInfo()
-            {
-                Usage = D3D11_USAGE.D3D11_USAGE_DYNAMIC,
-                BindFlags = D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER,
-                CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE
-            }));
+        //var transformBuffer = Buffer.CreateConstantBuffer(
+        //    device.CreateBuffer(new TransformConstantData().ToSurface(),
+        //    typeof(TransformConstantData),
+        //    new ResourceUsageInfo()
+        //    {
+        //        Usage = D3D11_USAGE.D3D11_USAGE_DYNAMIC,
+        //        BindFlags = D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER,
+        //        CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE
+        //    }));
 
         var vertexConstantBuffers = new List<ConstantBuffer>
         {
@@ -384,5 +321,59 @@ internal sealed class ForwardPass : Pass
 
         _subVariations.Add(variation);
         return variation;
+    }
+
+    public override void OnCameraAdd(CameraObject camera, Device device)
+    {
+    }
+
+    public override void OnCameraPause(CameraObject camera, Device device)
+    {
+    }
+
+    public override void OnCameraRemove(CameraObject camera, Device device)
+    {
+    }
+
+    public override void OnCameraResume(CameraObject camera, Device device)
+    {
+    }
+
+    public override void OnGraphicsAdd(GraphicsObject graphics, Device device)
+    {
+        var variation = AddNewSubVariation(
+            device, graphics.Info.material, graphics.Info.mesh, graphics.GetTransformBuffer());
+        graphics.AddVariation(variation);
+    }
+
+    public override void OnGraphicsPause(GraphicsObject graphics, Device device)
+    {
+    }
+
+    public override void OnGraphicsRemove(GraphicsObject graphics, Device device)
+    {
+    }
+
+    public override void OnGraphicsResume(GraphicsObject graphics, Device device)
+    {
+    }
+
+    public override void OnLightAdd(LightObject light, Device device)
+    {
+    }
+
+    public override void OnLightPause(LightObject light, Device device)
+    {
+    }
+
+    public override void OnLightRemove(LightObject light, Device device)
+    {
+    }
+
+    public override void OnLightResume(LightObject light, Device device)
+    {
+    }
+    public override void OnSkyboxSet(CubemapInfo info, Device device)
+    {
     }
 }

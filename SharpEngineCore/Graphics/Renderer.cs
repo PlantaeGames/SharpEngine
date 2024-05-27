@@ -2,6 +2,7 @@
 
 namespace SharpEngineCore.Graphics;
 
+
 internal class Renderer
 {
     private const int DEFAULT_ADAPTER = 0;
@@ -12,19 +13,63 @@ internal class Renderer
     protected RenderPipeline _pipeline;
     protected Swapchain _swapchain;
 
-    public GraphicsObject CreateGraphicsObject(Material material, Mesh mesh)
+    public GraphicsObject CreateGraphicsObject(GraphicsInfo info)
     {
-        return _pipeline.CreateGraphicsObject(_device, material, mesh);
+        var graphics = new GraphicsObject(info);
+        _pipeline.AddGraphics(info, _device, ref graphics);
+
+        return graphics;
     }
 
-    public LightObject CreateLightObject(LightData data)
+    public LightObject CreateLightObject(LightInfo info)
     {
-        return _pipeline.CreateLightObject(_device, data);
+        var light = new LightObject(info.data); 
+        _pipeline.AddLight(info, _device, ref light);
+
+        return light;
     }
 
-    public CameraObject CreateCameraObject(CameraConstantData data, Viewport viewport)
+    public CameraObject CreateCameraObject(CameraInfo info)
     {
-        return _pipeline.CreateCameraObject(_device, data, viewport);
+        var camera = new CameraObject(info.cameraTransform, info.viewport);
+        _pipeline.AddCamera(info, _device, ref camera);
+
+        return camera;
+    }
+
+    public void PauseCameraObject(CameraObject camera)
+    {
+        _pipeline.PauseCamera(camera, _device);
+    }
+
+    public void ResumeCameraObject(CameraObject camera)
+    {
+        _pipeline.ResumeCamera(camera, _device);
+    }
+
+    public void RemoveCameraInfo(CameraObject camera)
+    {
+        _pipeline.RemoveCamera(camera, _device);
+    }
+
+    public void RemoveLightObject(LightObject light)
+    {
+        _pipeline.RemoveLight(light, _device);
+    }
+
+    public void PauseLightObject(LightObject light)
+    {
+        _pipeline.PauseLight(light, _device);
+    }
+
+    public void ResumeLightObject(LightObject light)
+    {
+        _pipeline.ResumeLight(light, _device);
+    }
+
+    public void SetSkybox(CubemapInfo info)
+    {
+        _pipeline.SetSkybox(info, _device);
     }
 
     internal Device GetDevice() => _device;

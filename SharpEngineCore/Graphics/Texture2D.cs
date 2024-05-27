@@ -14,4 +14,10 @@ public sealed class Texture2D : Texture
     { 
         _pTexture = new(pTexture2D);
     }
+
+    internal static Texture2D GetPlaceHolder() => new Texture2D();
+
+    private Texture2D() : 
+        base(new(), null, null)
+    {}
 }

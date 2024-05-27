@@ -33,4 +33,56 @@ internal sealed class OutputPass : Pass
     public override void OnReady(Device device, DeviceContext context)
     {
     }
+
+    public override void OnLightAdd(LightObject light, Device device)
+    { 
+    }
+
+    public override void OnLightRemove(LightObject light, Device device)
+    {
+    }
+
+    public override void OnLightPause(LightObject light, Device device)
+    { 
+    }
+
+    public override void OnLightResume(LightObject light, Device device)
+    {
+    }
+
+    public override void OnCameraAdd(CameraObject camera, Device device)
+    {
+    }
+
+    public override void OnCameraPause(CameraObject camera, Device device)
+    {
+    }
+
+    public override void OnCameraResume(CameraObject camera, Device device)
+    {
+    }
+
+    public override void OnCameraRemove(CameraObject camera, Device device)
+    {
+    }
+
+    public override void OnGraphicsAdd(GraphicsObject graphics, Device device)
+    {
+    }
+
+    public override void OnGraphicsRemove(GraphicsObject graphics, Device device)
+    {
+    }
+
+    public override void OnGraphicsPause(GraphicsObject graphics, Device device)
+    {
+    }
+
+    public override void OnGraphicsResume(GraphicsObject graphics, Device device)
+    {
+    }
+
+    public override void OnSkyboxSet(CubemapInfo info, Device device)
+    {
+    }
 }
