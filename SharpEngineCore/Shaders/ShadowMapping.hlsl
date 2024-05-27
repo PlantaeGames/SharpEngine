@@ -13,7 +13,7 @@ float ToLinearDepth(float depth, float nearPlane, float farPlane)
 }
 
 float CalculateShadow(Texture2DArray<float> depthTexture, SamplerState depthSampler,
-                      float4 lvpPos, float lightType,
+                      float4 lvpPos, float lightType, float index,
                       float nearPlane, float farPlane,
                       float bias, float k, float kHalf)
 {
@@ -28,7 +28,7 @@ float CalculateShadow(Texture2DArray<float> depthTexture, SamplerState depthSamp
         z = ToLinearDepth(z, nearPlane, farPlane);
     }
     
-    float depth = depthTexture.Sample(depthSampler, float3(uvCoords.x, uvCoords.y, 0));
+    float depth = depthTexture.Sample(depthSampler, float3(uvCoords.x, uvCoords.y, index));
     float linDepth = ToLinearDepth(depth, nearPlane, farPlane);
     
     float visibility = k;

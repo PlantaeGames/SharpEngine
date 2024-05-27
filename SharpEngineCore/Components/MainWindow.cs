@@ -34,34 +34,35 @@ internal sealed class MainWindow : Window
 
     private GraphicsObject _cube;
     private CameraObject _camera;
+    private LightObject _light;
 
     public void Update()
     {
         Graphics.Graphics.Render();
 
-        unchecked
+        var pitch = GetAsyncKeyState(VK.VK_F2);
+        if (pitch < 0)
         {
-            var _ = 0;
-            for (var i = 0; i < 100000; i+=4)
-            {
-                _ += 1;
-                _ += 1;
-                _ += 1;
-                _ += 1;
-            }
+            _anglePitch -= _deltaTime * _speed;
         }
 
-        //var pitch = GetAsyncKeyState(VK.VK_F2);
-        //if (pitch < 0)
-        //{
-        //    _anglePitch -= _deltaTime * _speed;
-        //}
+        var pitch2 = GetAsyncKeyState(VK.VK_F1);
+        if (pitch2 < 0)
+        {
+            _anglePitch += _deltaTime * _speed;
+        }
 
-        //var pitch2 = GetAsyncKeyState(VK.VK_F1);
-        //if (pitch2 < 0)
-        //{
-        //    _anglePitch += _deltaTime * _speed;
-        //}
+        _light.Update(new()
+        {
+            Position = new(0, 0, _anglePitch * _deltaTime, 0),
+            Rotation = new(0, 0, 0, 0),
+            Scale = new(12.07f, 12.07f, 1000, 1),
+            AmbientColor = new(0.45f, 0.45f, 0.4f, 0.45f),
+            Color = new(1, 1f, 1f, 1f),
+            Intensity = new(1f, 128, 1, 0.25f),
+            Attributes = _camera.Data.Attributes,
+            LightType = Light.Point
+        });
 
         //_camera.UpdateCamera(new CameraConstantData()
         //{
@@ -267,12 +268,13 @@ internal sealed class MainWindow : Window
             Position = new(-3, 0, 0, 0),
             Rotation = new(20, 0, 0, 0),
             Scale = new(1, 1, 1, 1),
+            Projection = Camera.Perspective,
             Attributes = new(viewport.AspectRatio, 60, 0.03f, 1000f)
         };
 
         var light = new LightData()
         {
-            Position = new(0, 0, -100f, 0),
+            Position = new(0, 0, 0, 0),
             Rotation = new(0, 0, 0, 0),
             Scale = new(20, 20, 1000, 1),
             AmbientColor = new(0.45f, 0.45f, 0.4f, 0.45f),
@@ -308,7 +310,7 @@ internal sealed class MainWindow : Window
                 Scale = new(10, 10, 10, 1)
             });
 
-        var lightObj = Graphics.Graphics.CreateLightObject(new()
+        _light = Graphics.Graphics.CreateLightObject(new()
         { 
             data = light
         });

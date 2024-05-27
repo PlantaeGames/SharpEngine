@@ -5,6 +5,7 @@
 #include "Transformations.hlsl"
 #include "LightsSWBuffer.hlsl"
 #include "LightTypeIds.hlsl"
+#include "CameraProjectionTypeIds.hlsl"
 
 PixelInput main(VertexInput input)
 {
@@ -15,8 +16,17 @@ PixelInput main(VertexInput input)
     
     float4 worldCoords = TransformWorld(input.position, Position, Rotation, Scale);
     float4 camViewCoords = TransformCameraView(worldCoords, CamPosition, CamRotation);
-    float4 projectionCoords = TransformPerspective(
-                                    camViewCoords, AspectRatio, Fov, NearPlane, FarPlane);
+    
+    float4 projectionCoords = 0;
+    if(CamProjection.r == PERSPECTIVE_PROJECTION_ID)
+    {
+        projectionCoords = TransformPerspective(
+                             camViewCoords, AspectRatio, Fov, NearPlane, FarPlane);
+    }
+    if(CamProjection.r == ORTHOGONAL_PROJECTION_ID)
+    {
+        projectionCoords = TransformOrthogonal(camViewCoords, CamScale);
+    }
     
     output.position = projectionCoords;
     output.worldPos = worldCoords;

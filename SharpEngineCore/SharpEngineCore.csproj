@@ -23,6 +23,9 @@
   </ItemGroup>
 	
   <ItemGroup>
+    <None Update="Shaders\CameraProjectionTypeIds.hlsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Shaders\CamTransformCBuffer.hlsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -2,12 +2,13 @@
 
 using System.Runtime.InteropServices;
 
-[StructLayout(LayoutKind.Sequential, Pack = 0, Size = 64)]
+[StructLayout(LayoutKind.Sequential, Pack = 0, Size = 80)]
 public struct CameraConstantData : IFragmentable, ISurfaceable
 {
     public FColor4 Position;
     public FColor4 Rotation;
     public FColor4 Scale;
+    public FColor4 Projection;
     public FColor4 Attributes;
 
     public int GetFragmentsCount()
@@ -41,6 +42,11 @@ public struct CameraConstantData : IFragmentable, ISurfaceable
                 Scale.g,
                 Scale.b,
                 Scale.a,
+
+                Projection.r,
+                Projection.g,
+                Projection.b,
+                Projection.a,
 
                 Attributes.r,
                 Attributes.g,

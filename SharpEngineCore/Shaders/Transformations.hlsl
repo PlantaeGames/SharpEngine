@@ -225,6 +225,8 @@ float4 TransformOrthogonal(float4 viewCoords, float4 scale)
     orthogonalMatrix[3][3] = 1;
 
     coordinates = mul(orthogonalMatrix, coordinates);
+    
+    coordinates.z = saturate(coordinates.z);
     return coordinates;
 }
 
@@ -280,4 +282,60 @@ float4 TransformLightView(float4 worldCoords, float4 lightCoords, float4 lightAn
 
     coordinates.w = 1;
     return coordinates;
+}
+
+float3 CalculateForwardDir(float4 angles)
+{
+    float3 coords = 0;
+    
+    // yaw = x
+    // pitch = y
+    // roll = z
+    
+    coords.x = cos(radians(angles.y)) * sin(radians(angles.x));
+    coords.y = -sin(radians(angles.y));
+    coords.z = cos(radians(angles.y)) * cos(radians(angles.x));
+    
+    coords = normalize(coords);
+
+    return coords;
+}
+
+float3 CalculateRightDir(float4 angles)
+{
+    float3 coords = 0;
+    
+    // yaw = x
+    // pitch = y
+    // roll = z
+    
+    coords.x = cos(radians(angles.x));
+    coords.y = 0;
+    coords.z = -sin(radians(angles.x));
+    
+    coords = normalize(coords);
+    
+    return coords;
+}
+
+float3 CalculateUpDir(float4 angles)
+{
+    float3 coords = 0;
+    
+    // yaw = x
+    // pitch = y
+    // roll = z
+    
+    coords.x = sin(radians(angles.y)) * sin(radians(angles.x));
+    coords.y = cos(radians(angles.y));
+    coords.z = sin(radians(angles.y)) * cos(radians(angles.x));
+    
+    coords = normalize(coords);
+    
+    return coords;
+}
+
+float CalculateInverseLaw(float distance, float k)
+{
+    return 1 / (k + pow(distance, 2));
 }
