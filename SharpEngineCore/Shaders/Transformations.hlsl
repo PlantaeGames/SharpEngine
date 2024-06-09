@@ -339,3 +339,16 @@ float CalculateInverseLaw(float distance, float k)
 {
     return 1 / (k + pow(distance, 2));
 }
+
+float CalculateEttenuation(
+        float range,
+        float distance, float eConst, float eLinear, float eExpo)
+{
+    float attenuation = eConst + 
+                        eLinear * distance +
+                        eExpo * distance * distance;
+    
+    attenuation = range / attenuation;
+
+    return attenuation;
+}
