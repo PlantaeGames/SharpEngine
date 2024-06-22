@@ -11,8 +11,6 @@ public sealed class PolygonRenderer : Renderer
 
 public abstract class Renderer
 {
-    private 
-
     public Renderer()
     {
 

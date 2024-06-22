@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34723.18
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpEngineCore", "SharpEngineCore\SharpEngineCore.csproj", "{BFB7D2CB-28F8-49F1-B0D1-E5299B947007}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpEngineCore", "SharpEngineCore\SharpEngineCore.csproj", "{BFB7D2CB-28F8-49F1-B0D1-E5299B947007}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpEngineEditor", "SharpEngineEditor\SharpEngineEditor.csproj", "{B77E74A6-BDC2-4AAF-8C6D-9BFB358A4E05}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpEngineEditorControls", "SharpEngineEditorControls\SharpEngineEditorControls.csproj", "{BBEB9B03-CBF6-4249-A8FD-923EED21CC79}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{BFB7D2CB-28F8-49F1-B0D1-E5299B947007}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BFB7D2CB-28F8-49F1-B0D1-E5299B947007}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BFB7D2CB-28F8-49F1-B0D1-E5299B947007}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B77E74A6-BDC2-4AAF-8C6D-9BFB358A4E05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B77E74A6-BDC2-4AAF-8C6D-9BFB358A4E05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B77E74A6-BDC2-4AAF-8C6D-9BFB358A4E05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B77E74A6-BDC2-4AAF-8C6D-9BFB358A4E05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBEB9B03-CBF6-4249-A8FD-923EED21CC79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBEB9B03-CBF6-4249-A8FD-923EED21CC79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBEB9B03-CBF6-4249-A8FD-923EED21CC79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBEB9B03-CBF6-4249-A8FD-923EED21CC79}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
