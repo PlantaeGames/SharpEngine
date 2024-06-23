@@ -1,4 +1,4 @@
-cbuffer CamTransform : register(b1)
+cbuffer CamTransform : register(b2)
 {
 	float4 CamPosition;
 	float4 CamRotation;

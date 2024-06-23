@@ -274,8 +274,8 @@ internal sealed class ForwardPass : Pass
 
         var vertexConstantBuffers = new List<ConstantBuffer>();
         vertexConstantBuffers.Add(_lightDataCBuffer);
-        vertexConstantBuffers.Add(_currentCameraCBuffer);
         vertexConstantBuffers.Add(transformBuffer);
+        vertexConstantBuffers.Add(_currentCameraCBuffer);
         vertexConstantBuffers.AddRange(material.VertexConstantBuffers);
 
         var pixelConstantBuffers = new List<ConstantBuffer>();

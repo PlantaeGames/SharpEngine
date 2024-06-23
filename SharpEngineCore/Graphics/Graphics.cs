@@ -92,7 +92,7 @@ public static class Graphics
             "Graphics is not initialized yet.");
 
         Renderer.Render();
-        Swapchain.Present(0u);
+        Swapchain.Present(1u);
     }
 
     internal static void Initialize(Window window)

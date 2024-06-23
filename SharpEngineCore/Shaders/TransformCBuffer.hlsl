@@ -1,4 +1,4 @@
-cbuffer Transform : register(b2)
+cbuffer Transform : register(b1)
 {
     float4 Position;
     float4 Rotation;
