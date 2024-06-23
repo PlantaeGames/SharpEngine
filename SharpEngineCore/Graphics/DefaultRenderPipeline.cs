@@ -1,9 +1,4 @@
-﻿using System.Diagnostics;
-
-using SharpEngineCore.Utilities;
-
-using TerraFX.Interop.DirectX;
-using TerraFX.Interop.WinRT;
+﻿using TerraFX.Interop.DirectX;
 
 namespace SharpEngineCore.Graphics;
 
@@ -34,16 +29,17 @@ internal sealed class DefaultRenderPipeline : RenderPipeline
 
     public override void OnGraphicsAdd(GraphicsObject graphics, Device device)
     {
-        var transformBuffer = Buffer.CreateConstantBuffer(device.CreateBuffer(
-                                 new TransformConstantData().ToSurface(),
-                                 typeof(TransformConstantData),
-                                 new ResourceUsageInfo()
-                                 {       
-                                     Usage = D3D11_USAGE.D3D11_USAGE_DYNAMIC,
-                                     CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE,
-                                     BindFlags = D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER
+        var transformBuffer = 
+            Buffer.CreateConstantBuffer(device.CreateBuffer(
+                new TransformConstantData().ToSurface(),
+                typeof(TransformConstantData),
+                new ResourceUsageInfo()
+                {       
+                    Usage = D3D11_USAGE.D3D11_USAGE_DYNAMIC,
+                    CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE,
+                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER
 
-                                 }));
+                }));
 
         graphics.SetTransformBuffer(transformBuffer);
     }

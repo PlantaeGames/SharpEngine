@@ -4,7 +4,8 @@ internal sealed class ForwardVariation : PipelineVariation
 {
     public ForwardVariation(RenderTargetView renderTargetView,
                             DepthStencilState depthStencilState,
-                            DepthStencilView depthStencilView)
+                            DepthStencilView depthStencilView,
+                            BlendState blendState)
         : base()
     {
 
@@ -13,9 +14,10 @@ internal sealed class ForwardVariation : PipelineVariation
             RenderTargetViews = [renderTargetView],
             DepthStencilView = depthStencilView,
             DepthStencilState = depthStencilState,
+            BlendState = blendState,
 
-            Flags = OutputMerger.BindFlags.RenderTargetView |
-                    OutputMerger.BindFlags.DepthStencilState
+            Flags = OutputMerger.BindFlags.RenderTargetViewAndDepthView |
+                    OutputMerger.BindFlags.DepthStencilState          
         };
 
         _stages = [OutputMerger];

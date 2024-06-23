@@ -20,7 +20,7 @@ public struct LightTransformConstantData : IFragmentable, ISurfaceable
     {
         unsafe
         {
-            return sizeof(LightData);
+            return sizeof(LightConstantData);
         }
     }
 

@@ -2,7 +2,7 @@
 
 public sealed class LightInfo
 {
-    public LightData data;
+    public LightConstantData data;
 
     public LightInfo() { }
 }

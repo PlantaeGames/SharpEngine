@@ -1,6 +1,4 @@
-#define LIGHTS_COUNT 8
-
-struct LightData
+struct LightDataStruct
 {
 	float4 Position;
 	float4 Rotation;
@@ -16,4 +14,7 @@ struct LightData
     float FarPlane;
 };
 
-StructuredBuffer<LightData> LightDataBuffer : register(t0);
+cbuffer LightDataCBuffer : register (b0)
+{
+    LightDataStruct LightData;
+};

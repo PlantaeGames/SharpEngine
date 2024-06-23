@@ -52,7 +52,7 @@ internal sealed class SkyboxVariation : PipelineVariation
             DepthStencilView = depthView,
             RenderTargetViews = [renderTargetView],
 
-            Flags = OutputMerger.BindFlags.RenderTargetView,
+            Flags = OutputMerger.BindFlags.RenderTargetViewAndDepthView,
         };
 
         VertexCount = vertexBuffer.VertexCount;

@@ -3,7 +3,7 @@
 #include "TransformCBuffer.hlsl"
 #include "CamTransformCBuffer.hlsl"
 #include "Transformations.hlsl"
-#include "LightsSWBuffer.hlsl"
+#include "LightDataCBuffer.hlsl"
 #include "LightTypeIds.hlsl"
 #include "CameraProjectionTypeIds.hlsl"
 
@@ -35,31 +35,28 @@ PixelInput main(VertexInput input)
     
     output.normal = normalize(normalCoords);
     
-    [unroll] for (int i = 0; i < LVP_POSITIONS_COUNT; i++)
-    {
-        LightData data = LightDataBuffer[i];
+    LightDataStruct data = LightData;
         
-        float4 lightWorldCoords = TransformWorld(
+    float4 lightWorldCoords = TransformWorld(
                                 input.position, Position, Rotation, Scale);
-        float4 lightViewCoords = TransformLightView(
+    float4 lightViewCoords = TransformLightView(
                                 lightWorldCoords, data.Position, data.Rotation);
    
-        float4 projectionCoords = 0;
-        if(data.Type.r == DIRECTIONAL_LIGHT_ID)
-        {
-            projectionCoords = TransformOrthogonal(lightViewCoords, data.Scale);
-        }
-        if(data.Type.r == POINT_LIGHT_ID)
-        {
-            projectionCoords = TransformPerspective(lightViewCoords,
+    projectionCoords = 0;
+    if (data.Type.r == DIRECTIONAL_LIGHT_ID)
+    {
+        projectionCoords = TransformOrthogonal(lightViewCoords, data.Scale);
+    }
+    if (data.Type.r == POINT_LIGHT_ID)
+    {
+        projectionCoords = TransformPerspective(lightViewCoords,
                                     data.AspectRatio,
                                     data.Fov,
                                     data.NearPlane,
                                     data.FarPlane);
-        }
-        
-        output.LVPPositions[i] = projectionCoords;
     }
+        
+    output.LVPPosition = projectionCoords;
     
     return output;
 }

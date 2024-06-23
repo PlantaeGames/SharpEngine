@@ -11,7 +11,7 @@ internal sealed class DepthDynamicVariation : PipelineVariation
             RenderTargetViews = [renderTarget],
             DepthStencilView = depthView,
 
-            Flags = OutputMerger.BindFlags.RenderTargetView
+            Flags = OutputMerger.BindFlags.RenderTargetViewAndDepthView
         };
 
         _stages = [OutputMerger];

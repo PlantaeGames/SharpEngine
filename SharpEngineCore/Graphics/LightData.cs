@@ -3,7 +3,7 @@
 namespace SharpEngineCore.Graphics;
 
 [StructLayout(LayoutKind.Sequential, Pack = 0, Size = 128)]
-public struct LightData : IFragmentable, ISurfaceable
+public struct LightConstantData : IFragmentable, ISurfaceable
 {
     public FColor4 Position;
     public FColor4 Rotation;
@@ -23,7 +23,7 @@ public struct LightData : IFragmentable, ISurfaceable
     {
         unsafe
         {
-            return sizeof(LightData);
+            return sizeof(LightConstantData);
         }
     }
 

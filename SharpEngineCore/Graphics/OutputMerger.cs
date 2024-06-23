@@ -6,7 +6,7 @@ internal sealed class OutputMerger : IPipelineStage
     public enum BindFlags
     {
         None = 0,
-        RenderTargetView = 1 << 1,
+        RenderTargetViewAndDepthView = 1 << 1,
         DepthStencilState = 1 << 2,
         UnorderedAccessViews = 1 << 3,
         BlendState = 1 << 4
@@ -41,7 +41,7 @@ internal sealed class OutputMerger : IPipelineStage
 
     public void Bind(DeviceContext context)
     {
-        if(Flags.HasFlag(BindFlags.RenderTargetView) &&
+        if(Flags.HasFlag(BindFlags.RenderTargetViewAndDepthView) &&
           !Flags.HasFlag(BindFlags.UnorderedAccessViews))
         {
             context.OMSetRenderTargets(RenderTargetViews,
@@ -67,7 +67,7 @@ internal sealed class OutputMerger : IPipelineStage
 
     public void Unbind(DeviceContext context)
     {
-        if (Flags.HasFlag(BindFlags.RenderTargetView) &&
+        if (Flags.HasFlag(BindFlags.RenderTargetViewAndDepthView) &&
             !Flags.HasFlag(BindFlags.UnorderedAccessViews))
         {
             context.OMSetRenderTargets(RenderTargetViews,

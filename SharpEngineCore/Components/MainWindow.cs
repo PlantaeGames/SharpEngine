@@ -54,14 +54,14 @@ internal sealed class MainWindow : Window
 
         _light.Update(new()
         {
-            Position = new(0, 0, _anglePitch * _deltaTime * 5, 0),
-            Rotation = new(0, 0, 0, 0),
+            Position = new(0, 0, 0, 0),
+            Rotation = new(_anglePitch * _deltaTime * 5, 0, 0, 0),
             Scale = new(20, 20f, 1000, 1),
             AmbientColor = new(0.45f, 0.45f, 0.4f, 0.45f),
             Color = new(1, 1f, 1f, 1f),
             Intensity = new(1f, 128, 1, 0.25f),
             Attributes = _camera.Data.Attributes,
-            LightType = Light.Point
+            LightType = Light.Directional
         });
 
         //_camera.UpdateCamera(new CameraConstantData()
@@ -272,7 +272,7 @@ internal sealed class MainWindow : Window
             Attributes = new(viewport.AspectRatio, 90, 0.03f, 1000f)
         };
 
-        var light = new LightData()
+        var light = new LightConstantData()
         {
             Position = new(0, 0, 0, 0),
             Rotation = new(0, 0, 0, 0),

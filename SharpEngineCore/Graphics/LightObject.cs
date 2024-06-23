@@ -2,9 +2,9 @@
 
 public sealed class LightObject : Object
 {
-    public LightData Data { get; private set; }
+    public LightConstantData Data { get; private set; }
 
-    public void Update(LightData data)
+    public void Update(LightConstantData data)
     {
         Data = data;
     }
@@ -13,7 +13,7 @@ public sealed class LightObject : Object
     protected override void OnResume() { }
     protected override void OnRemove() { }
 
-    internal LightObject(LightData data) :
+    internal LightObject(LightConstantData data) :
         base()
     {
         Data = data;

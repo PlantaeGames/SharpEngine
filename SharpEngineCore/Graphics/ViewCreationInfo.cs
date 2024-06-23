@@ -6,8 +6,8 @@ internal readonly struct ViewCreationInfo()
 {
     public readonly int TextureMipLevels { get; init; } = 1;
     public readonly int TextureMipIndex { get; init; }
-    public readonly int TextureSliceCount { get; init; }
-    public readonly int TextureSliceIndex { get; init; }
+    public readonly int TextureArraySliceCount { get; init; }
+    public readonly int TextureArraySliceIndex { get; init; }
     public readonly int BufferByteStride { get; init; }
     public readonly int BufferBytesSize { get; init; }
     public readonly ViewResourceType ViewResourceType { get; init; }

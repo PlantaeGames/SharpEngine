@@ -4,11 +4,11 @@ namespace SharpEngineCore.Graphics;
 
 internal sealed class ForwardRenderPass : RenderPass
 {
-    private Texture2D _outputTexture;
+    private readonly Texture2D _outputTexture;
 
-    private DepthPass _depthPass;
-    private SkyboxPass _skyboxPass;
-    private ForwardPass _forwardPass;
+    private readonly DepthPass _depthPass;
+    private readonly SkyboxPass _skyboxPass;
+    private readonly ForwardPass _forwardPass;
 
     public ForwardRenderPass(
         Texture2D outputTexture,
@@ -23,7 +23,7 @@ internal sealed class ForwardRenderPass : RenderPass
         _skyboxPass = new SkyboxPass(_outputTexture, cameraObjects);
 
         _forwardPass = new ForwardPass(_outputTexture, maxPerLightsCount,
-            lightObjects, cameraObjects, _depthPass.DepthShaderViews, _depthPass.DepthSamplers);
+            lightObjects, cameraObjects, _depthPass);
 
         _passes = [_depthPass, _skyboxPass, _forwardPass];
     }

@@ -45,7 +45,6 @@ internal sealed class ForwardSubVariation : PipelineVariation
         {
             PixelShader = pixelShader,
             Samplers = pixelSamplers,
-            SamplerStartIndex = 1,
             ConstantBuffers = pixelConstantBuffers,
             ShaderResourceViews = pixelResourceViews,
 

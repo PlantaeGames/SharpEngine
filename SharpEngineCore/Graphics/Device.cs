@@ -24,7 +24,7 @@ internal sealed class Device
 
     public BlendState CreateBlendState(BlendStateInfo info)
     {
-        Debug.Assert(info.RenderTargetBlendDescs == null,
+        Debug.Assert(info.RenderTargetBlendDescs != null,
             $"Failed to create blend state the render target blend descs are null," +
             $" or not being initialized.");
 
@@ -186,14 +186,14 @@ internal sealed class Device
                 case ViewResourceType.CubeMap:
                     desc.ViewDimension = D3D11_DSV_DIMENSION.D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
                     desc.Texture2DArray.MipSlice = (uint)info.TextureMipIndex;
-                    desc.Texture2DArray.ArraySize = (uint)info.TextureSliceCount;
-                    desc.Texture2DArray.FirstArraySlice = (uint)info.TextureSliceIndex;
+                    desc.Texture2DArray.ArraySize = (uint)info.TextureArraySliceCount;
+                    desc.Texture2DArray.FirstArraySlice = (uint)info.TextureArraySliceIndex;
                     break;
                 case ViewResourceType.Texture2DArray:
                     desc.ViewDimension = D3D11_DSV_DIMENSION.D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
                     desc.Texture2DArray.MipSlice = (uint)info.TextureMipIndex;
-                    desc.Texture2DArray.ArraySize = (uint)info.TextureSliceCount;
-                    desc.Texture2DArray.FirstArraySlice = (uint)info.TextureSliceIndex;
+                    desc.Texture2DArray.ArraySize = (uint)info.TextureArraySliceCount;
+                    desc.Texture2DArray.FirstArraySlice = (uint)info.TextureArraySliceIndex;
                     break;
                 default:
                     pDesc = (D3D11_DEPTH_STENCIL_VIEW_DESC*)IntPtr.Zero;
@@ -309,8 +309,8 @@ internal sealed class Device
                     unchecked
                     {
                         desc.Texture2DArray.MostDetailedMip = (uint)info.TextureMipIndex;
-                        desc.Texture2DArray.ArraySize = (uint)info.TextureSliceCount;
-                        desc.Texture2DArray.FirstArraySlice = (uint)info.TextureSliceIndex;
+                        desc.Texture2DArray.ArraySize = (uint)info.TextureArraySliceCount;
+                        desc.Texture2DArray.FirstArraySlice = (uint)info.TextureArraySliceIndex;
                         desc.Texture2DArray.MipLevels = (uint)info.TextureMipLevels;
                     }
                     break;

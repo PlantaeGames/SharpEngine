@@ -18,14 +18,15 @@ internal sealed class ForwardPass : Pass
     private DepthStencilState _depthState;
 
     private readonly int _maxPerVariationLightsCount;
+
     private readonly List<LightObject> _lightObjects;
-    private Buffer _lightsBuffer;
-    private ShaderResourceView _lightsSRV;
+    private ConstantBuffer _lightDataCBuffer;
 
     private readonly List<CameraObject> _cameraObjects;
     private ConstantBuffer _currentCameraCBuffer;
 
     private DepthPass _depthPass;
+    private ShaderResourceView _lightDepthView;
 
     private PipelineVariation _staticVariation;
 
@@ -50,29 +51,37 @@ internal sealed class ForwardPass : Pass
             _currentCameraCBuffer.Update(cameraData.Data);
 
             var dynamicVariation = new ForwardDynamicVariation(cameraData.Viewport);
-            dynamicVariation.Bind(context);
 
-            foreach (var variation in _subVariations)
+            for (var i = 0; i < _lightObjects.Count; i++)
             {
-                variation.Bind(context);
-
                 // TODO: NEED CULLING HERE
                 // updating affecting lights
-                UpdateLightsBuffer(_lightObjects);
+                //                       //
 
-                // TODO: NEED CULLING HERE
-                // updating depthTextures to affecting textures
-                var dynamicSubVariation = new ForwardDynamicSubVariation(
-                    variation.PixelShaderStage, _shadowSRVS.ToArray());
-                dynamicSubVariation.Bind(context);
+                var light = _lightObjects[i];
+                var lightPasses = light.Data.LightType == Light.Point ?
+                                   6 : 1;
 
+                _lightDataCBuffer.Update(light.Data);
 
-                if(variation.UseIndexRendering)
-                    context.DrawIndexed(variation.IndexCount, 0);
-                else
-                    context.Draw(variation.VertexCount, 0);
+                for(var j = 0; j < lightPasses; j++)
+                {
+                    _depthPass.TakePass(device, context, i, j);
+                    _staticVariation.Bind(context);
+                    dynamicVariation.Bind(context);
 
-                variation.Unbind(context);
+                    foreach (var variation in _subVariations)
+                    {
+                        variation.Bind(context);
+
+                        if (variation.UseIndexRendering)
+                            context.DrawIndexed(variation.IndexCount, 0);
+                        else
+                            context.Draw(variation.VertexCount, 0);
+
+                        variation.Unbind(context);
+                    }
+                }
             }
         }
     }
@@ -113,7 +122,20 @@ internal sealed class ForwardPass : Pass
                 DepthComparisionFunc = D3D11_COMPARISON_FUNC.D3D11_COMPARISON_LESS
             });
 
-        _staticVariation = new ForwardVariation(_outputView, _depthState, _depthView);
+        var blendInfo = new BlendStateInfo();
+        blendInfo.RenderTargetBlendDescs[0] = new D3D11_RENDER_TARGET_BLEND_DESC
+        {
+            BlendEnable = true,
+            RenderTargetWriteMask = 0xff,
+            
+            SrcBlend = D3D11_BLEND.D3D11_BLEND_ONE,
+            DestBlend = D3D11_BLEND.D3D11_BLEND_ONE,
+            BlendOp = D3D11_BLEND_OP.D3D11_BLEND_OP_ADD
+        };
+        var blendState = device.CreateBlendState(blendInfo);
+
+        _staticVariation = new ForwardVariation(_outputView, _depthState, _depthView,
+                                                blendState);
 
         _currentCameraCBuffer = Buffer.CreateConstantBuffer(
             device.CreateBuffer(new CameraConstantData().ToSurface(), typeof(CameraConstantData),
@@ -124,24 +146,21 @@ internal sealed class ForwardPass : Pass
                 CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE
             }));
 
-        var length = new LightData().GetFragmentsCount() * _maxPerVariationLightsCount;
-        _lightsBuffer = device.CreateBuffer(
-            new FSurface(new(length, 1)), typeof(LightData),
+        _lightDataCBuffer = Buffer.CreateConstantBuffer(
+            device.CreateBuffer(
+                new LightConstantData().ToSurface(), typeof(LightConstantData),
             new ResourceUsageInfo()
             {
                 Usage = D3D11_USAGE.D3D11_USAGE_DYNAMIC,
-                BindFlags = D3D11_BIND_FLAG.D3D11_BIND_SHADER_RESOURCE,
-                CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE,
-                MiscFlags = D3D11_RESOURCE_MISC_FLAG.D3D11_RESOURCE_MISC_BUFFER_STRUCTURED
-            });
+                BindFlags = D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER,
+                CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE
+            }));
 
-        _lightsSRV = device.CreateShaderResourceView(_lightsBuffer,
+        _lightDepthView = device.CreateShaderResourceView(_depthPass.DepthTexture,
             new ViewCreationInfo()
             {
-                Format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN,
-                BufferByteStride = _lightsBuffer.Info.ByteStride,
-                BufferBytesSize = _lightsBuffer.Info.BytesSize,
-                ViewResourceType = ViewResourceType.Buffer
+                Format = DXGI_FORMAT.DXGI_FORMAT_R32_FLOAT,
+                ViewResourceType = ViewResourceType.Texture2D
             });
     }
 
@@ -153,39 +172,8 @@ internal sealed class ForwardPass : Pass
             Depth = DEPTH_CLEAR_VALUE,
         });
 
-        _staticVariation.Bind(context);
-    }
-
-    private void UpdateLightsBuffer(List<LightObject> lightObjects)
-    {
-        Debug.Assert(lightObjects.Count <= _maxPerVariationLightsCount,
-            "Ah, more lights have been sent.");
-
-        var lightsData = new List<LightData>();
-
-        for (var i = 0; i < _maxPerVariationLightsCount; i++)
-        {
-            if(i >= lightObjects.Count)
-            {
-                lightsData.Add(new());
-                continue;
-            }
-
-            lightsData.Add(lightObjects[i].Data);
-        }
-
-        var length = _lightsBuffer.Info.SurfaceSize.ToArea();
-        var surface = new FSurface(new(length, 1));
-
-        var fragments = new List<Fragment>();
-        for (var i = 0; i < lightsData.Count; i++)
-        {
-            fragments.AddRange(lightsData[i].ToFragments());
-        }
-
-        surface.SetLinearFragments(fragments.ToArray());
-
-        _lightsBuffer.Update(surface);
+/*        context.ClearRenderTargetView(_outputView,
+            new(1,1,0.4f,1));*/
     }
 
     private PipelineVariation AddNewSubVariation(
@@ -232,8 +220,8 @@ internal sealed class ForwardPass : Pass
             });
 
         var pixelResourceViews = new List<ShaderResourceView>();
-        pixelResourceViews.Add(_lightsSRV);
-        pixelResourceViews.AddRange(_shadowSRVS);
+        pixelResourceViews.Add(_lightDepthView);
+
         for (var x = 0; x < details.material.PixelTextures.Length; x++)
         {
             pixelResourceViews.Add(device.CreateShaderResourceView(
@@ -257,11 +245,11 @@ internal sealed class ForwardPass : Pass
         }
 
         var pixelSamplers = new List<Sampler>();
-        pixelSamplers.AddRange(_depthSamplers);
+        pixelSamplers.Add(_depthPass.DepthSampler);
         pixelSamplers.AddRange(material.PixelSamplers);
 
         var vertexResourceViews = new List<ShaderResourceView>();
-        vertexResourceViews.Add(_lightsSRV);
+
         for (var x = 0; x < details.material.VertexTextures.Length; x++)
         {
             vertexResourceViews.Add(device.CreateShaderResourceView(
@@ -284,6 +272,16 @@ internal sealed class ForwardPass : Pass
                 }));
         }
 
+        var vertexConstantBuffers = new List<ConstantBuffer>();
+        vertexConstantBuffers.Add(_lightDataCBuffer);
+        vertexConstantBuffers.Add(_currentCameraCBuffer);
+        vertexConstantBuffers.Add(transformBuffer);
+        vertexConstantBuffers.AddRange(material.VertexConstantBuffers);
+
+        var pixelConstantBuffers = new List<ConstantBuffer>();
+        pixelConstantBuffers.Add(_lightDataCBuffer);
+        pixelConstantBuffers.AddRange(material.PixelConstantBuffers);
+
         //var transformBuffer = Buffer.CreateConstantBuffer(
         //    device.CreateBuffer(new TransformConstantData().ToSurface(),
         //    typeof(TransformConstantData),
@@ -293,14 +291,6 @@ internal sealed class ForwardPass : Pass
         //        BindFlags = D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER,
         //        CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE
         //    }));
-
-        var vertexConstantBuffers = new List<ConstantBuffer>
-        {
-            _currentCameraCBuffer,
-            transformBuffer
-        };
-
-        vertexConstantBuffers.AddRange(details.material.VertexConstantBuffers);
 
         var variation = new ForwardSubVariation(
             inputLayout,
@@ -312,7 +302,7 @@ internal sealed class ForwardPass : Pass
             vertexResourceViews.ToArray(),
             pixelShader,
             pixelSamplers.ToArray(),
-            details.material.PixelConstantBuffers,
+            pixelConstantBuffers.ToArray(),
             pixelResourceViews.ToArray(),
             details.material.UseIndexedRendering
             );
