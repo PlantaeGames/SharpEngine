@@ -1,4 +1,5 @@
 ﻿namespace SharpEngineCore.Graphics;
+
 internal sealed class OutputMerger : IPipelineStage
 {
     [Flags]
@@ -7,13 +8,15 @@ internal sealed class OutputMerger : IPipelineStage
         None = 0,
         RenderTargetView = 1 << 1,
         DepthStencilState = 1 << 2,
-        UnorderedAccessViews = 1 << 3
+        UnorderedAccessViews = 1 << 3,
+        BlendState = 1 << 4
     }
 
     public RenderTargetView[] RenderTargetViews { get; init; }
     public DepthStencilState DepthStencilState { get; init; }
     public DepthStencilView DepthStencilView { get; init; }
     public UnorderedAccessView[] UnorderedAccessViews { get; init; }
+    public BlendState BlendState { get; init; }
 
     public BindFlags Flags { get; init; }
 
@@ -21,12 +24,14 @@ internal sealed class OutputMerger : IPipelineStage
         DepthStencilState depthStencilState,
         DepthStencilView depthStencilView,
         UnorderedAccessView[] unorderedAccessViews,
+        BlendState blendState,
         BindFlags flags)
     {
         RenderTargetViews = renderTargetViews;
         DepthStencilState = depthStencilState;
         DepthStencilView = depthStencilView;
         UnorderedAccessViews = unorderedAccessViews;
+        BlendState = blendState;
 
         Flags = flags;
     }
@@ -53,6 +58,11 @@ internal sealed class OutputMerger : IPipelineStage
             context.OMSetRenderTargetsAndUnorderedAccessViews(
                 RenderTargetViews, DepthStencilView, UnorderedAccessViews, 0);
         }
+
+        if(Flags.HasFlag(BindFlags.BlendState))
+        {
+            context.OMSetBlendState(BlendState);
+        }
     }
 
     public void Unbind(DeviceContext context)
@@ -73,6 +83,11 @@ internal sealed class OutputMerger : IPipelineStage
         {
             context.OMSetRenderTargetsAndUnorderedAccessViews(
                 RenderTargetViews, DepthStencilView, UnorderedAccessViews, 0, true);
+        }
+
+        if (Flags.HasFlag(BindFlags.BlendState))
+        {
+            context.OMSetBlendState(BlendState, true);
         }
     }
 }

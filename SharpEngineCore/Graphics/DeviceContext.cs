@@ -9,6 +9,30 @@ internal abstract class DeviceContext
 {
     protected readonly ComPtr<ID3D11DeviceContext> _pContext;
 
+    public void OMSetBlendState(BlendState state, bool clear = false)
+    {
+        const uint SAMPLE_MASK = 0xffffffff;
+
+        NativeOMSetBlendState();
+
+        unsafe void NativeOMSetBlendState()
+        {
+            var ptr = clear ? new ComPtr<ID3D11BlendState>() :
+                              state.GetNativePtr();
+
+            fixed(ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+
+                (*ppContext)->OMSetBlendState(ptr, (float*)IntPtr.Zero,
+                                                   SAMPLE_MASK);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    $"Failed to set blend state to output merger.");
+            }
+        }
+    }
+
     public void RSSetState(RasterizerState state, bool clear = false)
     {
         NativeRSSetState();

@@ -5,6 +5,7 @@ using TerraFX.Interop.DirectX;
 using SharpEngineCore.Utilities;
 
 namespace SharpEngineCore.Graphics;
+
 internal sealed class ForwardPass : Pass
 {
     private const float DEPTH_CLEAR_VALUE = 1f;
@@ -24,8 +25,7 @@ internal sealed class ForwardPass : Pass
     private readonly List<CameraObject> _cameraObjects;
     private ConstantBuffer _currentCameraCBuffer;
 
-    private readonly List<ShaderResourceView> _shadowSRVS = new();
-    private readonly List<Sampler> _depthSamplers = new();
+    private DepthPass _depthPass;
 
     private PipelineVariation _staticVariation;
 
@@ -33,16 +33,14 @@ internal sealed class ForwardPass : Pass
         int maxPerVariationLightsCount,
         List<LightObject> lightObjects,
         List<CameraObject> cameraObjects,
-        List<ShaderResourceView> depthSRVs,
-        List<Sampler> depthSamplers) :
+        DepthPass depthPass) :
         base()
     {
         _outputTexture = outputTexture;
         _maxPerVariationLightsCount = maxPerVariationLightsCount;
         _lightObjects = lightObjects;
         _cameraObjects = cameraObjects;
-        _shadowSRVS = depthSRVs;
-        _depthSamplers = depthSamplers;
+        _depthPass = depthPass;
     }
 
     public override void OnGo(Device device, DeviceContext context)

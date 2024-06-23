@@ -22,7 +22,50 @@ internal sealed class Device
 
     private D3D_FEATURE_LEVEL _featureLevel;
 
-    public RasterizerState CreateRasterizerState(RasterizerStateInfo info, bool clear = false)
+    public BlendState CreateBlendState(BlendStateInfo info)
+    {
+        Debug.Assert(info.RenderTargetBlendDescs == null,
+            $"Failed to create blend state the render target blend descs are null," +
+            $" or not being initialized.");
+
+        Debug.Assert(info.RenderTargetBlendDescs.Length == 8,
+            $"The render target blend descs must be 8.");
+
+        var state =  new BlendState(NativeCreateBlendState(), this, info);
+        return state;
+
+        unsafe ComPtr<ID3D11BlendState> NativeCreateBlendState()
+        {
+            var desc = new D3D11_BLEND_DESC();
+            desc.AlphaToCoverageEnable = info.AplhaToCoverageEnable;
+            desc.IndependentBlendEnable = info.IndependentBlendEnabled;
+
+            var renderTargetDescsCount = info.RenderTargetBlendDescs.Length;
+            var renderTargetDescs = stackalloc D3D11_RENDER_TARGET_BLEND_DESC[renderTargetDescsCount];
+
+            for(var i = 0; i < renderTargetDescsCount; i++)
+            {
+                desc.RenderTarget[0] = renderTargetDescs[i];
+            }
+
+            var ptr = new ComPtr<ID3D11BlendState>();
+            fixed(ID3D11Device** ppDevice = _pDevice)
+            {
+                GraphicsException.SetInfoQueue();
+                var result = (*ppDevice)->CreateBlendState(&desc, ptr.GetAddressOf());
+
+                if(result.FAILED)
+                {
+                    GraphicsException.ThrowLastGraphicsException(
+                        $"Failed to create blend state.\nError Code: {result}");
+                }
+            }
+
+            return ptr;
+        }
+    }
+
+    public RasterizerState CreateRasterizerState(RasterizerStateInfo info)
     {
         return new RasterizerState(NativeCreateRasterizerState(), info,
             this);
