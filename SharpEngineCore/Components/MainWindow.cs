@@ -54,9 +54,9 @@ internal sealed class MainWindow : Window
 
         _light.Update(new()
         {
-            Position = new(0, 0, _anglePitch * _deltaTime, 0),
+            Position = new(0, 0, _anglePitch * _deltaTime * 5, 0),
             Rotation = new(0, 0, 0, 0),
-            Scale = new(12.07f, 12.07f, 1000, 1),
+            Scale = new(20, 20f, 1000, 1),
             AmbientColor = new(0.45f, 0.45f, 0.4f, 0.45f),
             Color = new(1, 1f, 1f, 1f),
             Intensity = new(1f, 128, 1, 0.25f),
@@ -267,9 +267,9 @@ internal sealed class MainWindow : Window
         {
             Position = new(-3, 0, 0, 0),
             Rotation = new(20, 0, 0, 0),
-            Scale = new(1, 1, 1, 1),
+            Scale = new(20, 20, 1000, 1),
             Projection = Camera.Perspective,
-            Attributes = new(viewport.AspectRatio, 60, 0.03f, 1000f)
+            Attributes = new(viewport.AspectRatio, 90, 0.03f, 1000f)
         };
 
         var light = new LightData()

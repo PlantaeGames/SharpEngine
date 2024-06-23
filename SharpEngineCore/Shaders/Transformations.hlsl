@@ -98,7 +98,7 @@ float4 TransformCameraView(float4 worldCoords,
     zRotationMatrix[0][0] = 1;
     zRotationMatrix[3][3] = 1;
 
-    // x rotation
+    // x rotationa
     row_major matrix xRotationMatrix = 0;
     xRotationMatrix[0][0] = cos(radians(rotations.x));
     xRotationMatrix[0][2] = sin(radians(rotations.x));
@@ -216,11 +216,11 @@ float4 TransformOrthogonal(float4 viewCoords, float4 scale)
     row_major matrix orthogonalMatrix = 0;
     orthogonalMatrix[0][0] = 2 / scale.x;
     orthogonalMatrix[1][1] = 2 / scale.y;
-    orthogonalMatrix[2][2] = -2 / scale.z;
+    orthogonalMatrix[2][2] = 1 / scale.z;
 
-    orthogonalMatrix[0][3] = - 1 / scale.x;
-    orthogonalMatrix[1][3] = - 1 / scale.y;
-    orthogonalMatrix[2][3] = - 1 / scale.z;
+    //orthogonalMatrix[0][3] = scale.x;
+    //orthogonalMatrix[1][3] = scale.y;
+    orthogonalMatrix[2][3] = 0;
 
     orthogonalMatrix[3][3] = 1;
 
