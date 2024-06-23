@@ -41,5 +41,6 @@ float4 main(PixelInput input) : SV_Target
     
     color *= ambient + diffuse + specular;
     
+    color.a = input.color.a;
     return color;
 }

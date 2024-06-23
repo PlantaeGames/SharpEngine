@@ -6,6 +6,7 @@ internal readonly struct BlendStateInfo
 {
     public readonly bool AplhaToCoverageEnable { get; init; }
     public readonly bool IndependentBlendEnabled { get; init; }
+    public readonly float BlendFactor { get; init; } 
 
     /// <remarks>
     /// The array will be initialized by constructor to fixed length.

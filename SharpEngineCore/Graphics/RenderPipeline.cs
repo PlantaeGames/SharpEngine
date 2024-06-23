@@ -71,6 +71,7 @@ internal abstract class RenderPipeline : PipelineEvents
     public sealed override void RemoveLight(LightObject light, Device device)
     {
         light.SetState(State.Expired);
+        _lightObjects.Remove(light);
 
         OnLightRemove(light, device);
 

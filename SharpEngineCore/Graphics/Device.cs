@@ -41,11 +41,9 @@ internal sealed class Device
             desc.IndependentBlendEnable = info.IndependentBlendEnabled;
 
             var renderTargetDescsCount = info.RenderTargetBlendDescs.Length;
-            var renderTargetDescs = stackalloc D3D11_RENDER_TARGET_BLEND_DESC[renderTargetDescsCount];
-
             for(var i = 0; i < renderTargetDescsCount; i++)
             {
-                desc.RenderTarget[0] = renderTargetDescs[i];
+                desc.RenderTarget[i] = info.RenderTargetBlendDescs[i];
             }
 
             var ptr = new ComPtr<ID3D11BlendState>();

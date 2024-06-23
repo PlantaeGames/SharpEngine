@@ -67,6 +67,12 @@ internal sealed class ForwardPass : Pass
                 for(var j = 0; j < lightPasses; j++)
                 {
                     _depthPass.TakePass(device, context, i, j);
+
+                    if (i < 1)
+                        _staticVariation.OutputMerger.ToggleBlendState(false);
+                    else
+                        _staticVariation.OutputMerger.ToggleBlendState(true);
+
                     _staticVariation.Bind(context);
                     dynamicVariation.Bind(context);
 
@@ -126,16 +132,23 @@ internal sealed class ForwardPass : Pass
         blendInfo.RenderTargetBlendDescs[0] = new D3D11_RENDER_TARGET_BLEND_DESC
         {
             BlendEnable = true,
-            RenderTargetWriteMask = 0xff,
+            RenderTargetWriteMask = (byte)D3D11_COLOR_WRITE_ENABLE.D3D11_COLOR_WRITE_ENABLE_ALL,
             
-            SrcBlend = D3D11_BLEND.D3D11_BLEND_ONE,
-            DestBlend = D3D11_BLEND.D3D11_BLEND_ONE,
-            BlendOp = D3D11_BLEND_OP.D3D11_BLEND_OP_ADD
+            SrcBlend = D3D11_BLEND.D3D11_BLEND_SRC_COLOR,
+            DestBlend = D3D11_BLEND.D3D11_BLEND_DEST_COLOR,
+            BlendOp = D3D11_BLEND_OP.D3D11_BLEND_OP_ADD,
+
+            SrcBlendAlpha = D3D11_BLEND.D3D11_BLEND_SRC_ALPHA,
+            DestBlendAlpha = D3D11_BLEND.D3D11_BLEND_DEST_ALPHA,
+            BlendOpAlpha = D3D11_BLEND_OP.D3D11_BLEND_OP_ADD
         };
-        var blendState = device.CreateBlendState(blendInfo);
+
+        var blendOn = device.CreateBlendState(blendInfo);
+        blendInfo.RenderTargetBlendDescs[0].BlendEnable = false;
+        var blendOff = device.CreateBlendState(blendInfo);
 
         _staticVariation = new ForwardVariation(_outputView, _depthState, _depthView,
-                                                blendState);
+                                                blendOn, blendOff);
 
         _currentCameraCBuffer = Buffer.CreateConstantBuffer(
             device.CreateBuffer(new CameraConstantData().ToSurface(), typeof(CameraConstantData),

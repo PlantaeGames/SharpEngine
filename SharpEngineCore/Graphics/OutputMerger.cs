@@ -1,4 +1,7 @@
-﻿namespace SharpEngineCore.Graphics;
+﻿using System.Diagnostics;
+using TerraFX.Interop.Windows;
+
+namespace SharpEngineCore.Graphics;
 
 internal sealed class OutputMerger : IPipelineStage
 {
@@ -9,14 +12,20 @@ internal sealed class OutputMerger : IPipelineStage
         RenderTargetViewAndDepthView = 1 << 1,
         DepthStencilState = 1 << 2,
         UnorderedAccessViews = 1 << 3,
-        BlendState = 1 << 4
+        BlendState = 1 << 4,
+        ToogleableBlendState = 1 << 5
     }
 
     public RenderTargetView[] RenderTargetViews { get; init; }
     public DepthStencilState DepthStencilState { get; init; }
     public DepthStencilView DepthStencilView { get; init; }
     public UnorderedAccessView[] UnorderedAccessViews { get; init; }
+    public BlendState DefaultBlendState { get; init; }
     public BlendState BlendState { get; init; }
+
+    private BlendState _currentBlendState;
+
+    public bool BlendOn { get; private set; }
 
     public BindFlags Flags { get; init; }
 
@@ -24,6 +33,7 @@ internal sealed class OutputMerger : IPipelineStage
         DepthStencilState depthStencilState,
         DepthStencilView depthStencilView,
         UnorderedAccessView[] unorderedAccessViews,
+        BlendState defaultBlendState,
         BlendState blendState,
         BindFlags flags)
     {
@@ -31,8 +41,11 @@ internal sealed class OutputMerger : IPipelineStage
         DepthStencilState = depthStencilState;
         DepthStencilView = depthStencilView;
         UnorderedAccessViews = unorderedAccessViews;
+        DefaultBlendState = defaultBlendState;
         BlendState = blendState;
 
+        _currentBlendState = DefaultBlendState;
+        
         Flags = flags;
     }
 
@@ -61,7 +74,7 @@ internal sealed class OutputMerger : IPipelineStage
 
         if(Flags.HasFlag(BindFlags.BlendState))
         {
-            context.OMSetBlendState(BlendState);
+            context.OMSetBlendState(_currentBlendState);
         }
     }
 
@@ -87,7 +100,15 @@ internal sealed class OutputMerger : IPipelineStage
 
         if (Flags.HasFlag(BindFlags.BlendState))
         {
-            context.OMSetBlendState(BlendState, true);
+            context.OMSetBlendState(_currentBlendState, true);
         }
+    }
+
+    public void ToggleBlendState(bool on)
+    {
+        Debug.Assert(Flags.HasFlag(BindFlags.BlendState),
+                      "The output merger does not have toggleable blend state.");
+
+        _currentBlendState = on ? BlendState : DefaultBlendState;
     }
 }
