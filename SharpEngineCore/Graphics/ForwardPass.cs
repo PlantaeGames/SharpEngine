@@ -1,8 +1,4 @@
-﻿using System.Diagnostics;
-
-using TerraFX.Interop.DirectX;
-
-using SharpEngineCore.Utilities;
+﻿using TerraFX.Interop.DirectX;
 
 namespace SharpEngineCore.Graphics;
 
@@ -15,7 +11,6 @@ internal sealed class ForwardPass : Pass
 
     private Texture2D _depthTexture;
     private DepthStencilView _depthView;
-    private DepthStencilState _depthState;
 
     private readonly int _maxPerVariationLightsCount;
 
@@ -60,7 +55,7 @@ internal sealed class ForwardPass : Pass
 
                 var light = _lightObjects[i];
                 var lightPasses = light.Data.LightType == Light.Point ?
-                                   6 : 1;
+                                   1 : 1;
 
                 _lightDataCBuffer.Update(light.Data);
 
@@ -68,10 +63,17 @@ internal sealed class ForwardPass : Pass
                 {
                     _depthPass.TakePass(device, context, i, j);
 
+                    var outputMerger = _staticVariation.OutputMerger;
                     if (i < 1)
-                        _staticVariation.OutputMerger.ToggleBlendState(false);
+                    {
+                        outputMerger.ToggleDepthStencilState(true);
+                        outputMerger.ToggleBlendState(false);
+                    }
                     else
-                        _staticVariation.OutputMerger.ToggleBlendState(true);
+                    {
+                        outputMerger.ToggleDepthStencilState(false);
+                        outputMerger.ToggleBlendState(true);
+                    }
 
                     _staticVariation.Bind(context);
                     dynamicVariation.Bind(context);
@@ -120,15 +122,25 @@ internal sealed class ForwardPass : Pass
                 Format = _depthTexture.Info.Format
             });
 
-        _depthState = device.CreateDepthStencilState(
-            new DepthStencilStateInfo()
-            {
-                DepthEnabled = true,
-                DepthWriteMask = D3D11_DEPTH_WRITE_MASK.D3D11_DEPTH_WRITE_MASK_ALL,
-                DepthComparisionFunc = D3D11_COMPARISON_FUNC.D3D11_COMPARISON_LESS
-            });
+        var depthInfoOn = new DepthStencilStateInfo()
+        {
+            DepthEnabled = true,
+            DepthWriteMask = D3D11_DEPTH_WRITE_MASK.D3D11_DEPTH_WRITE_MASK_ALL,
+            DepthComparisionFunc = D3D11_COMPARISON_FUNC.D3D11_COMPARISON_LESS
+        };
+        var depthInfoOff = new DepthStencilStateInfo()
+        {
+            DepthEnabled = true,
+            DepthWriteMask = D3D11_DEPTH_WRITE_MASK.D3D11_DEPTH_WRITE_MASK_ZERO,
+            DepthComparisionFunc = D3D11_COMPARISON_FUNC.D3D11_COMPARISON_LESS_EQUAL
+        };
+        var depthOn = device.CreateDepthStencilState(depthInfoOn);
+        var depthOff = device.CreateDepthStencilState(depthInfoOff);
 
-        var blendInfo = new BlendStateInfo();
+        var blendInfo = new BlendStateInfo()
+        {
+            BlendFactor = 1f
+        };
         blendInfo.RenderTargetBlendDescs[0] = new D3D11_RENDER_TARGET_BLEND_DESC
         {
             BlendEnable = true,
@@ -147,7 +159,8 @@ internal sealed class ForwardPass : Pass
         blendInfo.RenderTargetBlendDescs[0].BlendEnable = false;
         var blendOff = device.CreateBlendState(blendInfo);
 
-        _staticVariation = new ForwardVariation(_outputView, _depthState, _depthView,
+        _staticVariation = new ForwardVariation(_outputView,
+                                                depthOn, depthOff, _depthView,
                                                 blendOn, blendOff);
 
         _currentCameraCBuffer = Buffer.CreateConstantBuffer(

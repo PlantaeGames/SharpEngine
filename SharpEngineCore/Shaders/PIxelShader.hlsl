@@ -40,7 +40,6 @@ float4 main(PixelInput input) : SV_Target
     specular = s * data.Color;
     
     color *= ambient + diffuse + specular;
-    
-    color.a = input.color.a;
+
     return color;
 }
