@@ -20,13 +20,14 @@ internal abstract class DeviceContext
             var ptr = clear ? new ComPtr<ID3D11BlendState>() :
                               state.GetNativePtr();
 
-            var blendFactor = state.Info.BlendFactor;
+            var blendFactor = stackalloc FColor4[1];
+            *blendFactor = state.Info.BlendFactor;
 
             fixed(ID3D11DeviceContext** ppContext = _pContext)
             {
                 GraphicsException.SetInfoQueue();
 
-                (*ppContext)->OMSetBlendState(ptr.Get(), &blendFactor,
+                (*ppContext)->OMSetBlendState(ptr.Get(), (float*)blendFactor,
                                                    SAMPLE_MASK);
 
                 Debug.Assert(GraphicsException.CheckIfAny() == false,

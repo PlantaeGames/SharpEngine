@@ -27,7 +27,7 @@ Output main(VertexInput input)
         projectionCoords = TransformOrthogonal(lightViewCoords, LightScale);
         color = projectionCoords.z;
     }
-    if(LightType.r == POINT_LIGHT_ID)
+    else if(LightType.r == POINT_LIGHT_ID)
     {
         projectionCoords = TransformPerspective(lightViewCoords,
                                     LightAspectRatio, LightFov, LightNearPlane,
@@ -36,7 +36,7 @@ Output main(VertexInput input)
         float z = ((projectionCoords.xyz / projectionCoords.w).z * 0.5 + 0.5) * 2.0 - 1.0;
         float linZ = (2.0 * LightNearPlane * LightFarPlane) /
                  (LightFarPlane + LightNearPlane - z * LightFarPlane);
-        color = float4(float3(linZ, linZ, linZ) / LightFarPlane, 1);
+        color = 1 - float4(float3(linZ, linZ, linZ) / LightFarPlane, 1);
     }
     
     output.Position = projectionCoords;

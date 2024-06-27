@@ -29,12 +29,14 @@ float CalculateShadow(Texture2D<float> depthTexture, SamplerState depthSampler,
     }
     
     float depth = depthTexture.Sample(depthSampler, float2(uvCoords));
-    float linDepth = ToLinearDepth(depth, nearPlane, farPlane);
     
     float visibility = k;
     
-    if(z > 1.0f)
+    if (depth > 1.0f)
         return visibility;
+    
+    float linDepth = ToLinearDepth(depth, nearPlane, farPlane);
+
     
     if(linDepth + bias < z)
         visibility *= kHalf;

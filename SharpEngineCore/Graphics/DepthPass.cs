@@ -65,7 +65,10 @@ internal sealed class DepthPass : Pass
                     Rotation = rotation,
                     Scale = light.Data.Scale,
                     LightType = light.Data.LightType,
-                    Attributes = light.Data.Attributes
+                    Attributes = new (SHADOOW_MAP_HEIGHT / SHADOW_MAP_WIDTH,
+                                  light.Data.Attributes.g,
+                                  light.Data.Attributes.b,
+                                  light.Data.Attributes.a)
                 });
 
             foreach (var variation in _subVariations)
@@ -142,8 +145,9 @@ internal sealed class DepthPass : Pass
 
         _depthSampler = device.CreateSampler(new()
         {
-            AddressMode = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_CLAMP,
-            Filter = D3D11_FILTER.D3D11_FILTER_MIN_MAG_MIP_POINT
+            AddressMode = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_BORDER,
+            Filter = D3D11_FILTER.D3D11_FILTER_MIN_MAG_MIP_POINT,
+            BorderColor = new(1, 1, 1, 1)
         });
 
         _depthTexture = device.CreateTexture2D(

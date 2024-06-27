@@ -10,7 +10,7 @@ float4 CalculateAmbient(float4 lightPos, float4 fragWorldPos,
     float lightDistance = sqrt(pow((l - p).x, 2) + pow((l - p).y, 2) + pow((l - p).z, 2));
     
     //float persistance = CalculateInverseLaw(lightDistance, kE);
-    float persistance = CalculateEttenuation(100, lightDistance, 1, 1, 1);
+    float persistance = CalculateEttenuation(200, lightDistance, 1, 1, 1);
     if (type == DIRECTIONAL_LIGHT_ID)
     {
         persistance = 1;
@@ -29,7 +29,7 @@ float CalculateDiffuse(float4 normal, float4 lightPos, float4 fragWorldPos,
     float lightDistance = sqrt(pow((l - p).x, 2) + pow((l - p).y, 2) + pow((l - p).z, 2));
     
     //float persistance = CalculateInverseLaw(lightDistance, kE);
-    float persistance = CalculateEttenuation(100, lightDistance, 1, 1, 1) * 3;
+    float persistance = CalculateEttenuation(200, lightDistance, 1, 1, 1) * 3;
     if(type == DIRECTIONAL_LIGHT_ID)
     {
         lightDir = CalculateForwardDir(lightAngles);

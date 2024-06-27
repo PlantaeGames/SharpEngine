@@ -1,4 +1,5 @@
-﻿using TerraFX.Interop.DirectX;
+﻿using SharpEngineCore.Components;
+using TerraFX.Interop.DirectX;
 
 namespace SharpEngineCore.Graphics;
 
@@ -24,6 +25,8 @@ internal sealed class ForwardPass : Pass
     private ShaderResourceView _lightDepthView;
 
     private PipelineVariation _staticVariation;
+
+    private ConstantBuffer _lightingSwitchCBuffer;
 
     public ForwardPass(Texture2D outputTexture,
         int maxPerVariationLightsCount,
@@ -55,12 +58,25 @@ internal sealed class ForwardPass : Pass
 
                 var light = _lightObjects[i];
                 var lightPasses = light.Data.LightType == Light.Point ?
-                                   1 : 1;
+                                   6 : 1;
 
-                _lightDataCBuffer.Update(light.Data);
+                //_lightDataCBuffer.Update(light.Data);
 
                 for(var j = 0; j < lightPasses; j++)
                 {
+                    var rotation = Utilities.Utilities.CubeFaceIndexToAngle(j);
+                    _lightDataCBuffer.Update(new LightConstantData()
+                    {
+                        Position = light.Data.Position,
+                        Rotation = rotation,
+                        Scale = light.Data.Scale,
+                        LightType = light.Data.LightType,
+                        Attributes = light.Data.Attributes,
+                        AmbientColor = light.Data.AmbientColor,
+                        Color = light.Data.Color,
+                        Intensity = light.Data.Intensity
+                    });
+
                     _depthPass.TakePass(device, context, i, j);
 
                     var outputMerger = _staticVariation.OutputMerger;
@@ -73,6 +89,23 @@ internal sealed class ForwardPass : Pass
                     {
                         outputMerger.ToggleDepthStencilState(false);
                         outputMerger.ToggleBlendState(true);
+                    }
+
+                    if(j < 1)
+                    {
+                        _lightingSwitchCBuffer.Update(
+                            new PixelShaderPassSwitchData()
+                            {
+                                LightingSwitch = new(1, 0, 0, 0)
+                            });
+                    }
+                    else
+                    {
+                        _lightingSwitchCBuffer.Update(
+                            new PixelShaderPassSwitchData()
+                            {
+                                LightingSwitch = new(0, 0, 0, 0)
+                            });
                     }
 
                     _staticVariation.Bind(context);
@@ -139,7 +172,7 @@ internal sealed class ForwardPass : Pass
 
         var blendInfo = new BlendStateInfo()
         {
-            BlendFactor = 1f
+            BlendFactor = new(1, 1, 1, 1)
         };
         blendInfo.RenderTargetBlendDescs[0] = new D3D11_RENDER_TARGET_BLEND_DESC
         {
@@ -188,6 +221,16 @@ internal sealed class ForwardPass : Pass
                 Format = DXGI_FORMAT.DXGI_FORMAT_R32_FLOAT,
                 ViewResourceType = ViewResourceType.Texture2D
             });
+
+        _lightingSwitchCBuffer = Buffer.CreateConstantBuffer(
+            device.CreateBuffer(
+                new PixelShaderPassSwitchData().ToSurface(), typeof(PixelShaderPassSwitchData),
+                new ResourceUsageInfo()
+                {
+                    Usage = D3D11_USAGE.D3D11_USAGE_DYNAMIC,
+                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER,
+                    CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE
+                }));
     }
 
     public override void OnReady(Device device, DeviceContext context)
@@ -306,6 +349,7 @@ internal sealed class ForwardPass : Pass
 
         var pixelConstantBuffers = new List<ConstantBuffer>();
         pixelConstantBuffers.Add(_lightDataCBuffer);
+        pixelConstantBuffers.Add(_lightingSwitchCBuffer);
         pixelConstantBuffers.AddRange(material.PixelConstantBuffers);
 
         //var transformBuffer = Buffer.CreateConstantBuffer(
@@ -317,6 +361,13 @@ internal sealed class ForwardPass : Pass
         //        BindFlags = D3D11_BIND_FLAG.D3D11_BIND_CONSTANT_BUFFER,
         //        CPUAccessFlags = D3D11_CPU_ACCESS_FLAG.D3D11_CPU_ACCESS_WRITE
         //    }));
+
+        var rasterizer = device.CreateRasterizerState(
+            new RasterizerStateInfo()
+            {
+                CullMode = material.CullMode,
+                FillMode = material.FillMode
+            });
 
         var variation = new ForwardSubVariation(
             inputLayout,
@@ -330,7 +381,8 @@ internal sealed class ForwardPass : Pass
             pixelSamplers.ToArray(),
             pixelConstantBuffers.ToArray(),
             pixelResourceViews.ToArray(),
-            details.material.UseIndexedRendering
+            rasterizer,
+            details.material.UseIndexedRendering            
             );
 
         _subVariations.Add(variation);

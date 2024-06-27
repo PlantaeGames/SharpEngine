@@ -102,7 +102,7 @@ public sealed class FSurface : Surface
         }
 
         // zero out memory
-        Clear(color);
+        //Clear(color);
     }
 
     public void Clear()

@@ -1,4 +1,6 @@
-﻿namespace SharpEngineCore.Graphics;
+﻿using TerraFX.Interop.DirectX;
+
+namespace SharpEngineCore.Graphics;
 
 public sealed class Material
 {
@@ -17,6 +19,9 @@ public sealed class Material
     public Texture[] PixelTextures = [];
     public Sampler[] PixelSamplers = [];
     public Buffer[] PixelBuffers = [];
+
+    public D3D11_CULL_MODE CullMode;
+    public D3D11_FILL_MODE FillMode;
 
     public Material()
     { }

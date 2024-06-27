@@ -7,6 +7,7 @@ using static TerraFX.Interop.Windows.Windows;
 using SharpEngineCore.Graphics;
 using SharpEngineCore.Utilities;
 using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace SharpEngineCore.Components;
 
@@ -52,10 +53,9 @@ internal sealed class MainWindow : Window
         {
             _anglePitch += _deltaTime * _speed;
         }
-
         _light.Update(new()
         {
-            Position = new(0, 0, -2, 0),
+            Position = new(_anglePitch * _deltaTime * 0.5f, 5, -10, 0),
             Rotation = new(0, 0, 0, 0),
             Scale = new(20, 20f, 1000, 1),
             AmbientColor = new(0.45f, 0.45f, 0.4f, 0.45f),
@@ -64,25 +64,26 @@ internal sealed class MainWindow : Window
             Attributes = _camera.Data.Attributes,
             LightType = Light.Point
         });
-        _light2.Update(new()
-        {
-            Position = new(0, 0, _anglePitch * _deltaTime, 0),
-            Rotation = new(0, 0, 0, 0),
-            Scale = new(20, 20f, 1000, 1),
-            AmbientColor = new(0.45f, 0.45f, 0.4f, 0.45f),
-            Color = new(1, 0f, 0f, 1f),
-            Intensity = new(1f, 128, 1, 0.25f),
-            Attributes = _camera.Data.Attributes,
-            LightType = Light.Point
-        });
-
-        //_camera.UpdateCamera(new CameraConstantData()
+        //_light2.Update(new()
         //{
-        //    Position = _camera.Data.Position,
-        //    Rotation = new FColor4(_anglePitch, 0, 0, 0),
-        //    Scale = _camera.Data.Scale,
+        //    Position = new(_anglePitch * _deltaTime * 0.5f, 0,0, 0),
+        //    Rotation = new(0, 0, 0, 0),
+        //    Scale = new(20, 20f, 1000, 1),
+        //    AmbientColor = new(0.45f, 0.45f, 0.4f, 0.45f),
+        //    Color = new(1, 0f, 0f, 1f),
+        //    Intensity = new(1f, 128, 1, 0.25f),
         //    Attributes = _camera.Data.Attributes,
+        //    LightType = Light.Point
         //});
+
+        _camera.UpdateCamera(new CameraConstantData()
+        {
+            Position = new(-8, 0, -20, 0),
+            Rotation = new(20, 0, 0, 0),
+            Scale = new(20, 20, 1000, 1),
+            Projection = Camera.Perspective,
+            Attributes = new(_camera.Data.Attributes.r, 90, 0.03f, 1000f)
+        });
 
         //var transform = _forwardPass
         //                     .PerspectiveCamera
@@ -261,6 +262,9 @@ internal sealed class MainWindow : Window
         material.VertexShader = vertex;
         material.PixelShader = pixel;
 
+        material.CullMode = TerraFX.Interop.DirectX.D3D11_CULL_MODE.D3D11_CULL_BACK;
+        material.FillMode = TerraFX.Interop.DirectX.D3D11_FILL_MODE.D3D11_FILL_SOLID;
+
         var cube = Mesh.Cube();
         var plane = Mesh.Plane();
         var triangle = Mesh.Triangle();
@@ -304,9 +308,24 @@ internal sealed class MainWindow : Window
         });
         _cube.UpdateTransform(new TransformConstantData()
         {
-            Position = new(0, 0, 5, 0),
+            Position = new(0, 0, -5, 0),
             Scale = new(1f, 1f, 1f, 1)
         });
+
+        var cube2 = Graphics.Graphics.CreateGraphicsObject(new()
+        {
+            material = material,
+            mesh = cube
+        });
+
+        cube2.UpdateTransform(new TransformConstantData()
+        {
+            Position = new(0, -2.5f, -7.5f, 0),
+            Scale = new(1f, 1f, 1f, 1)
+        });
+
+
+        material.CullMode = TerraFX.Interop.DirectX.D3D11_CULL_MODE.D3D11_CULL_NONE;
 
         var planeObj = Graphics.Graphics.CreateGraphicsObject(new()
         {
@@ -314,22 +333,36 @@ internal sealed class MainWindow : Window
             mesh = plane
         });
 
+        var planeObj2 = Graphics.Graphics.CreateGraphicsObject(new()
+        {
+            material = material,
+            mesh = plane
+        });
+
         planeObj.UpdateTransform(
             new TransformConstantData()
             {
-                Position = new(0, 0, 20, 0),
-                Rotation = new(0, 0, 180, 0),
-                Scale = new(10, 10, 10, 1)
+                Position = new(0, 0, 0, 0),
+                Rotation = new(0, 0, 0, 0),
+                Scale = new(30, 10, 10, 1)
+            });
+
+        planeObj2.UpdateTransform(
+            new TransformConstantData()
+            {
+                Position = new(0, -5, -5, 0),
+                Rotation = new(0, 0, 90, 0),
+                Scale = new(30, 10, 10, 1)
             });
 
         _light = Graphics.Graphics.CreateLightObject(new()
         { 
             data = light
         });
-        _light2 = Graphics.Graphics.CreateLightObject(new()
-        {
-            data = light
-        });
+        //_light2 = Graphics.Graphics.CreateLightObject(new()
+        //{
+        //    data = light
+        //});
         _camera = Graphics.Graphics.CreateCameraObject(new()
         {
             cameraTransform = camera,

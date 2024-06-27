@@ -3,11 +3,11 @@
 #include "DepthTextures.hlsl"
 #include "PhongLighting.hlsl"
 #include "ShadowMapping.hlsl"
+#include "PixelShaderPassSwitchData.hlsl"
 
 float4 main(PixelInput input) : SV_Target
 {
     float4 color = input.color;
-    //return color;
     
     float4 ambient = 0;
     float4 diffuse = 0;
@@ -30,7 +30,8 @@ float4 main(PixelInput input) : SV_Target
                             input.LVPPosition, data.Type.r,
                             data.NearPlane, data.FarPlane,
                             bias, data.Intensity.b, data.Intensity.a);
-        
+    
+    
     ambient = a * data.Color;
     diffuse = d * data.Color * visiblity;
     if (visiblity < 1)
@@ -38,6 +39,14 @@ float4 main(PixelInput input) : SV_Target
         s = 0;
     }
     specular = s * data.Color;
+    
+    if(visiblity == 1 &&
+       DoLighting == false)
+        discard;
+    
+    if(visiblity < 1 &&
+       DoLighting == false)
+        color *= -1;      
     
     color *= ambient + diffuse + specular;
 

@@ -16,13 +16,13 @@ internal sealed class Utilities
                 result = new(0, 0, 0, 0);
                 break;
             case 1:
-                result = new(0, 90, 0, 0);
+                result = new(0, 0, 90, 0);
                 break;
             case 2:
-                result = new(0, 180, 0, 0);
+                result = new(0, 0, 180, 0);
                 break;
             case 3:
-                result = new(0, 270, 0, 0);
+                result = new(0, 0, 270, 0);
                 break;
             case 4:
                 result = new(90, 0, 0, 0);

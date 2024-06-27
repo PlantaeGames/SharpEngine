@@ -14,6 +14,7 @@ internal sealed class ForwardSubVariation : PipelineVariation
                                Sampler[] pixelSamplers,
                                ConstantBuffer[] pixelConstantBuffers,
                                ShaderResourceView[] pixelResourceViews,
+                               RasterizerState rasterizerState,
                                bool useIndexedRendering) :
         base()
     {
@@ -54,6 +55,13 @@ internal sealed class ForwardSubVariation : PipelineVariation
                     PixelShaderStage.BindFlags.ShaderResourceViews
         };
 
+        Rasterizer = new Rasterizer()
+        {
+            RasterizerState = rasterizerState,
+
+            Flags = Rasterizer.BindFlags.RasterizerState
+        };
+
         VertexCount = vertexBuffer.VertexCount;
         IndexCount = indexBuffer.IndexCount;
         UseIndexRendering = useIndexedRendering;
@@ -61,6 +69,7 @@ internal sealed class ForwardSubVariation : PipelineVariation
 
         _stages = [InputAssembler,
                    VertexShaderStage,
-                   PixelShaderStage];
+                   PixelShaderStage,
+                   Rasterizer];
     }
 }
