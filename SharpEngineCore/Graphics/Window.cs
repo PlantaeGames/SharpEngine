@@ -13,8 +13,8 @@ public class Window
     [UnmanagedCallersOnly]
     public static LRESULT WndProcStub(HWND hWnd, uint msg, WPARAM wParam, LPARAM lPraram)
     {
-        var window = (Window?)GCHandle.FromIntPtr(GetWindowLongPtrW(hWnd, GWLP.GWLP_USERDATA)).Target;
-        LRESULT result = window?.WndProc(hWnd, msg, wParam, lPraram) ?? 0;
+        var window = (Window)GCHandle.FromIntPtr(GetWindowLongPtrW(hWnd, GWLP.GWLP_USERDATA)).Target;
+        LRESULT result = window.WndProc(hWnd, msg, wParam, lPraram);
 
         return result;
     }
@@ -29,7 +29,7 @@ public class Window
                 var pCreateInfo = (CREATESTRUCTW*) lParam;
 
                 var windowHandle = GCHandle.FromIntPtr((IntPtr)pCreateInfo->lpCreateParams);
-                var window = (Window?)windowHandle.Target;
+                var window = (Window)windowHandle.Target;
 
                 delegate* unmanaged<HWND, uint, WPARAM, LPARAM, LRESULT> lpFnWndProc = &WndProcStub;
 
@@ -51,7 +51,7 @@ public class Window
 
         public string Name { get; private set; }
 
-        private static Class? _instance = null;
+        private static Class _instance = null;
         private static object _instanceLock = new ();
 
         private bool _disposed = false;
@@ -91,7 +91,7 @@ public class Window
                     var atom = RegisterClassExW(&wc);
                     if (atom == 0)
                     {
-                        throw SharpException.GetLastWin32Exception(new SharpException("Window Register Error"));
+                        SharpException.ThrowLastWin32Exception("Window Register Error");
                     }
                 }
             }
@@ -107,7 +107,7 @@ public class Window
                 {
                     if (UnregisterClassW(pName, (HINSTANCE)Process.GetCurrentProcess().Handle) == 0u)
                     {
-                        throw SharpException.GetLastWin32Exception(new SharpException("Class Unregister Error"));
+                        SharpException.ThrowLastWin32Exception("Class Unregister Error");
                     }
                 }
             }
@@ -138,6 +138,31 @@ public class Window
 
     public HWND HWnd { get; private set; }
 
+    public Size GetSize()
+    {
+        var size = NativeGetSize();
+        return new Size(size.width, size.height);
+
+        unsafe (int width, int height) NativeGetSize()
+        {
+            (int width, int height) size = (0, 0);
+
+            var rect = new RECT();
+            var result = GetClientRect(HWnd, &rect);
+            if (result == false)
+            {
+                // error here.
+                SharpException.ThrowLastWin32Exception(
+                    "Failed to get window size.");
+            }
+
+            size.width = rect.right - rect.left;
+            size.height = rect.bottom - rect.top;
+
+            return size;
+        }
+    }
+
     public (bool availability, MSG msg) PeekAndDispatchMessage()
     {
         return NativePeekAndDispatch();
@@ -147,11 +172,6 @@ public class Window
             (bool availability, MSG msg) result = (false, new MSG());
 
             result.availability = PeekMessageW(&result.msg, HWnd, 0u, 0u, PM.PM_REMOVE);
-
-            if(result.msg.message == WM.WM_QUIT)
-            {
-                return result;
-            }
 
             TranslateMessage(&result.msg);
             DispatchMessageW(&result.msg);
@@ -178,7 +198,7 @@ public class Window
         {
             if (DestroyWindow(HWnd) == 0)
             {
-                throw SharpException.GetLastWin32Exception(new SharpException("Window Destruction Error"));
+                SharpException.ThrowLastWin32Exception("Window Destruction Error");
             }
         }
     }
@@ -204,7 +224,7 @@ public class Window
         }
     }
 
-    private void Create(string name, Point location, Size size)
+    private void Create(string name, Point location, Size size, HWND parent)
     {
         try
         {
@@ -220,23 +240,28 @@ public class Window
         {
             HWND hWnd = (HWND)0;
 
+            bool isChild = parent.Value != (void*)IntPtr.Zero;
+
             fixed (char* pWindowName = name)
             {
                 fixed (char* pClassName = _class.Name)
                 {
+                    uint flags = WS.WS_OVERLAPPEDWINDOW;
+                    flags |= isChild ? WS.WS_CHILDWINDOW : 0u;
+
                     RECT newSize = new RECT(0, 0, size.Width, size.Height);
-                    AdjustWindowRectEx(&newSize, WS.WS_OVERLAPPEDWINDOW, FALSE, 0u);
+                    AdjustWindowRectEx(&newSize, flags, FALSE, 0u);
 
                     hWnd = CreateWindowExW(0u,
-                        pClassName, pWindowName, WS.WS_OVERLAPPEDWINDOW,
+                        pClassName, pWindowName, flags,
                         location.X, location.Y, newSize.right - newSize.left, newSize.bottom - newSize.top,
-                        (HWND)null, (HMENU)null, (HINSTANCE)Process.GetCurrentProcess().Handle, (void*)GCHandle.ToIntPtr(_pThis));
+                        (HWND)IntPtr.Zero, (HMENU)IntPtr.Zero, (HINSTANCE)Process.GetCurrentProcess().Handle, (void*)GCHandle.ToIntPtr(_pThis));
                 }
             }
-            if (hWnd == (HWND)null)
+            if (hWnd == (HWND)IntPtr.Zero)
             {
                 // error here.
-                throw SharpException.GetLastWin32Exception(new SharpException("Window Creation Error"));
+                SharpException.ThrowLastWin32Exception("Window Creation Error");
             }
 
             HWnd = hWnd;
@@ -256,12 +281,12 @@ public class Window
         return DefWindowProcW(hWND, msg, wParam, lParam);
     }
 
-    public Window(string name, Point location, Size size)
+    public Window(string name, Point location, Size size, HWND parent)
     {
         _class = Class.GetInstance();
         _pThis = GCHandle.Alloc(this);
 
-        Create(name, location, size);
+        Create(name, location, size, parent);
     }
 
     public Window()
@@ -269,7 +294,7 @@ public class Window
         _class = Class.GetInstance();
         _pThis = GCHandle.Alloc(this);
 
-        Create(DEFAULT_NAME, _defaultLocation, _defaultSize);
+        Create(DEFAULT_NAME, _defaultLocation, _defaultSize, new HWND());
     }
 
     private void FreeHandle()

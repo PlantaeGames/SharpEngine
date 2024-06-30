@@ -1,5 +1,6 @@
 ﻿using SharpEngineCore.Components;
 using SharpEngineCore.Exceptions;
+using SharpEngineCore.Graphics;
 
 namespace SharpEngineCore;
 internal sealed class Program
@@ -12,13 +13,18 @@ internal sealed class Program
         {
             returnCode = new App().Run();
         }
+        catch(GraphicsException e)
+        {
+            e.Show();
+        }
         catch (SharpException e)
         {
             e.Show();
         }
         catch (Exception e)
         {
-            var exception = new SharpException("Something unexpected happened", e);
+            var exception = new SharpException($"Something unexpected happened\n\n" +
+                $"[Stack Trace]\n{e.StackTrace}\n\nError Code: {e.HResult}", e);
             exception.Show();
         }
 

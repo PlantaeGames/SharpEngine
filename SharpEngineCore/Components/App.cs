@@ -1,4 +1,5 @@
-﻿using TerraFX.Interop.Windows;
+﻿using SharpEngineCore.Tests;
+using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Components;
 
@@ -11,7 +12,7 @@ internal sealed class App
     {
         var returnCode = 0;
 
-        var window = new MainWindow("Sharp Engine", new Point(0,0), new Size(1024, 768));
+        var window = new MainWindow("Sharp Engine", new Point(0,0), new Size(1024, 768), new HWND());
         try
         {
             window.Show();
@@ -39,7 +40,8 @@ internal sealed class App
                     break;
 
                 // other code here.
-                window.Tick();
+                window.Update();
+                //          //
             }
         }
         catch

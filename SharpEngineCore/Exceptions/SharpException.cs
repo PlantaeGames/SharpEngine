@@ -1,8 +1,10 @@
-﻿using System.Runtime.CompilerServices;
-using System.Text;
+﻿using System.Text;
 
 using TerraFX.Interop.Windows;
 using Win32 = TerraFX.Interop.Windows.Windows;
+
+using SharpEngineCore.Utilities;
+using System.Diagnostics;
 
 namespace SharpEngineCore.Exceptions;
 
@@ -13,36 +15,49 @@ public class SharpException : Exception
 {
     private const string ERROR_LABEL = "Error";
 
-    public SharpException(
-        [CallerLineNumber] int lineNumber = 0,
-        [CallerMemberName] string memberName = "",
-        [CallerFilePath] string fileName = "") : base($"{lineNumber}\nMemberName: {memberName}\nFileName: {fileName}")
+    public SharpException() : 
+        base($"[Stack Trace]\n{new StackTrace()}")
     { }
 
-    public SharpException(string message,
-        [CallerLineNumber] int lineNumber = 0,
-        [CallerMemberName] string memberName = "",
-        [CallerFilePath] string fileName = "") :
-        base($"{message}\n\nLineNumber: {lineNumber}\nMemberName: {memberName}\nFileName: {fileName}")
+    public SharpException(string message) :
+        base($"{message}\n\n[Stack Trace]\n{new StackTrace()}")
     { }
 
-    public SharpException(string message, Exception inner,      
-        [CallerLineNumber] int lineNumber = 0,
-        [CallerMemberName] string memberName = "",
-        [CallerFilePath] string fileName = "") :
-        base($"{message}\n\nLineNumber: {lineNumber}\nMemberName: {memberName}\nFileName: {fileName}", inner)
+    public SharpException(string message, Exception inner) :
+        base($"{message}\n\n[Stack Trace]\n{new StackTrace()}", inner)
     { }
 
     public virtual void Show()
     {
-       MessageBox.Show($"{this}", ERROR_LABEL, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        NativeShow();
+
+        unsafe void NativeShow()
+        {
+            var message = this.ToString();
+            var caption = "Error";
+
+            fixed(char* pMessage = message)
+            {
+                fixed(char* pCaption = caption)
+                {
+                    Win32.MessageBoxExW((HWND)IntPtr.Zero, pMessage, pCaption, MB.MB_OK, 0);
+                }
+            }
+        }
+
+        new Logger().LogError(this.ToString());
     }
 
-    public static SharpException GetLastWin32Exception(SharpException e)
+    public static SharpException GetLastWin32Exception()
+    {
+        return GetLastWin32Exception("");
+    }
+
+    public static SharpException GetLastWin32Exception(string message)
     {
         var errorMessage = NativeGetError();
-        
-        var exception = new SharpException(errorMessage, e);
+
+        return new SharpException($"{message}\n\n[Win32 Exception]\n{errorMessage}");
 
         unsafe string NativeGetError()
         {
@@ -54,12 +69,12 @@ public class SharpException : Exception
             char* buffer = stackalloc char[bufferSize];
 
             if (Win32.FormatMessageW(FORMAT.FORMAT_MESSAGE_FROM_SYSTEM,
-                null, errorCode, 0u, buffer, (uint)bufferSize, null) == 0u)
+                null, errorCode, 0u, buffer, bufferSize, null) == 0u)
             {
                 throw new SharpException("Failed to format error code.");
             }
 
-            Span<char[]> message = new(buffer, bufferSize);
+            Span<char> message = new(buffer, bufferSize);
             var sb = new StringBuilder(bufferSize);
             foreach (var c in message)
             {
@@ -70,8 +85,11 @@ public class SharpException : Exception
 
             return result;
         }
+    }
 
-        return exception;
+    public static void ThrowLastWin32Exception(string message)
+    {
+        throw GetLastWin32Exception(message);
     }
 
     public override string ToString()

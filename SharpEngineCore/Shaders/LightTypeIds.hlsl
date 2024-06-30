@@ -1,0 +1,2 @@
+#define POINT_LIGHT_ID 0
+#define DIRECTIONAL_LIGHT_ID 1
