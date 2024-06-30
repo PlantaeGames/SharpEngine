@@ -12,7 +12,7 @@ internal sealed class App
     {
         var returnCode = 0;
 
-        var window = new MainWindow("Sharp Engine", new Point(0,0), new Size(1024, 768));
+        var window = new MainWindow("Sharp Engine", new Point(0,0), new Size(1024, 768), new HWND());
         try
         {
             window.Show();

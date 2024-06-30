@@ -55,7 +55,7 @@ internal sealed class MainWindow : Window
         }
         _light.Update(new()
         {
-            Position = new(_anglePitch * _deltaTime * 0.5f, 5, -10, 0),
+            Position = new(-5, 0, -10, 0),
             Rotation = new(0, 0, 0, 0),
             Scale = new(20, 20f, 1000, 1),
             AmbientColor = new(0.45f, 0.45f, 0.4f, 0.45f),
@@ -64,17 +64,17 @@ internal sealed class MainWindow : Window
             Attributes = _camera.Data.Attributes,
             LightType = Light.Point
         });
-        //_light2.Update(new()
-        //{
-        //    Position = new(_anglePitch * _deltaTime * 0.5f, 0,0, 0),
-        //    Rotation = new(0, 0, 0, 0),
-        //    Scale = new(20, 20f, 1000, 1),
-        //    AmbientColor = new(0.45f, 0.45f, 0.4f, 0.45f),
-        //    Color = new(1, 0f, 0f, 1f),
-        //    Intensity = new(1f, 128, 1, 0.25f),
-        //    Attributes = _camera.Data.Attributes,
-        //    LightType = Light.Point
-        //});
+        _light2.Update(new()
+        {
+            Position = new(5, 0, -10, 0),
+            Rotation = new(0, 0, 0, 0),
+            Scale = new(20, 20f, 1000, 1),
+            AmbientColor = new(0.45f, 0.45f, 0.4f, 0.45f),
+            Color = new(1, 0f, 0f, 1f),
+            Intensity = new(1f, 128, 1, 0.25f),
+            Attributes = _camera.Data.Attributes,
+            LightType = Light.Point
+        });
 
         _camera.UpdateCamera(new CameraConstantData()
         {
@@ -247,7 +247,8 @@ internal sealed class MainWindow : Window
         //    });
     }
 
-    public MainWindow(string name, Point location, Size size) : base(name, location, size)
+    public MainWindow(string name, Point location, Size size, HWND parent) :
+        base(name, location, size, parent)
     {
         _log = new();
         Graphics.Graphics.Initialize(this);
@@ -359,10 +360,10 @@ internal sealed class MainWindow : Window
         { 
             data = light
         });
-        //_light2 = Graphics.Graphics.CreateLightObject(new()
-        //{
-        //    data = light
-        //});
+        _light2 = Graphics.Graphics.CreateLightObject(new()
+        {
+            data = light
+        });
         _camera = Graphics.Graphics.CreateCameraObject(new()
         {
             cameraTransform = camera,

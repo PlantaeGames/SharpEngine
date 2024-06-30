@@ -224,7 +224,7 @@ public class Window
         }
     }
 
-    private void Create(string name, Point location, Size size)
+    private void Create(string name, Point location, Size size, HWND parent)
     {
         try
         {
@@ -240,15 +240,20 @@ public class Window
         {
             HWND hWnd = (HWND)0;
 
+            bool isChild = parent.Value != (void*)IntPtr.Zero;
+
             fixed (char* pWindowName = name)
             {
                 fixed (char* pClassName = _class.Name)
                 {
+                    uint flags = WS.WS_OVERLAPPEDWINDOW;
+                    flags |= isChild ? WS.WS_CHILDWINDOW : 0u;
+
                     RECT newSize = new RECT(0, 0, size.Width, size.Height);
-                    AdjustWindowRectEx(&newSize, WS.WS_OVERLAPPEDWINDOW, FALSE, 0u);
+                    AdjustWindowRectEx(&newSize, flags, FALSE, 0u);
 
                     hWnd = CreateWindowExW(0u,
-                        pClassName, pWindowName, WS.WS_OVERLAPPEDWINDOW,
+                        pClassName, pWindowName, flags,
                         location.X, location.Y, newSize.right - newSize.left, newSize.bottom - newSize.top,
                         (HWND)IntPtr.Zero, (HMENU)IntPtr.Zero, (HINSTANCE)Process.GetCurrentProcess().Handle, (void*)GCHandle.ToIntPtr(_pThis));
                 }
@@ -276,12 +281,12 @@ public class Window
         return DefWindowProcW(hWND, msg, wParam, lParam);
     }
 
-    public Window(string name, Point location, Size size)
+    public Window(string name, Point location, Size size, HWND parent)
     {
         _class = Class.GetInstance();
         _pThis = GCHandle.Alloc(this);
 
-        Create(name, location, size);
+        Create(name, location, size, parent);
     }
 
     public Window()
@@ -289,7 +294,7 @@ public class Window
         _class = Class.GetInstance();
         _pThis = GCHandle.Alloc(this);
 
-        Create(DEFAULT_NAME, _defaultLocation, _defaultSize);
+        Create(DEFAULT_NAME, _defaultLocation, _defaultSize, new HWND());
     }
 
     private void FreeHandle()
