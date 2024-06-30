@@ -20,5 +20,10 @@ namespace SharpEngineEditor
         {
             InitializeComponent();
         }
+
+        private void customControl_Click(object sender, RoutedEventArgs e)
+        {
+            txtBlock.Text = "You have just click your custom control";
+        }
     }
 }

@@ -8,4 +8,9 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SharpEngineCore\SharpEngineCore.csproj" />
+    <ProjectReference Include="..\SharpEngineEditorControls\SharpEngineEditorControls.csproj" />
+  </ItemGroup>
+
 </Project>

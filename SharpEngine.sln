@@ -6,6 +6,10 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpEngineCore", "SharpEngineCore\SharpEngineCore.csproj", "{BFB7D2CB-28F8-49F1-B0D1-E5299B947007}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpEngineEditor", "SharpEngineEditor\SharpEngineEditor.csproj", "{B77E74A6-BDC2-4AAF-8C6D-9BFB358A4E05}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BBEB9B03-CBF6-4249-A8FD-923EED21CC79} = {BBEB9B03-CBF6-4249-A8FD-923EED21CC79}
+		{BFB7D2CB-28F8-49F1-B0D1-E5299B947007} = {BFB7D2CB-28F8-49F1-B0D1-E5299B947007}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpEngineEditorControls", "SharpEngineEditorControls\SharpEngineEditorControls.csproj", "{BBEB9B03-CBF6-4249-A8FD-923EED21CC79}"
 EndProject
