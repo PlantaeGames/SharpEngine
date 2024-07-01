@@ -1,14 +1,86 @@
-﻿<Window xmlns:MyNamespace="clr-namespace:SharpEngineEditorControls.Misc;assembly=SharpEngineEditorControls" x:Class="SharpEngineEditor.MainWindow"
+﻿<Window x:Class="SharpEngineEditor.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SharpEngineEditor"
+        xmlns:Misc="clr-namespace:SharpEngineEditor.Misc"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <StackPanel>
-            <MyNamespace:WinformHost/>
-        </StackPanel>
+         
+        Title="Sharp Engine Editor" Height="768" Width="1024">
+    <Grid Name="Root">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"></ColumnDefinition>
+            <ColumnDefinition Width="2.5*"></ColumnDefinition>
+            <ColumnDefinition Width="1*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="2.5*"></RowDefinition>
+            <RowDefinition Height="1*"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Column="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"></RowDefinition>
+                    <RowDefinition Height="25*"></RowDefinition>
+                </Grid.RowDefinitions>
+
+                <DockPanel Grid.Row="0" HorizontalAlignment="Left">
+                    <TabControl TabStripPlacement="Top">
+                        <TabItem>
+                            <TabItem.Header>
+                                Scene
+                            </TabItem.Header>
+                        </TabItem>
+                        <TabItem>
+                            <TabItem.Header>
+                                Game
+                            </TabItem.Header>
+                        </TabItem>
+                    </TabControl>
+                </DockPanel>
+
+                <Misc:SharpEngineView x:Name="SharpEngineView" Grid.Row="1"/>
+            </Grid>
+        </DockPanel>
+        <DockPanel Grid.Column="0">
+            <StackPanel>
+                <Label>
+                    Hierarchy
+                </Label>
+
+                <ListBox x:Name="HierarchyUI">
+                    <ListBoxItem>
+                        GameObject
+                    </ListBoxItem>
+                </ListBox>
+            </StackPanel>
+        </DockPanel>
+        <DockPanel Grid.Column="2">
+            <StackPanel >
+                <Label>
+                    Inspector
+                </Label>
+
+                <ListBox Name="InspectorUI">
+                    <ListBoxItem>
+                        Transform
+                    </ListBoxItem>
+                </ListBox>
+            </StackPanel>
+        </DockPanel>
+        <DockPanel Grid.Row="1" Grid.ColumnSpan="012">
+            <StackPanel>
+                <Label>
+                    Console
+                </Label>
+                <StackPanel x:Name="ConsoleUI">
+                    <AccessText>
+                        Log: Hello?
+                    </AccessText>
+                </StackPanel>
+            </StackPanel>
+        </DockPanel>
     </Grid>
 </Window>

@@ -11,7 +11,7 @@ using System.Xml.Linq;
 
 namespace SharpEngineCore.Components;
 
-internal sealed class MainWindow : Window
+public sealed class MainWindow : Window
 {
     private Logger _log;
     //private Renderer _renderer;
@@ -66,7 +66,7 @@ internal sealed class MainWindow : Window
         });
         _light2.Update(new()
         {
-            Position = new(5, 0, -10, 0),
+            Position = new(_anglePitch * _deltaTime * _speed, 0, -10, 0),
             Rotation = new(0, 0, 0, 0),
             Scale = new(20, 20f, 1000, 1),
             AmbientColor = new(0.45f, 0.45f, 0.4f, 0.45f),

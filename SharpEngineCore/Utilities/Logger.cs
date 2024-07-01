@@ -30,6 +30,8 @@ internal sealed class Logger
 
     private void Log(string message, ConsoleColor color, bool pause)
     {
+        return;
+
         var (initX, initY) = (Console.CursorLeft, Console.CursorTop);
         var previousColor = Console.ForegroundColor;
         Console.ForegroundColor = color;

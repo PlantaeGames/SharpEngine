@@ -136,6 +136,8 @@ public class Window
     private Class _class;
     private readonly GCHandle _pThis;
 
+    private int _style;
+
     public HWND HWnd { get; private set; }
 
     public Size GetSize()
@@ -160,6 +162,49 @@ public class Window
             size.height = rect.bottom - rect.top;
 
             return size;
+        }
+    }
+
+    public Point GetPosition()
+    {
+        var pos = NativeGetPosition();
+        return new(pos.x, pos.y);
+
+        unsafe (int x, int y) NativeGetPosition()
+        {
+            (int x, int y) pos = (0, 0);
+
+            var rect = new RECT();
+            var result = GetClientRect(HWnd, &rect);
+            if (result == false)
+            {
+                // error here.
+                SharpException.ThrowLastWin32Exception(
+                    "Failed to get window size.");
+            }
+
+            pos.x = rect.left;
+            pos.y = rect.top;
+
+            return pos;
+        }
+    }
+
+    public void SetSizeAndPosition(Point position, Size size)
+    {
+        NativeSetSize();
+
+        unsafe void NativeSetSize()
+        {
+            RECT newSize = new RECT(0, 0, size.Width, size.Height);
+            Debug.Assert(AdjustWindowRectEx(&newSize, (uint)_style, FALSE, 0u));
+
+            var result = SetWindowPos(HWnd, HWND.HWND_TOP, position.X, position.Y, newSize.right - newSize.left, newSize.bottom - newSize.top, 0U);
+            if(result == false)
+            {
+                SharpException.ThrowLastWin32Exception(
+                    $"Failed to set size and position of the window");
+            }
         }
     }
 
@@ -246,16 +291,18 @@ public class Window
             {
                 fixed (char* pClassName = _class.Name)
                 {
-                    uint flags = WS.WS_OVERLAPPEDWINDOW;
-                    flags |= isChild ? WS.WS_CHILDWINDOW : 0u;
+                    int flags = 0;
+                    flags |= isChild ? WS.WS_CHILDWINDOW : WS.WS_OVERLAPPEDWINDOW;
+
+                    _style = flags;
 
                     RECT newSize = new RECT(0, 0, size.Width, size.Height);
-                    AdjustWindowRectEx(&newSize, flags, FALSE, 0u);
+                    Debug.Assert(AdjustWindowRectEx(&newSize, (uint)_style, FALSE, 0u));
 
                     hWnd = CreateWindowExW(0u,
-                        pClassName, pWindowName, flags,
+                        pClassName, pWindowName, (uint)_style,
                         location.X, location.Y, newSize.right - newSize.left, newSize.bottom - newSize.top,
-                        (HWND)IntPtr.Zero, (HMENU)IntPtr.Zero, (HINSTANCE)Process.GetCurrentProcess().Handle, (void*)GCHandle.ToIntPtr(_pThis));
+                        parent, (HMENU)IntPtr.Zero, (HINSTANCE)Process.GetCurrentProcess().Handle, (void*)GCHandle.ToIntPtr(_pThis));
                 }
             }
             if (hWnd == (HWND)IntPtr.Zero)

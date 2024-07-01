@@ -9,6 +9,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using SharpEngineCore;
+
 namespace SharpEngineEditor
 {
     /// <summary>
@@ -19,6 +21,15 @@ namespace SharpEngineEditor
         public MainWindow()
         {
             InitializeComponent();
+
+            Loaded += OnLoaded;
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            this.Loaded -= OnLoaded;
+
+            //SharpEngineView.Tick();
         }
     }
 }
