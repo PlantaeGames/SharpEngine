@@ -79,14 +79,20 @@ public class Window
 
             unsafe void NativeRegister()
             {
+                var cursor = LoadCursorA((HINSTANCE)IntPtr.Zero, (sbyte*)IDC.IDC_ARROW);
+                Debug.Assert(cursor != (HCURSOR)IntPtr.Zero,
+                    "Failed to load cursor.");
+
                 fixed (char* pName = Name)
                 {
+
                     var wc = new WNDCLASSEXW();
                     wc.cbSize = (uint)sizeof(WNDCLASSEXW);
 
                     wc.lpfnWndProc = &InitWndProc;
                     wc.lpszClassName = pName;
                     wc.hInstance = (HINSTANCE)Process.GetCurrentProcess().Handle;
+                    wc.hCursor = cursor;
 
                     var atom = RegisterClassExW(&wc);
                     if (atom == 0)

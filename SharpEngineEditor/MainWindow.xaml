@@ -41,7 +41,7 @@
                     </TabControl>
                 </DockPanel>
 
-                <Misc:SharpEngineView x:Name="SharpEngineView" Grid.Row="1"/>
+                <Misc:SharpEngineView x:Name="SharpEngineView" Grid.Row="1" Cursor="Arrow"/>
             </Grid>
         </DockPanel>
         <DockPanel Grid.Column="0">
@@ -82,5 +82,26 @@
                 </StackPanel>
             </StackPanel>
         </DockPanel>
+
+        <GridSplitter Grid.Column="0" 
+              HorizontalAlignment="Right" 
+              VerticalAlignment="Stretch"
+              Background="Silver"
+              ShowsPreview="true"
+              Width="5"/>
+        <GridSplitter Grid.Column="2" 
+              HorizontalAlignment="Left" 
+              VerticalAlignment="Stretch"
+              Background="Silver"
+              ShowsPreview="true"
+              Width="5"/>
+        <GridSplitter Grid.Column="0" 
+              Grid.Row="1"
+              Grid.ColumnSpan="012"
+              HorizontalAlignment="Stretch" 
+              VerticalAlignment="Top"
+              Background="Silver"
+              ShowsPreview="true"
+              Height="5"/>
     </Grid>
 </Window>
