@@ -33,9 +33,12 @@ internal sealed class ShaderCompiler
     /// <exception cref="GraphicsException"></exception>
     public Blob Compile(ShaderModule module, ShaderCompiler.Params @params)
     {
+        Blob blob = null;
+
         if(module.PreCompiled)
         {
-            return new Blob(NativePreCompiled());
+            blob = new Blob(NativePreCompiled());
+            return blob;
         }
 
         var initEnvironment = Environment.CurrentDirectory;
@@ -43,7 +46,7 @@ internal sealed class ShaderCompiler
 
         try
         {
-            var blob = new Blob(NativeCompile());
+            blob = new Blob(NativeCompile());
         }
         catch
         {
