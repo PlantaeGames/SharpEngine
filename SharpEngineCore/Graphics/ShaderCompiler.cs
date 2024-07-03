@@ -38,7 +38,25 @@ internal sealed class ShaderCompiler
             return new Blob(NativePreCompiled());
         }
 
-        return new Blob(NativeCompile());
+        var initEnvironment = Environment.CurrentDirectory;
+        Environment.CurrentDirectory = Path.GetDirectoryName(module.Name);
+
+        try
+        {
+            var blob = new Blob(NativeCompile());
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            Environment.CurrentDirectory = initEnvironment;
+        }
+
+        Environment.CurrentDirectory = initEnvironment;
+
+        return blob;
 
         unsafe ComPtr<ID3DBlob> NativePreCompiled()
         {
@@ -123,9 +141,10 @@ internal sealed class ShaderCompiler
                             GraphicsException.ThrowLastGraphicsException(
                                 $"Failed to compile shader.\nError Code: {result}\n\n" +
                                 $"{sb}\n" +
-                                $"Module: {module.Name}");
+                                $"Module: {module.Name}\n\n" +
+                                $"Executable Path: {Environment.ProcessPath}\n" +
+                                $"Working Path: {Environment.CurrentDirectory}");
                         }
-
                         return pShaderBlob;
                     }
                 }

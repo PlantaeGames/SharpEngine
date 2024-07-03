@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using TerraFX.Interop.DirectX;
+using TerraFX.Interop.Windows;
 
 namespace SharpEngineEditor.Misc
 {
@@ -23,8 +24,21 @@ namespace SharpEngineEditor.Misc
     public partial class SharpEngineView : UserControl
     {
 #nullable disable
+        public event Action<SharpEngineView> OnEngineLoaded;
+        public event Action<SharpEngineView> OnEngineUnloaded;
+
         private SharpEngineHost _host;
 #nullable enable
+
+        public void ENGINE_CALL(Action action)
+        {
+            _host.ENGINE_ACTION_CALL(action);
+        }
+
+        public T ENGINE_CALL<T>(Func<T> function)
+        {
+            return _host.ENGINE_FUNC_CALL(function);
+        }
 
         public SharpEngineView()
         {
@@ -38,7 +52,25 @@ namespace SharpEngineEditor.Misc
             Loaded -= OnLoaded;
 
             _host = new SharpEngineHost();
+
+            _host.OnEngineLoaded += OnHostEngineLoaded;
+            _host.OnEngineUnloaded += OnHostEngineUnloaded;
+
             Content = _host;
+
+            void OnHostEngineLoaded(SharpEngineHost _)
+            {
+                _host.OnEngineLoaded -= OnHostEngineLoaded;
+
+                OnEngineLoaded?.Invoke(this);
+            }
+
+            void OnHostEngineUnloaded(SharpEngineHost _)
+            {
+                _host.OnEngineUnloaded -= OnHostEngineUnloaded;
+
+                OnEngineUnloaded?.Invoke(this);
+            }
         }
     }
 }

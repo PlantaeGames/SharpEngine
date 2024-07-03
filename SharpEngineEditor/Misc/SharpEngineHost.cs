@@ -10,26 +10,51 @@ namespace SharpEngineEditor.Misc
     public sealed class SharpEngineHost : HwndHost
     {
 #nullable disable
-        public SharpEngineCore.Components.MainWindow Window { get; private set; }
-        private Thread _renderThread;
+        public event Action<SharpEngineHost> OnEngineLoaded;
+        public event Action<SharpEngineHost> OnEngineUnloaded;
+
+        private SharpEngineCore.Components.MainWindow _engineWindow;
+        private Thread _engineThread;
 #nullable enable
 
-        private static object _renderThreadWindowLock = new();
-        private static object _renderThreadExitLock = new();
-        private static bool _exitRenderThread;
+        private static object _engineThreadLock = new();
+        private static object _engineThreadExitLock = new();
+        private static bool _quitEngineThread;
 
-        private void RenderThread(object? mainWindow)
+        public void ENGINE_ACTION_CALL(Action action)
         {
+            Debug.Assert(action != null);
+
+            lock(_engineThreadLock)
+            {
+                action.Invoke();
+            }
+        }
+
+        public T ENGINE_FUNC_CALL<T>(Func<T> function)
+        {
+            Debug.Assert(function != null);
+
+            lock (_engineThreadLock)
+            {
+                return function.Invoke();
+            }
+        }
+
+        private void EngineThread(object? _engineWindow)
+        {
+            Debug.Assert(_engineThread != null);
+
 #nullable disable
             SharpEngineCore.Components.MainWindow window = null;
-            lock (_renderThreadWindowLock)
+            lock (_engineThreadLock)
             {
-                window = (SharpEngineCore.Components.MainWindow)mainWindow;
+                window = (SharpEngineCore.Components.MainWindow)_engineWindow;
             }
 
             while (true)
             {
-                lock (_renderThreadWindowLock)
+                lock (_engineThreadLock)
                 {
                     bool stop = false;
                     // message loop
@@ -50,9 +75,9 @@ namespace SharpEngineEditor.Misc
                     if (stop)
                         break;
 
-                    lock (_renderThreadExitLock)
+                    lock (_engineThreadExitLock)
                     {
-                        if (_exitRenderThread)
+                        if (_quitEngineThread)
                             break;
                     }
 
@@ -68,26 +93,30 @@ namespace SharpEngineEditor.Misc
         {
             unsafe
             {
-                Window = new SharpEngineCore.Components.MainWindow("SharpEngine", new(0, 0), new(1920, 1080), new HWND((void*)hwndParent.Handle));
+                _engineWindow = new SharpEngineCore.Components.MainWindow("SharpEngine", new(0, 0), new(1920, 1080), new HWND((void*)hwndParent.Handle));
             }
-            _renderThread = new Thread(new ParameterizedThreadStart(RenderThread));
-            _renderThread.Start(Window);
+            _engineThread = new Thread(new ParameterizedThreadStart(EngineThread));
+            _engineThread.Start(_engineWindow);
 
-            lock (_renderThreadWindowLock)
+            OnEngineLoaded?.Invoke(this);
+
+            lock (_engineThreadLock)
             {
-                return new(null, Window.HWnd);
+                return new(null, _engineWindow.HWnd);
             }
         }
 
         protected override void DestroyWindowCore(HandleRef hwnd)
         {
-            lock(_renderThreadExitLock)
+            lock(_engineThreadExitLock)
             {
-                _exitRenderThread = true;
+                _quitEngineThread = true;
             }
 
-            _renderThread.Join();
-            Window.Destroy();
+            _engineThread.Join();
+            _engineWindow.Destroy();
+
+            OnEngineUnloaded?.Invoke(this);
         }
     }
 }

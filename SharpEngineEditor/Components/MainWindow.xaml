@@ -1,9 +1,9 @@
-﻿<Window x:Class="SharpEngineEditor.MainWindow"
+﻿<Window x:Class="SharpEngineEditor.Components.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SharpEngineEditor"
+        xmlns:local="clr-namespace:SharpEngineEditor.Components"
         xmlns:Misc="clr-namespace:SharpEngineEditor.Misc"
         mc:Ignorable="d"
          
@@ -41,7 +41,7 @@
                     </TabControl>
                 </DockPanel>
 
-                <Misc:SharpEngineView x:Name="SharpEngineView" Grid.Row="1" Cursor="Arrow"/>
+                <Misc:SharpEngineView x:Name="EngineView" Grid.Row="1"/>
             </Grid>
         </DockPanel>
         <DockPanel Grid.Column="0">
@@ -86,13 +86,13 @@
         <GridSplitter Grid.Column="0" 
               HorizontalAlignment="Right" 
               VerticalAlignment="Stretch"
-              Background="Silver"
+              Background="Black"
               ShowsPreview="true"
               Width="5"/>
         <GridSplitter Grid.Column="2" 
               HorizontalAlignment="Left" 
               VerticalAlignment="Stretch"
-              Background="Silver"
+              Background="Black"
               ShowsPreview="true"
               Width="5"/>
         <GridSplitter Grid.Column="0" 
@@ -100,7 +100,7 @@
               Grid.ColumnSpan="012"
               HorizontalAlignment="Stretch" 
               VerticalAlignment="Top"
-              Background="Silver"
+              Background="Black"
               ShowsPreview="true"
               Height="5"/>
     </Grid>
