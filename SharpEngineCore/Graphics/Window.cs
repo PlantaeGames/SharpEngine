@@ -214,7 +214,7 @@ public class Window
         }
     }
 
-    public (bool availability, MSG msg) PeekAndDispatchMessage()
+    public virtual (bool availability, MSG msg) PeekAndDispatchMessage()
     {
         return NativePeekAndDispatch();
 

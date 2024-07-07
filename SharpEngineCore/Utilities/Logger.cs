@@ -6,6 +6,8 @@ internal sealed class Logger
     private const ConsoleColor ERROR_COLOR = ConsoleColor.Red;
     private const ConsoleColor HEADER_COLOR = ConsoleColor.Cyan;
 
+    public static bool Enabled;
+
     public Logger() { }
 
     public void LogMessage(string message, bool pause = false)
@@ -30,7 +32,8 @@ internal sealed class Logger
 
     private void Log(string message, ConsoleColor color, bool pause)
     {
-        return;
+        if (Enabled == false)
+            return;
 
         var (initX, initY) = (Console.CursorLeft, Console.CursorTop);
         var previousColor = Console.ForegroundColor;

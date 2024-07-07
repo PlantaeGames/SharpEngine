@@ -20,6 +20,10 @@
     <Folder Include="Textures\" />
     <Folder Include="Structures\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SharpEngineBuildSystem\SharpEngineBuildSystem.csproj" />
+  </ItemGroup>
 	
   <ItemGroup>
     <None Update="Scripts\CopyShaders.bat">

@@ -4,7 +4,7 @@ namespace SharpEngineCore.ECS;
 
 public static class SceneManager
 {
-    public static Scene ActiveScene { get; private set; } = new Scene();
+    public static Scene ActiveScene { get; private set; }
 
     private static List<Scene> _scenes = new();
 
@@ -38,8 +38,14 @@ public static class SceneManager
         _scenes.Remove(scene);
     }
 
-    static SceneManager()
+    internal static void Initialize()
     {
-        AddScene(ActiveScene);
+        const string sceneName = "SampleScene";
+
+        var scene = new Scene();
+        scene.name = sceneName;
+
+        AddScene(scene);
+        LoadScene(sceneName);
     }
 }

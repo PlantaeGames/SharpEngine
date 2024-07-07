@@ -1,9 +1,10 @@
-﻿using System.Diagnostics;
+﻿using System.Collections;
+using System.Diagnostics;
 using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Input;
 
-internal sealed class InputManager
+internal sealed class InputManager : IEnumerable<InputDevice>
 {
     private const int MAX_DEVICE_COUNT = 32;
 
@@ -38,6 +39,14 @@ internal sealed class InputManager
         return device;
     }
 
+    public void Feed(MSG msg)
+    {
+        foreach (var device in _devices)
+        {
+            device.Feed(msg);
+        }
+    }
+
     public void Feed(MSG msg, DeviceType type)
     {
         var devices = _devices.
@@ -49,6 +58,52 @@ internal sealed class InputManager
         }
     }
 
+    public IEnumerator<InputDevice> GetEnumerator()
+    {
+        return new Enumerator(_devices.ToArray());
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return new Enumerator(_devices.ToArray());
+    }
+
     public InputManager()
     { }
+
+    internal sealed class Enumerator : IEnumerator<InputDevice>
+    {
+        private InputDevice[] _devices;
+        private int _index;
+
+        public Enumerator(InputDevice[] devices)
+        {
+            Debug.Assert(devices != null);
+
+            _devices = devices;
+        }
+
+        public InputDevice Current => _devices[_index];
+
+        object IEnumerator.Current => _devices[_index];
+
+        public void Dispose()
+        {}
+
+        public bool MoveNext()
+        {
+            if (_index < _devices.Length)
+            {
+                _index++;
+                return true;
+            }
+
+            return false;
+        }
+
+        public void Reset()
+        {
+            _index = 0;
+        }
+    }
 }

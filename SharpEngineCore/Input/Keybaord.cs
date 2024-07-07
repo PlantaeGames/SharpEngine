@@ -1,11 +1,12 @@
-﻿using TerraFX.Interop.Windows;
+﻿using SharpEngineCore.Graphics;
+using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Input;
 
 public sealed class Keyboard : InputDevice
 {
-    public Keyboard(HANDLE handle)
-        : base(handle, DeviceType.Keyboard)
+    public Keyboard(Window window)
+        : base(window, DeviceType.Keyboard)
     { }
 
     public override void Feed(MSG msg)

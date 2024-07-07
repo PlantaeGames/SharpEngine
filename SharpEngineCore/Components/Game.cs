@@ -1,8 +1,22 @@
+using System.Diagnostics;
 using System.Reflection;
 
-public abstract class Game
+public sealed class Game
 {
-	protected Game()
+	private Assembly _assembly;
+
+	public void Load()
 	{
+		Debug.Assert(_assembly != null);
+	}
+
+	public Game(string gameAssenbmlyPath)
+	{
+
+	}
+
+	public Game(Assembly gameAssenbly)
+	{
+
 	}
 }
