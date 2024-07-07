@@ -1,8 +1,9 @@
 ﻿using System.Diagnostics;
+using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Input;
 
-public sealed class InputManager
+internal sealed class InputManager
 {
     private const int MAX_DEVICE_COUNT = 32;
 
@@ -10,8 +11,8 @@ public sealed class InputManager
 
     private List<InputDevice> _devices = new();
 
-    public T GetDevice<T>(int index)
-        where T : InputDevice, new()
+    public T GetDevice<T>(int index = 0)
+        where T : InputDevice
     {
         var device = _devices
                         .Where(x => x as T != null)
@@ -20,15 +21,15 @@ public sealed class InputManager
         return device as T;
     }
 
-    public void RemoveDevice<T>(int index)
-        where T : InputDevice, new()
+    public void RemoveDevice<T>(int index = 0)
+        where T : InputDevice
     {
         var device = GetDevice<T>(index);
         _devices.Remove(device);
     }
 
     public T AddDevice<T>(T device)
-        where T : InputDevice, new()
+        where T : InputDevice
     {
         Debug.Assert(DeviceCount <= MAX_DEVICE_COUNT,
             "Input device limit reached, can't add more devices.");
@@ -37,14 +38,14 @@ public sealed class InputManager
         return device;
     }
 
-    public void Feed(Key key, DeviceType type)
+    public void Feed(MSG msg, DeviceType type)
     {
         var devices = _devices.
                         Where(x => x.Type == type);
 
         foreach(var device in devices)
         {
-            device.Feed(key);
+            device.Feed(msg);
         }
     }
 

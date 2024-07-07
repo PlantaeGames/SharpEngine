@@ -2,14 +2,23 @@
 
 namespace SharpEngineCore.Input;
 
-public sealed class Keybaord : InputDevice
+public sealed class Keyboard : InputDevice
 {
-    public override void Feed(Key key)
-    {
-
-    }
-
-    public Keybaord(HANDLE handle)
+    public Keyboard(HANDLE handle)
         : base(handle, DeviceType.Keyboard)
     { }
+
+    public override void Feed(MSG msg)
+    {
+        var key = (Key)((int)msg.wParam);
+
+        if (msg.message == WM.WM_KEYDOWN)
+        {
+            UpdateKey(key, false);
+        }
+        else if (msg.message == WM.WM_KEYUP)
+        {
+            UpdateKey(key, true);
+        }
+    }
 }
