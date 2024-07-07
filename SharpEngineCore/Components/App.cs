@@ -5,17 +5,21 @@ namespace SharpEngineCore.Components;
 
 internal sealed class App
 {
-    public App()
+    public App(string arguments)
     { }
 
     public int Run()
     {
         var returnCode = 0;
+        
+        // TODO: PARSE ARGUMENTS FROM HERE AND CREATE GAME.
+        var game = new Game();
 
         var window = new MainWindow("Sharp Engine", new Point(0,0), new Size(1024, 768), new HWND());
         try
         {
             window.Show();
+            window.Start();
 
             // application loop
             while (true)
@@ -43,6 +47,8 @@ internal sealed class App
                 window.Update();
                 //          //
             }
+
+            window.Stop();
         }
         catch
         {

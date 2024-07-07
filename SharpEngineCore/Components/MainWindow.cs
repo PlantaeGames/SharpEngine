@@ -20,12 +20,12 @@ public sealed class MainWindow : Window
 
     public void Start()
     {
-
+        _game.StartExecution();
     }
 
     public void Stop()
     {
-        
+        _game.StopExecution();
     }
 
     public void Update()
@@ -36,6 +36,7 @@ public sealed class MainWindow : Window
         {
             foreach (var device in _inputManager)
             {
+
                 device.Clear();
             }
         }

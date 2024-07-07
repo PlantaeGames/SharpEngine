@@ -1,22 +1,35 @@
 using System.Diagnostics;
 using System.Reflection;
+using TerraFX.Interop.Windows;
 
 public sealed class Game
 {
 	private Assembly _assembly;
 
-	public void Load()
+	public void StartExecution()
 	{
 		Debug.Assert(_assembly != null);
+
+
+	}
+
+	public void StopExecution()
+	{
+		Debug.Assert(_assembly != null);
+
+		
 	}
 
 	public Game(string gameAssenbmlyPath)
 	{
-
-	}
-
-	public Game(Assembly gameAssenbly)
-	{
-
+		try
+		{
+			_assembly = Assembly.Load(gameAssenbmlyPath);
+		}
+		catch(Exception e)
+		{
+			throw new FailedToLoadGameAssemblyException(
+				$"Failed to load game assembly.", e);
+		}
 	}
 }
