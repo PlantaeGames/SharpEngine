@@ -91,9 +91,12 @@ namespace SharpEngineEditor.Misc
 
         protected override HandleRef BuildWindowCore(HandleRef hwndParent)
         {
+            var game = new Game("SharpEngineGame.dll");
+
             unsafe
             {
-                _engineWindow = new SharpEngineCore.Components.MainWindow("SharpEngine", new(0, 0), new(1920, 1080), new HWND((void*)hwndParent.Handle));
+                _engineWindow = new SharpEngineCore.Components.MainWindow(game,
+                    "SharpEngine", new(0, 0), new(1920, 1080), new HWND((void*)hwndParent.Handle));
             }
             _engineThread = new Thread(new ParameterizedThreadStart(EngineThread));
             _engineThread.Start(_engineWindow);

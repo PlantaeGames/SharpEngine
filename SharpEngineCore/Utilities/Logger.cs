@@ -6,7 +6,7 @@ internal sealed class Logger
     private const ConsoleColor ERROR_COLOR = ConsoleColor.Red;
     private const ConsoleColor HEADER_COLOR = ConsoleColor.Cyan;
 
-    public static bool Enabled;
+    public static bool Enabled = false;
 
     public Logger() { }
 

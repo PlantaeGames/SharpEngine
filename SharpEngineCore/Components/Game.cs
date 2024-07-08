@@ -20,16 +20,25 @@ public sealed class Game
 		
 	}
 
-	public Game(string gameAssenbmlyPath)
+	public Game(string gameAssembly)
 	{
-		try
+		Debug.Assert(gameAssembly != null);
+		Debug.Assert(gameAssembly != string.Empty);
+
+		string path = string.Empty;
+    
+        try
 		{
-			_assembly = Assembly.Load(gameAssenbmlyPath);
+            path = Path.Combine(Environment.CurrentDirectory, gameAssembly);
+            var bytes = File.ReadAllBytes(path);
+			
+            _assembly = Assembly.Load(bytes);
 		}
-		catch(Exception e)
+		catch(FileLoadException e)
 		{
 			throw new FailedToLoadGameAssemblyException(
-				$"Failed to load game assembly.", e);
+				$"Failed to load game assembly.\n\n" +
+				$"Path: {path}", e);
 		}
 	}
 }

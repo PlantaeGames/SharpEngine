@@ -18,6 +18,8 @@ public sealed class MainWindow : Window
     private readonly InputManager _inputManager;
     private readonly Game _game;
 
+    private bool _initialized;
+
     public void Start()
     {
         _game.StartExecution();
@@ -30,13 +32,14 @@ public sealed class MainWindow : Window
 
     public void Update()
     {
+        Graphics.Graphics.Render();
+
         ClearInputSinks();
 
         void ClearInputSinks()
         {
             foreach (var device in _inputManager)
             {
-
                 device.Clear();
             }
         }
@@ -60,13 +63,18 @@ public sealed class MainWindow : Window
         Graphics.Graphics.Initialize(this);
         Input.Input.Initialize(_inputManager);
         SceneManager.Initialize();
+
+        _initialized = true;
     }
 
     public override (bool availability, MSG msg) PeekAndDispatchMessage()
     {
         var result = base.PeekAndDispatchMessage();
 
-        _inputManager.Feed(result.msg);
+        if (_initialized)
+        {
+            _inputManager.Feed(result.msg);
+        }
 
         return result;
     }

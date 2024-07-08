@@ -5,13 +5,13 @@ using SharpEngineCore.Graphics;
 namespace SharpEngineCore;
 internal sealed class Program
 {
-    public static int Main()
+    public static int Main(params string[] args)
     {
         var returnCode = 0;
 
         try
         {
-            returnCode = new App().Run();
+            returnCode = new App(args).Run();
         }
         catch(GraphicsException e)
         {

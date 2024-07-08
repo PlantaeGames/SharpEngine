@@ -92,18 +92,14 @@ internal sealed class InputManager : IEnumerable<InputDevice>
 
         public bool MoveNext()
         {
-            if (_index < _devices.Length)
-            {
-                _index++;
-                return true;
-            }
+            _index++;
 
-            return false;
+            return _index < _devices.Length;
         }
 
         public void Reset()
         {
-            _index = 0;
+            _index = -1;
         }
     }
 }
