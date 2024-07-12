@@ -4,17 +4,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.9.34723.18
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpEngineCore", "SharpEngineCore\SharpEngineCore.csproj", "{BFB7D2CB-28F8-49F1-B0D1-E5299B947007}"
-	ProjectSection(ProjectDependencies) = postProject
-		{B9BCF445-2042-4E78-92A9-DC79378B8F49} = {B9BCF445-2042-4E78-92A9-DC79378B8F49}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpEngineEditor", "SharpEngineEditor\SharpEngineEditor.csproj", "{097ECA50-7BA7-4964-B2F4-9DC47461403F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F7B81922-C7E0-41CF-B123-BB45C414A4B3} = {F7B81922-C7E0-41CF-B123-BB45C414A4B3}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpEngineEditorControls", "SharpEngineEditorControls\SharpEngineEditorControls.csproj", "{94D4A2F0-DDC7-4EFF-9C26-3B167D0D65E1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpEngineBuildSystem", "SharpEngineBuildSystem\SharpEngineBuildSystem.csproj", "{B9BCF445-2042-4E78-92A9-DC79378B8F49}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpEngineGame", "SharpEngineGame\SharpEngineGame.csproj", "{F7B81922-C7E0-41CF-B123-BB45C414A4B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpEngineGame", "SharpEngineGame\SharpEngineGame.csproj", "{F7B81922-C7E0-41CF-B123-BB45C414A4B3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

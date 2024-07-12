@@ -23,15 +23,21 @@ public sealed class MainWindow : Window
     public void Start()
     {
         _game.StartExecution();
+
+        SceneManager.Tick(TickType.Start);
     }
 
     public void Stop()
     {
+        // TODO: STOP TICK HERE OF SCENE MANAGER
+        
+
         _game.StopExecution();
     }
 
     public void Update()
     {
+        SceneManager.Tick(TickType.Update);
         Graphics.Graphics.Render();
 
         ClearInputSinks();

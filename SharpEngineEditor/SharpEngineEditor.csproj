@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SharpEngineBuildSystem\SharpEngineBuildSystem.csproj" />
     <ProjectReference Include="..\SharpEngineCore\SharpEngineCore.csproj" />
     <ProjectReference Include="..\SharpEngineEditorControls\SharpEngineEditorControls.csproj" />
   </ItemGroup>

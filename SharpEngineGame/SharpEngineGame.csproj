@@ -4,11 +4,15 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SharpEngineCore\SharpEngineCore.csproj" />
+    <ProjectReference Include="..\SharpEngineCore\SharpEngineCore.csproj">
+      <Private>False</Private>
+      <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
+      <ExcludeAssets></ExcludeAssets>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>
