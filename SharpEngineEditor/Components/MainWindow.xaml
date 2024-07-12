@@ -4,7 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SharpEngineEditor.Components"
-        xmlns:Misc="clr-namespace:SharpEngineEditor.Misc"
+        xmlns:misc="clr-namespace:SharpEngineEditor.Misc"
+        xmlns:controls="clr-namespace:SharpEngineEditorControls.Components;assembly=SharpEngineEditorControls"
         mc:Ignorable="d"
          
         Title="Sharp Engine Editor" Height="1080" Width="1920">
@@ -41,7 +42,7 @@
                     </TabControl>
                 </DockPanel>
 
-                <Misc:SharpEngineView x:Name="EngineView" Grid.Row="1"/>
+                <misc:SharpEngineView x:Name="EngineView" Grid.Row="1"/>
             </Grid>
         </DockPanel>
         <DockPanel Grid.Column="0">
@@ -71,16 +72,9 @@
             </StackPanel>
         </DockPanel>
         <DockPanel Grid.Row="1" Grid.ColumnSpan="012">
-            <StackPanel>
-                <Label>
-                    Console
-                </Label>
-                <StackPanel x:Name="ConsoleUI">
-                    <AccessText>
-                        Log: Hello?
-                    </AccessText>
-                </StackPanel>
-            </StackPanel>
+            <controls:Console>
+                
+            </controls:Console>
         </DockPanel>
 
         <GridSplitter Grid.Column="0" 
