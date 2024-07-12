@@ -91,7 +91,7 @@ namespace SharpEngineEditor.Misc
 
         protected override HandleRef BuildWindowCore(HandleRef hwndParent)
         {
-            var game = new Game("SharpEngineGame.dll");
+            var game = new GameAssembly("SharpEngineGame.dll");
 
             unsafe
             {

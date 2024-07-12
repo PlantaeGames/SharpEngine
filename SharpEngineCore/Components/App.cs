@@ -47,7 +47,7 @@ internal sealed class App
         var returnCode = 0;
         
         // TODO: PARSE ARGUMENTS FROM HERE AND CREATE GAME.
-        var game = new Game(_params.GameAssembly);
+        var game = new GameAssembly(_params.GameAssembly);
 
         var window = new MainWindow(game,
             "Sharp Engine", new Point(0,0), new Size(1024, 768), new HWND());

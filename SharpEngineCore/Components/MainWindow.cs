@@ -16,13 +16,13 @@ namespace SharpEngineCore.Components;
 public sealed class MainWindow : Window
 {
     private readonly InputManager _inputManager;
-    private readonly Game _game;
+    private readonly GameAssembly _assembly;
 
     private bool _initialized;
 
     public void Start()
     {
-        _game.StartExecution();
+        _assembly.StartExecution();
 
         SceneManager.Tick(TickType.Start);
     }
@@ -32,7 +32,7 @@ public sealed class MainWindow : Window
         // TODO: STOP TICK HERE OF SCENE MANAGER
         
 
-        _game.StopExecution();
+        _assembly.StopExecution();
     }
 
     public void Update()
@@ -52,11 +52,11 @@ public sealed class MainWindow : Window
     }
 
     public MainWindow(
-        Game game,
+        GameAssembly game,
         string name, Point location, Size size, HWND parent) :
         base(name, location, size, parent)
     {
-        _game = game;
+        _assembly = game;
 
         _inputManager = new InputManager();
 

@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using TerraFX.Interop.Windows;
 
-public sealed class Game
+public sealed class GameAssembly
 {
 	private Assembly _assembly;
 
@@ -25,7 +25,7 @@ public sealed class Game
 		_stopMethod.Invoke(null, null);
 	}
 
-	public Game(string gameAssembly)
+	public GameAssembly(string gameAssembly)
 	{
 		Debug.Assert(gameAssembly != null);
 		Debug.Assert(gameAssembly != string.Empty);
