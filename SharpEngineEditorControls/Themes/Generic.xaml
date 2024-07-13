@@ -1,4 +1,8 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:SharpEngineEditorControls.Controls">
+
+    <SolidColorBrush x:Key="ElementBackgroundBrush" Color="#171716" Opacity="100"></SolidColorBrush>
+    <Color x:Key="ElementBackgroundColor" R="23" G="23" B="22"></Color>
+    
 </ResourceDictionary>

@@ -28,6 +28,10 @@ namespace SharpEngineEditorControls.Controls
             Text = _msg;
         }
 
+        public Log() 
+        {
+        }
+
         public Log(string msg, Color color)
         {
             _msg = msg;

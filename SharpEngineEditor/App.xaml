@@ -9,6 +9,8 @@
                 <ResourceDictionary Source="Themes/Generic.xaml"></ResourceDictionary>
                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDark.xaml"/>
                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/SharpEngineEditorControls;component/Themes/Generic.xaml"></ResourceDictionary>
+                <ResourceDictionary Source="pack://application:,,,/NetDock;component/Styles/Commons.xaml"></ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

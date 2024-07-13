@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using NetDock;
 using NetDock.Controls;
 using SharpEngineCore;
 using SharpEngineEditor.Extensions;
@@ -22,14 +23,16 @@ namespace SharpEngineEditor.Components
     /// </summary>
     public partial class MainWindow : Window
     {
-        private SharpEngineEditorControls.Components.ConsoleWindow _console;
+        private SharpEngineEditorControls.Components.HierarchyElement _hierarchy;
+        private SharpEngineEditorControls.Components.ConsoleElement _console;
         private SharpEngineView _engineView;
 
         protected override void OnInitialized(EventArgs e)
         {
             base.OnInitialized(e);
 
-            _console = new SharpEngineEditorControls.Components.ConsoleWindow();
+            _hierarchy = new SharpEngineEditorControls.Components.HierarchyElement();
+            _console = new SharpEngineEditorControls.Components.ConsoleElement();
             _engineView = new SharpEngineView();
 
             var consoleDockItem = new DockItem(_console);
@@ -46,8 +49,16 @@ namespace SharpEngineEditor.Components
                 sharpEngineViewDockItem.TabName = name;
             }
 
+            var hierarchyDockItem = new DockItem(_hierarchy);
+            {
+                var name = _hierarchy.Name;
+                hierarchyDockItem.Name = name;
+                hierarchyDockItem.TabName = name;
+            }
+
             DockSurface.Add(consoleDockItem, NetDock.Enums.DockDirection.Bottom);
             DockSurface.Add(sharpEngineViewDockItem, NetDock.Enums.DockDirection.Top);
+            DockSurface.Add(hierarchyDockItem, NetDock.Enums.DockDirection.Left);
         }
 
         public MainWindow()

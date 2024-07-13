@@ -22,7 +22,7 @@ namespace SharpEngineEditorControls.Components
     /// <summary>
     /// Interaction logic for Console.xaml
     /// </summary>
-    public partial class ConsoleWindow : UserControl
+    public partial class ConsoleElement : UserControl
     {
         public enum LogType
         {
@@ -75,7 +75,7 @@ namespace SharpEngineEditorControls.Components
             LogStack.Children.RemoveAt(index);
         }
 
-        public ConsoleWindow()
+        public ConsoleElement()
         {
             InitializeComponent();
 

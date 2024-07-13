@@ -1,0 +1,51 @@
+﻿<UserControl x:Class="SharpEngineEditorControls.Components.HierarchyElement"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SharpEngineEditorControls.Components"
+             xmlns:controls="clr-namespace:SharpEngineEditorControls.Controls"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             mc:Ignorable="d" 
+             d:DesignHeight="600" d:DesignWidth="400"
+             Name="Hierarchy">
+    <Grid Name="Root">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="5"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="30"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <Rectangle Grid.ColumnSpan="3" Grid.RowSpan="2" Fill="{StaticResource ElementBackgroundBrush}"></Rectangle>
+
+        <hc:SimpleText Text="Hierarchy" FontSize="14" Foreground="White" Margin="10,5,0,0" Grid.ColumnSpan="2"></hc:SimpleText>
+        <Button Name="AddButton" Grid.Column="2" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="1, 1, 1, 1">
+            <Image Source="../Resources/Icons/Plus.bmp"/>
+        </Button>
+
+        <hc:ScrollViewer Grid.ColumnSpan="12" Grid.Row="1">
+            <hc:SimpleStackPanel>
+                <controls:GameObjectElement></controls:GameObjectElement>
+                <controls:GameObjectElement></controls:GameObjectElement>
+                <controls:GameObjectElement></controls:GameObjectElement>
+                <controls:GameObjectElement></controls:GameObjectElement>
+                <controls:GameObjectElement></controls:GameObjectElement>
+                <controls:GameObjectElement></controls:GameObjectElement>
+                <controls:GameObjectElement></controls:GameObjectElement>
+            </hc:SimpleStackPanel>
+        </hc:ScrollViewer>
+    </Grid>
+    <UserControl.ContextMenu>
+        <ContextMenu>
+            <MenuItem Header="Create New Game Object"></MenuItem>
+        </ContextMenu>
+    </UserControl.ContextMenu>
+
+    <UserControl.Resources>
+        <ResourceDictionary Source="../Themes/Generic.xaml"></ResourceDictionary>
+    </UserControl.Resources>
+</UserControl>

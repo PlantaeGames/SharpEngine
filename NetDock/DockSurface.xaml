@@ -21,13 +21,11 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid x:Name="rootGrid" Background="White"   >
+    <Grid x:Name="rootGrid" Background="#282828">
         <Grid.RowDefinitions>
             <RowDefinition x:Name="tabRowDef" Height="0" ></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
-
-
 
         <Border BorderThickness="0 0 0 0" BorderBrush="#2000"   >
             <StackPanel Orientation="Horizontal"   HorizontalAlignment="Left" x:Name="tab" Background="White" Height="32"   >
