@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,7 +22,7 @@ namespace SharpEngineEditorControls.Components
     /// <summary>
     /// Interaction logic for Console.xaml
     /// </summary>
-    public partial class Console : UserControl
+    public partial class ConsoleWindow : UserControl
     {
         public enum LogType
         {
@@ -29,14 +30,6 @@ namespace SharpEngineEditorControls.Components
             Warning,
             Error
         }
-
-        private const string LOG_STACK_NAME = "LogStack";
-        private const string ROOT_NAME = "Root";
-        private const string LOG_VIEW_NAME = "LogView";
-
-        private Grid _root;
-        private HandyControl.Controls.ScrollViewer _logView;
-        private SimpleStackPanel _logStack;
 
         private int _lastLogIndex;
 
@@ -47,7 +40,6 @@ namespace SharpEngineEditorControls.Components
 
         public void Log(string msg, LogType type)
         {
-            Debug.Assert(_logStack == null);
             Debug.Assert(msg == null);
 
             Log log = null;
@@ -55,37 +47,35 @@ namespace SharpEngineEditorControls.Components
             switch (type)
             {
                 case LogType.Message:
-                    log = new(msg, Color.FromRgb(byte.MaxValue, byte.MaxValue, byte.MaxValue));
+                    log = new($"Message: {msg}", Color.FromRgb(byte.MaxValue, byte.MaxValue, byte.MaxValue));
                     break;
                 case LogType.Warning:
-                    log = new(msg, Color.FromRgb(byte.MaxValue >> 1, byte.MaxValue >> 1, byte.MaxValue >> 1));
+                    log = new($"Warning: {msg}", Color.FromRgb(235, 146, 52));
                     break;
                 case LogType.Error:
-                    log = new(msg, Color.FromRgb(byte.MaxValue, 0, 0));
+                    log = new($"Error: {msg}", Color.FromRgb(byte.MaxValue, 0, 0));
                     break;
                 default:
                     Debug.Assert(false);
                     break;
             }
 
-            _lastLogIndex = _logStack.Children.Add(log);
+            _lastLogIndex = LogStack.Children.Add(log);
         }
 
         public void Clear()
         {
-            Debug.Assert(_logStack == null);
-
-            _logStack.Children.Clear();
+            LogStack.Children.Clear();
         }
 
         public void Remove(int index)
         {
-            Debug.Assert(index < _logStack.Children.Count);
+            Debug.Assert(index < LogStack.Children.Count);
 
-            _logStack.Children.RemoveAt(index);
+            LogStack.Children.RemoveAt(index);
         }
 
-        public Console()
+        public ConsoleWindow()
         {
             InitializeComponent();
 
@@ -96,9 +86,7 @@ namespace SharpEngineEditorControls.Components
         {
             this.Loaded -= OnLoaded;
 
-            _root = (Grid)this.FindName(ROOT_NAME);
-            _logView = (HandyControl.Controls.ScrollViewer)this.FindName(LOG_VIEW_NAME);
-            _logStack = (SimpleStackPanel)this.FindName(LOG_STACK_NAME);
+           //Clear();
         }
     }
 }

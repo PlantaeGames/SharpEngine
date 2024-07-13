@@ -6,96 +6,13 @@
         xmlns:local="clr-namespace:SharpEngineEditor.Components"
         xmlns:misc="clr-namespace:SharpEngineEditor.Misc"
         xmlns:controls="clr-namespace:SharpEngineEditorControls.Components;assembly=SharpEngineEditorControls"
+        xmlns:netdock="clr-namespace:NetDock;assembly=NetDock"
         mc:Ignorable="d"
          
         Title="Sharp Engine Editor" Height="1080" Width="1920">
-    <Grid Name="Root">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"></ColumnDefinition>
-            <ColumnDefinition Width="2.5*"></ColumnDefinition>
-            <ColumnDefinition Width="1*"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="2.5*"></RowDefinition>
-            <RowDefinition Height="1*"></RowDefinition>
-        </Grid.RowDefinitions>
 
-        <DockPanel Grid.Column="1">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"></RowDefinition>
-                    <RowDefinition Height="25*"></RowDefinition>
-                </Grid.RowDefinitions>
+    <netdock:DockSurface Name="DockSurface">
 
-                <DockPanel Grid.Row="0" HorizontalAlignment="Left">
-                    <TabControl TabStripPlacement="Top">
-                        <TabItem>
-                            <TabItem.Header>
-                                Scene
-                            </TabItem.Header>
-                        </TabItem>
-                        <TabItem>
-                            <TabItem.Header>
-                                Game
-                            </TabItem.Header>
-                        </TabItem>
-                    </TabControl>
-                </DockPanel>
+    </netdock:DockSurface>
 
-                <misc:SharpEngineView x:Name="EngineView" Grid.Row="1"/>
-            </Grid>
-        </DockPanel>
-        <DockPanel Grid.Column="0">
-            <StackPanel>
-                <Label>
-                    Hierarchy
-                </Label>
-
-                <ListBox x:Name="HierarchyUI">
-                    <ListBoxItem>
-                        GameObject
-                    </ListBoxItem>
-                </ListBox>
-            </StackPanel>
-        </DockPanel>
-        <DockPanel Grid.Column="2">
-            <StackPanel >
-                <Label>
-                    Inspector
-                </Label>
-
-                <ListBox Name="InspectorUI">
-                    <ListBoxItem>
-                        Transform
-                    </ListBoxItem>
-                </ListBox>
-            </StackPanel>
-        </DockPanel>
-        <DockPanel Grid.Row="1" Grid.ColumnSpan="012">
-            <controls:Console>
-                
-            </controls:Console>
-        </DockPanel>
-
-        <GridSplitter Grid.Column="0" 
-              HorizontalAlignment="Right" 
-              VerticalAlignment="Stretch"
-              Background="Black"
-              ShowsPreview="true"
-              Width="5"/>
-        <GridSplitter Grid.Column="2" 
-              HorizontalAlignment="Left" 
-              VerticalAlignment="Stretch"
-              Background="Black"
-              ShowsPreview="true"
-              Width="5"/>
-        <GridSplitter Grid.Column="0" 
-              Grid.Row="1"
-              Grid.ColumnSpan="012"
-              HorizontalAlignment="Stretch" 
-              VerticalAlignment="Top"
-              Background="Black"
-              ShowsPreview="true"
-              Height="5"/>
-    </Grid>
 </Window>

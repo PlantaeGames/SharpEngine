@@ -1,7 +1,6 @@
-﻿using SharpEngineCore.Graphics;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
-namespace SharpEngineCore.Components;
+namespace SharpEngineCore.Graphics;
 
 [StructLayout(LayoutKind.Sequential, Pack = 0, Size = 16)]
 internal struct PixelShaderPassSwitchData : IFragmentable, ISurfaceable

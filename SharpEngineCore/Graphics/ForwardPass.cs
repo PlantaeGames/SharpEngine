@@ -1,5 +1,4 @@
-﻿using SharpEngineCore.Components;
-using TerraFX.Interop.DirectX;
+﻿using TerraFX.Interop.DirectX;
 
 namespace SharpEngineCore.Graphics;
 

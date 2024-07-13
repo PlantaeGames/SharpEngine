@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HandyControl.Controls;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -16,7 +17,7 @@ using System.Windows.Shapes;
 
 namespace SharpEngineEditorControls.Controls
 {
-    public class Log : Label
+    public class Log : SimpleText
     {
         private string _msg;
 
@@ -24,7 +25,7 @@ namespace SharpEngineEditorControls.Controls
         {
             Loaded -= OnLoaded;
 
-            Content = _msg;
+            Text = _msg;
         }
 
         public Log(string msg, Color color)

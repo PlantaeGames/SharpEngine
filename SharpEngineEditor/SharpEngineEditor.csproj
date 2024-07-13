@@ -3,13 +3,14 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\NetDock\NetDock.csproj" />
     <ProjectReference Include="..\SharpEngineBuildSystem\SharpEngineBuildSystem.csproj" />
     <ProjectReference Include="..\SharpEngineCore\SharpEngineCore.csproj" />
     <ProjectReference Include="..\SharpEngineEditorControls\SharpEngineEditorControls.csproj" />

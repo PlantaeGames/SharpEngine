@@ -9,8 +9,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
+using NetDock.Controls;
 using SharpEngineCore;
+using SharpEngineEditor.Extensions;
 using SharpEngineEditor.Misc;
 using SharpEngineEditor.Tests;
 
@@ -21,31 +22,37 @@ namespace SharpEngineEditor.Components
     /// </summary>
     public partial class MainWindow : Window
     {
-        private void OnEngineLoaded(SharpEngineView _)
-        {
-            EngineView.OnEngineLoaded -= OnEngineLoaded;
+        private SharpEngineEditorControls.Components.ConsoleWindow _console;
+        private SharpEngineView _engineView;
 
-            Debug.Assert(((IInternalEngineParameterizedTest<SharpEngineView>)new SharpEngineView_ENGINE_CALL_Test()).Run(EngineView));
-        }
-
-        private void OnEngineUnloaded(SharpEngineView _)
+        protected override void OnInitialized(EventArgs e)
         {
-            EngineView.OnEngineUnloaded -= OnEngineUnloaded;
+            base.OnInitialized(e);
+
+            _console = new SharpEngineEditorControls.Components.ConsoleWindow();
+            _engineView = new SharpEngineView();
+
+            var consoleDockItem = new DockItem(_console);
+            {
+                var name = _console.Name;
+                consoleDockItem.Name = name;
+                consoleDockItem.TabName = name;
+            }
+
+            var sharpEngineViewDockItem = new DockItem(_engineView);
+            {
+                var name = _engineView.Name;
+                sharpEngineViewDockItem.Name = name;
+                sharpEngineViewDockItem.TabName = name;
+            }
+
+            DockSurface.Add(consoleDockItem, NetDock.Enums.DockDirection.Bottom);
+            DockSurface.Add(sharpEngineViewDockItem, NetDock.Enums.DockDirection.Top);
         }
 
         public MainWindow()
         {
             InitializeComponent();
-
-            Loaded += OnLoaded;
-        }
-
-        private void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            Loaded -= OnLoaded;
-
-            EngineView.OnEngineLoaded += OnEngineLoaded;
-            EngineView.OnEngineUnloaded += OnEngineUnloaded;
         }
     }
 }
