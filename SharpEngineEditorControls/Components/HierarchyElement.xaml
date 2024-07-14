@@ -23,8 +23,9 @@
         <Rectangle Grid.ColumnSpan="3" Grid.RowSpan="2" Fill="{StaticResource ElementBackgroundBrush}"></Rectangle>
 
         <hc:SimpleText Text="Hierarchy" FontSize="14" Foreground="White" Margin="10,5,0,0" Grid.ColumnSpan="2"></hc:SimpleText>
-        <Button Name="AddButton" Grid.Column="2" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="1, 1, 1, 1">
-            <Image Source="../Resources/Icons/Plus.bmp"/>
+        
+        <Button Name="CreateButton" Grid.Column="2" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" >
+            <Image Source="../Resources/Icons/Plus.bmp"></Image>
         </Button>
 
         <hc:ScrollViewer Grid.ColumnSpan="12" Grid.Row="1">
@@ -41,7 +42,7 @@
     </Grid>
     <UserControl.ContextMenu>
         <ContextMenu>
-            <MenuItem Header="Create New Game Object"></MenuItem>
+            <MenuItem Header="Create New Game Object" Click="ContextMenuCreateNewGameObjectClicked"></MenuItem>
         </ContextMenu>
     </UserControl.ContextMenu>
 

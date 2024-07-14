@@ -1,5 +1,7 @@
-﻿using System;
+﻿using SharpEngineEditorControls.Constants;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,9 +22,131 @@ namespace SharpEngineEditorControls.Controls
     /// </summary>
     public partial class GameObjectElement : UserControl
     {
+        private SolidColorBrush _bgBrushNormal;
+        private SolidColorBrush _bgBrush;
+
+        private SolidColorBrush _bgBrushDark;
+        private SolidColorBrush _bgBrushBlack;
+        private SolidColorBrush _bgBrushUnactive;
+
+        private string _name = "Game Object";
+
+        public bool Selected { get; private set; }
+        public bool IsActive { get; private set; } = true;
+        public string TextName
+        {
+            get
+            {
+                return _name;
+            }
+            set
+            {
+                Debug.Assert(value != null);
+
+                NameText.Text = value;
+
+                OnNameTextChanged?.Invoke(this, value);
+            }
+        }
+
+        public event Action<GameObjectElement> OnSelected;
+        public event Action<GameObjectElement> OnDisSelected;
+        public event Action<GameObjectElement> OnDeleteClicked;
+        public event Action<GameObjectElement, bool> OnActiveStateChanged;
+        public event Action<GameObjectElement, string> OnNameTextChanged;
+
+        public void SetActive(bool active)
+        {
+            IsActive = active;
+
+            if(active)
+            {
+                _bgBrush = _bgBrushNormal;
+                UpdateBackground();
+            }
+            else
+            {
+                _bgBrush = _bgBrushUnactive;
+                UpdateBackground();
+            }
+
+            OnActiveStateChanged?.Invoke(this, active);
+        }
+
+        public void DisSelect()
+        {
+            Selected = false;
+
+            UpdateBackground();
+
+            OnDisSelected?.Invoke(this);
+        }
+
+        protected override void OnMouseEnter(MouseEventArgs e)
+        {
+            base.OnMouseEnter(e);
+
+            if (Selected)
+                return;
+
+            UpdateBackground(_bgBrushDark);
+        }
+
+        protected override void OnMouseLeave(MouseEventArgs e)
+        {
+            base.OnMouseLeave(e);
+
+            if (Selected)
+                return;
+
+            UpdateBackground();
+        }
+
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonDown(e);
+
+            UpdateBackground(_bgBrushBlack);
+
+            Selected = true;
+            OnSelected?.Invoke(this);
+        }
+
+        private void UpdateBackground()
+        {
+            UpdateBackground(_bgBrush);
+        }
+        private void UpdateBackground(SolidColorBrush brush)
+        {
+            Debug.Assert(brush != null);
+
+            Background = brush;
+        }
+
         public GameObjectElement()
         {
             InitializeComponent();
+
+            _bgBrushDark = (SolidColorBrush)FindResource(ResourceKeys.GAMEOBJECT_ELEMENT_ONMOUSE_ENTER_SOLID_BRUSH_KEY);
+            _bgBrushBlack = (SolidColorBrush)FindResource(ResourceKeys.GAMEOBJECT_ELEMENT_ONMOUSE_CLICK_SOLID_BRUSH_KEY);
+            _bgBrushNormal = (SolidColorBrush)FindResource(ResourceKeys.ELEMENT_BACKGROUND_SOLID_BRUSH_KEY);
+            _bgBrushUnactive = (SolidColorBrush)FindResource(ResourceKeys.GAMEOBJECT_ELEMENT_UNACTIVE__SOLID_BRUSH_KEY);
+
+            _bgBrush = _bgBrushNormal;
+
+            ContextMenu.Opened += OnContextMenuOpen;
+            ContextMenu.Closed += OnContextMenuClosed;
+        }
+
+        private void OnContextMenuClosed(object sender, RoutedEventArgs e)
+        {}
+
+        private void OnContextMenuOpen(object sender, RoutedEventArgs e)
+        {}
+
+        private void OnContextMenuDeleteClicked(object sender, RoutedEventArgs e)
+        {
+            OnDeleteClicked?.Invoke(this);
         }
     }
 }

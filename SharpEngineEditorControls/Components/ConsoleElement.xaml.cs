@@ -86,7 +86,7 @@ namespace SharpEngineEditorControls.Components
         {
             this.Loaded -= OnLoaded;
 
-           //Clear();
+           Clear();
         }
     }
 }

@@ -1,9 +1,9 @@
-﻿using SharpEngineCore.Exceptions;
+﻿namespace SharpEngineCore.Exceptions;
 
-public sealed class FailedToLoadGameAssemblyException : 
-	SharpException
+public sealed class FailedToLoadGameAssemblyException :
+    SharpException
 {
-	public FailedToLoadGameAssemblyException(string message, Exception inner) :
-		base(message, inner)
-	{ }
+    public FailedToLoadGameAssemblyException(string message, Exception inner) :
+        base(message, inner)
+    { }
 }

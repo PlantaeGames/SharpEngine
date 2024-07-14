@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace SharpEngineGame
 {
-    internal sealed class GameAssembly
+    internal static class GameAssembly
     {
         [GameAssemblyStart]
         internal static void Start()

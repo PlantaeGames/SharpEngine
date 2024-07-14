@@ -20,9 +20,32 @@ namespace SharpEngineEditorControls.Components
     /// </summary>
     public partial class HierarchyElement : UserControl
     {
+        public event Action<HierarchyElement> OnCreateNewGameObjectClicked;
+
         public HierarchyElement()
         {
             InitializeComponent();
+
+            ContextMenu.Opened += OnContextMenuOpened;
+            ContextMenu.Closed += OnContextMenuClosed;
+
+            CreateButton.Click += OnCreateButtonClicked; ;
+        }
+
+        private void OnCreateButtonClicked(object sender, RoutedEventArgs e)
+        {
+            OnCreateNewGameObjectClicked?.Invoke(this);
+        }
+
+        private void OnContextMenuClosed(object sender, RoutedEventArgs e)
+        {}
+
+        private void OnContextMenuOpened(object sender, RoutedEventArgs e)
+        {}
+
+        private void ContextMenuCreateNewGameObjectClicked(object sender, RoutedEventArgs e)
+        {
+            OnCreateNewGameObjectClicked?.Invoke(this);
         }
     }
 }

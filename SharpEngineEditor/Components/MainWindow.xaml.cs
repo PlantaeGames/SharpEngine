@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using HandyControl.Tools;
 using NetDock;
 using NetDock.Controls;
 using SharpEngineCore;
@@ -25,6 +26,7 @@ namespace SharpEngineEditor.Components
     {
         private SharpEngineEditorControls.Components.HierarchyElement _hierarchy;
         private SharpEngineEditorControls.Components.ConsoleElement _console;
+        private SharpEngineEditorControls.Components.InspectorElement _inspector;
         private SharpEngineView _engineView;
 
         protected override void OnInitialized(EventArgs e)
@@ -33,6 +35,7 @@ namespace SharpEngineEditor.Components
 
             _hierarchy = new SharpEngineEditorControls.Components.HierarchyElement();
             _console = new SharpEngineEditorControls.Components.ConsoleElement();
+            _inspector = new SharpEngineEditorControls.Components.InspectorElement();
             _engineView = new SharpEngineView();
 
             var consoleDockItem = new DockItem(_console);
@@ -56,14 +59,23 @@ namespace SharpEngineEditor.Components
                 hierarchyDockItem.TabName = name;
             }
 
+            var inspectorDockItem = new DockItem(_inspector);
+            {
+                var name = _inspector.Name;
+                inspectorDockItem.Name = name;
+                inspectorDockItem.TabName = name;
+            }
+
             DockSurface.Add(consoleDockItem, NetDock.Enums.DockDirection.Bottom);
             DockSurface.Add(sharpEngineViewDockItem, NetDock.Enums.DockDirection.Top);
             DockSurface.Add(hierarchyDockItem, NetDock.Enums.DockDirection.Left);
+            DockSurface.Add(inspectorDockItem, NetDock.Enums.DockDirection.Right);
         }
 
         public MainWindow()
         {
             InitializeComponent();
+            
         }
     }
 }

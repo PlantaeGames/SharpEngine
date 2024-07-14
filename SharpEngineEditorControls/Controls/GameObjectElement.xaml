@@ -7,7 +7,8 @@
              xmlns:hc="https://handyorg.github.io/handycontrol"
              mc:Ignorable="d" 
              d:DesignHeight="20" d:DesignWidth="800"
-             Name="GameObject">
+             Name="GameObject"
+             Background="{StaticResource ElementBackgroundBrush}">
     <Grid Name="Root">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="5"></ColumnDefinition>
@@ -16,10 +17,28 @@
         </Grid.ColumnDefinitions>
 
         <Image Grid.Column="1" Source="../Resources/Icons/Box.bmp" Margin="2" Stretch="Fill"></Image>
-        
-        <Rectangle Name="Background" Grid.ColumnSpan="3"></Rectangle>
 
-        <hc:SimpleText Grid.Column="2" Text="Game Object" Foreground="White" VerticalAlignment="Center" Margin="20,0,0,0"></hc:SimpleText>
-        
+        <hc:SimpleText Name="NameText" Grid.Column="2" Text="Game Object" Foreground="White" VerticalAlignment="Center" Margin="20,0,0,0"></hc:SimpleText>
+
     </Grid>
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Themes/Generic.xaml"></ResourceDictionary>
+
+                <ResourceDictionary>
+                    <SolidColorBrush x:Key="OnMouseEnterBrush" Color="#282827"></SolidColorBrush>
+                    <SolidColorBrush x:Key="OnMouseClickBrush" Color="Black"></SolidColorBrush>
+                    <SolidColorBrush x:Key="UnactiveBrush" Color="DarkGray" Opacity="70"></SolidColorBrush>
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <UserControl.ContextMenu>
+        <ContextMenu>
+            <MenuItem Header="Delete" Click="OnContextMenuDeleteClicked"></MenuItem>
+        </ContextMenu>
+    </UserControl.ContextMenu>
 </UserControl>

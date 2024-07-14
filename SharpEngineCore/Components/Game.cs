@@ -1,4 +1,5 @@
 using SharpEngineCore.Attributes;
+using SharpEngineCore.Exceptions;
 using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Metadata;
@@ -41,7 +42,7 @@ public sealed class GameAssembly
 
             foreach (var type in _assembly.GetTypes())
             {
-                foreach (var method in type.GetMethods(BindingFlags.Static))
+                foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static))
                 {
                     var start = method.GetCustomAttribute<GameAssemblyStart>();
                     var end = method.GetCustomAttribute<GameAssemblyStop>();
@@ -62,7 +63,7 @@ public sealed class GameAssembly
                 }
             }
         }
-		catch(FileLoadException e)
+		catch(Exception e)
 		{
 			throw new FailedToLoadGameAssemblyException(
 				$"Failed to load game assembly.\n\n" +

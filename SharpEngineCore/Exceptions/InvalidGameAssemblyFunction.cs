@@ -1,4 +1,4 @@
-﻿using SharpEngineCore.Exceptions;
+﻿namespace SharpEngineCore.Exceptions;
 
 public sealed class InvalidGameAssemblyFunction :
     SharpException
