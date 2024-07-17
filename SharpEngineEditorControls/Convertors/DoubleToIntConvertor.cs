@@ -8,24 +8,15 @@ namespace SharpEngineEditorControls.Convertors
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            double result = System.Convert.ToDouble(value);
+            var target = Math.Clamp((int)value, int.MinValue, int.MaxValue);
+            var result = (double)target;
             return result;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var target = (double)value;
-            var result = 0;
-            if (target <= int.MinValue)
-            {
-                result = int.MinValue;
-            }
-            else if(target >= int.MaxValue)
-            {
-                result = int.MaxValue;
-            }
-            else
-                result = System.Convert.ToInt32(target);
+            var target = Math.Clamp((double)value, double.MinValue, double.MaxValue);
+            var result = (int)target;
             return result;
         }
     }
