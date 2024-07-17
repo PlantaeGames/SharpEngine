@@ -9,15 +9,15 @@ using TerraFX.Interop.DirectX;
 
 namespace SharpEngineBuildSystem.Utilities;
 
-public class CodeGenerator
+public partial class CodeGenerator
 {
     public interface ICodeBuilder;
 
-    public class Builder : ICodeBuilder
+    public partial class Builder : ICodeBuilder
     {
         public interface IFieldBuilder : ICodeBuilder
         {
-            ITypeBuilder FeildEnd();
+            ITypeBuilder FieldEnd();
         }
 
         public interface ITypeBuilder : ICodeBuilder
@@ -54,19 +54,19 @@ public class CodeGenerator
             T MethodEnd();
         }
 
-        private class Type : ITypeBuilder
+        private partial class Type : ITypeBuilder
         {
-            private class Feild : IFieldBuilder
+            private class Field : IFieldBuilder
             {
                 private TypeBuilder _typeBuilder;
                 private Type _type;
 
-                public ITypeBuilder FeildEnd()
+                public ITypeBuilder FieldEnd()
                 {
                     return _type;
                 }
 
-                public Feild(Type type, TypeBuilder typeBuilder)
+                public Field(Type type, TypeBuilder typeBuilder)
                 {
                     _type = type;
                     _typeBuilder = typeBuilder;

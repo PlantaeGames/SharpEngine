@@ -44,8 +44,8 @@ public sealed class GameAssembly
             {
                 foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static))
                 {
-                    var start = method.GetCustomAttribute<GameAssemblyStart>();
-                    var end = method.GetCustomAttribute<GameAssemblyStop>();
+                    var start = method.GetCustomAttribute<GameAssemblyStartAttribute>();
+                    var end = method.GetCustomAttribute<GameAssemblyStopAttribute>();
 
                     if (start != null)
                     {

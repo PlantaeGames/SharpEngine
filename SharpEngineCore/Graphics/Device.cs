@@ -373,10 +373,10 @@ internal sealed class Device
     public InputLayout CreateInputLayout(InputLayoutInfo info)
     {
         var type = info.Layout.GetType();
-        var feilds = type.GetFields();;
+        var fields = type.GetFields();;
         
 
-        var count = feilds.Length;
+        var count = fields.Length;
 
         Debug.Assert(count > 0,
             "Fragment count can't be zero here.");
@@ -391,7 +391,7 @@ internal sealed class Device
             var formats = new DXGI_FORMAT[count];
             for (var i = 0; i < count; i++)
             {
-                var nameBytes = Encoding.ASCII.GetBytes(feilds[i].Name);
+                var nameBytes = Encoding.ASCII.GetBytes(fields[i].Name);
                 nint pName = 0x0;
                 try
                 {
@@ -413,7 +413,7 @@ internal sealed class Device
 
                 pNames[i] = pName;
 
-                var size = feilds[i].FieldType.GetDataTypeSize();
+                var size = fields[i].FieldType.GetDataTypeSize();
                 Debug.Assert(size > 0,
                     "The size of memebers of input struct must be greater than 1.");
 

@@ -5,12 +5,12 @@ namespace SharpEngineGame
 {
     internal static class GameAssembly
     {
-        [GameAssemblyStart]
+        [GameAssemblyStartAttribute]
         internal static void Start()
         {
         }
 
-        [GameAssemblyStop]
+        [GameAssemblyStopAttribute]
         internal static void Stop()
         {
 
