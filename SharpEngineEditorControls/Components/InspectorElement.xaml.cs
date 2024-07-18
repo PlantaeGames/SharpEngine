@@ -10,6 +10,8 @@ using System.Security.Policy;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Runtime.CompilerServices;
+using SharpEngineEditorControls.Controls;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace SharpEngineEditorControls.Components
 {
@@ -89,9 +91,13 @@ namespace SharpEngineEditorControls.Components
                 var editor = _resolver.Resolve(type);
 
                 var uiCollection = editor.CreateUI(_resolver, new(@object, null));
-                uiCollection.Margin = new System.Windows.Thickness(0, 10, 0, 0);
 
-                ComponentsStack.Children.Add(uiCollection);
+                var componentElement = new ComponentElement();
+                componentElement.AddCollection(type.Name, uiCollection);
+                componentElement.ToggleExpend(true);
+                componentElement.Margin = new System.Windows.Thickness(0, 10, 0, 0);
+
+                ComponentsStack.Children.Add(componentElement);
             }
         }
 

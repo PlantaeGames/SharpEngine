@@ -94,6 +94,8 @@ namespace SharpEngineEditor.Components
             public int Age = 12;
             public float Float = 3.3f;
 
+            public Test test = new();
+
         }
         public class Test
         {

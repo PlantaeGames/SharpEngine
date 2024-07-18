@@ -39,13 +39,6 @@ namespace SharpEngineEditorControls.Editors
                 collection += more;
             }
 
-            var componentElement = new ComponentElement();
-            componentElement.AddCollection(parent.GetType().Name, collection);
-            componentElement.ToggleExpend(true);
-
-            collection = new UICollection();
-            collection += componentElement;
-
             return collection;
         }
     }

@@ -12,6 +12,7 @@ namespace SharpEngineCore.Graphics;
 
 public class GraphicsException : SharpException
 {
+#if DEBUG
     /// <summary>
     /// Wraps the COM IDXGIInfoQueue.
     /// Provides methods to obtains messages from DXGIQueue.
@@ -210,23 +211,37 @@ public class GraphicsException : SharpException
 
     private static DXGIInfoQueue _InfoQueue = new();
 
+#endif
+
 #nullable enable
     public static bool CheckIfAny()
     {
+#if DEBUG
         return _InfoQueue.IsMessageAvailable();
+#else
+        return false;
+#endif
     }
 #nullable disable
 
     public static void SetInfoQueue()
     {
+#if DEBUG
         _InfoQueue.Set();
+#endif
     }
 
     public static void ThrowLastGraphicsException(string message)
     {
+#if DEBUG
+        var infoQueueMsg = _InfoQueue.GetMessages().ToSingleString();
+#else
+        var infoQueueMsg = string.Empty;
+#endif
+
         throw new GraphicsException(
                     $"{message}\n" +
-                    $"\n{_InfoQueue.GetMessages().ToSingleString()}\n");
+                    $"\n{infoQueueMsg}\n");
     }
 
     public GraphicsException() 
