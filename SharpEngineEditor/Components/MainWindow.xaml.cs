@@ -14,6 +14,7 @@ using HandyControl.Tools;
 using NetDock;
 using NetDock.Controls;
 using SharpEngineCore;
+using SharpEngineCore.ECS;
 using SharpEngineEditor.Extensions;
 using SharpEngineEditor.Misc;
 using SharpEngineEditor.Tests;
@@ -82,8 +83,10 @@ namespace SharpEngineEditor.Components
             DockSurface.Add(hierarchyDockItem, NetDock.Enums.DockDirection.Left);
             DockSurface.Add(inspectorDockItem, NetDock.Enums.DockDirection.Right);
 
-            _inspector.AddObject(_t);
-            _inspector.AddObject(new Test());
+            _inspector.Clear();
+
+            _hierarchy.Clear();
+            _hierarchy.AddRootGameObject("Test GameObject", SceneManager.ActiveScene.ECS.Create());
         }
 
         private Component _t = new();

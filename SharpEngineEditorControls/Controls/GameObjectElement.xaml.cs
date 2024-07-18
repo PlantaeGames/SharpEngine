@@ -49,6 +49,9 @@ namespace SharpEngineEditorControls.Controls
             }
         }
 
+        public object Object { get; set; }
+        public TreeViewItem ItemObject { get; set; }
+
         public event Action<GameObjectElement> OnDeleteClicked;
         public event Action<GameObjectElement, bool> OnActiveStateChanged;
         public event Action<GameObjectElement, string> OnNameTextChanged;

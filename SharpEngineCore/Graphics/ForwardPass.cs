@@ -56,7 +56,7 @@ internal sealed class ForwardPass : Pass
                 //                       //
 
                 var light = _lightObjects[i];
-                var lightPasses = light.Data.LightType == Light.Point ?
+                var lightPasses = light.Data.LightType == LightInfo.Point ?
                                    6 : 1;
 
                 //_lightDataCBuffer.Update(light.Data);

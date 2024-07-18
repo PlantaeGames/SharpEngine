@@ -30,7 +30,7 @@
         </Button>
 
         <hc:ScrollViewer Grid.ColumnSpan="2" Grid.Row="1" Grid.Column="1" Background="Transparent">
-            <TreeView Background="Transparent" BorderBrush="Transparent">
+            <TreeView Name="Tree" Background="Transparent" BorderBrush="Transparent">
                 <TreeViewItem>
                     <TreeViewItem.Header>
                         <controls:GameObjectElement></controls:GameObjectElement>
