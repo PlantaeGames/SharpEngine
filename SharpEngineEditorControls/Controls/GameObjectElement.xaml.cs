@@ -49,8 +49,6 @@ namespace SharpEngineEditorControls.Controls
             }
         }
 
-        public event Action<GameObjectElement> OnSelected;
-        public event Action<GameObjectElement> OnDisSelected;
         public event Action<GameObjectElement> OnDeleteClicked;
         public event Action<GameObjectElement, bool> OnActiveStateChanged;
         public event Action<GameObjectElement, string> OnNameTextChanged;
@@ -59,7 +57,7 @@ namespace SharpEngineEditorControls.Controls
         {
             IsActive = active;
 
-            if(active)
+            if (active)
             {
                 _bgBrush = _bgBrushNormal;
                 UpdateBackground();
@@ -71,45 +69,6 @@ namespace SharpEngineEditorControls.Controls
             }
 
             OnActiveStateChanged?.Invoke(this, active);
-        }
-
-        public void DisSelect()
-        {
-            Selected = false;
-
-            UpdateBackground();
-
-            OnDisSelected?.Invoke(this);
-        }
-
-        protected override void OnMouseEnter(MouseEventArgs e)
-        {
-            base.OnMouseEnter(e);
-
-            if (Selected)
-                return;
-
-            UpdateBackground(_bgBrushDark);
-        }
-
-        protected override void OnMouseLeave(MouseEventArgs e)
-        {
-            base.OnMouseLeave(e);
-
-            if (Selected)
-                return;
-
-            UpdateBackground();
-        }
-
-        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
-        {
-            base.OnMouseLeftButtonDown(e);
-
-            UpdateBackground(_bgBrushBlack);
-
-            Selected = true;
-            OnSelected?.Invoke(this);
         }
 
         private void UpdateBackground()

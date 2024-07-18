@@ -16,28 +16,32 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="5"></ColumnDefinition>
+            <ColumnDefinition Width="40"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition Width="30"></ColumnDefinition>
         </Grid.ColumnDefinitions>
 
-        <Rectangle Grid.ColumnSpan="3" Grid.RowSpan="2" Fill="{StaticResource ElementBackgroundBrush}"></Rectangle>
+        <Rectangle Grid.ColumnSpan="4" Grid.RowSpan="2" Fill="{StaticResource ElementBackgroundBrush}"></Rectangle>
 
-        <hc:SimpleText Text="Hierarchy" FontSize="14" Foreground="White" Margin="10,5,0,0" Grid.ColumnSpan="2"></hc:SimpleText>
+        <hc:SimpleText Text="Hierarchy" FontSize="14" Foreground="White" Margin="10,5,0,0" Grid.ColumnSpan="2" Grid.Column="1"></hc:SimpleText>
         
-        <Button Name="CreateButton" Grid.Column="2" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" >
+        <Button Name="CreateButton" Grid.Column="3" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" BorderBrush="Transparent">
             <Image Source="../Resources/Icons/Plus.bmp"></Image>
         </Button>
 
-        <hc:ScrollViewer Grid.ColumnSpan="12" Grid.Row="1">
-            <hc:SimpleStackPanel>
-                <controls:GameObjectElement></controls:GameObjectElement>
-                <controls:GameObjectElement></controls:GameObjectElement>
-                <controls:GameObjectElement></controls:GameObjectElement>
-                <controls:GameObjectElement></controls:GameObjectElement>
-                <controls:GameObjectElement></controls:GameObjectElement>
-                <controls:GameObjectElement></controls:GameObjectElement>
-                <controls:GameObjectElement></controls:GameObjectElement>
-            </hc:SimpleStackPanel>
+        <hc:ScrollViewer Grid.ColumnSpan="2" Grid.Row="1" Grid.Column="1" Background="Transparent">
+            <TreeView Background="Transparent" BorderBrush="Transparent">
+                <TreeViewItem>
+                    <TreeViewItem.Header>
+                        <controls:GameObjectElement></controls:GameObjectElement>
+                    </TreeViewItem.Header>
+                    <TreeViewItem>
+                        <TreeViewItem.Header>
+                            <controls:GameObjectElement></controls:GameObjectElement>
+                        </TreeViewItem.Header>
+                    </TreeViewItem>
+                </TreeViewItem>
+            </TreeView>
         </hc:ScrollViewer>
     </Grid>
     <UserControl.ContextMenu>
