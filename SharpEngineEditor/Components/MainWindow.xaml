@@ -11,7 +11,5 @@
          
         Title="Sharp Engine Editor" Height="1080" Width="1920">
 
-    <netdock:DockSurface Name="DockSurface">
-    </netdock:DockSurface>
-
+    <local:SharpEditor></local:SharpEditor>
 </Window>

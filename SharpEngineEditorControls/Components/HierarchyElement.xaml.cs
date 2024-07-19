@@ -1,6 +1,7 @@
 ﻿using SharpEngineEditorControls.Controls;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,6 +26,7 @@ namespace SharpEngineEditorControls.Components
         public event Action<HierarchyElement> OnCreateNewGameObjectClicked;
         public event Action<HierarchyElement, object> OnChildGameObjectAdd;
         public event Action<HierarchyElement, object> OnRootGameObjectAdd;
+        public event Action<HierarchyElement, object> OnSelected;
 
         public event Action<HierarchyElement, object> OnGameObjectRemove;
 
@@ -35,16 +37,17 @@ namespace SharpEngineEditorControls.Components
 
         public void Remove(TreeViewItem item)
         {
-            var source = ItemsControl.ItemsControlFromItemContainer(item);
-            while(source != null)
+            var parent = item.Parent as TreeViewItem;
+            if (parent != null)
             {
-                source.Items.Remove(source);
-
-                source = source.Parent as TreeViewItem;
+                parent.Items.Remove(item);
+            }
+            else
+            {
+                Tree.Items.Remove(item);
             }
 
-            Tree.Items.Remove(source);
-            //Tree.UpdateLayout();
+            OnGameObjectRemove?.Invoke(this, ((GameObjectElement)item.Header).Object);
         }
 
         public void AddRootGameObject(string name, object value)
@@ -54,11 +57,14 @@ namespace SharpEngineEditorControls.Components
             var gameObject = new GameObjectElement();
             gameObject.Object = value;
             gameObject.ItemObject = treeItem;
+            gameObject.OnDeleteClicked += (x) =>
+            {
+                Remove(x.ItemObject);
+            };
 
             treeItem.Header = gameObject;
 
             Tree.Items.Add(treeItem);
-            //Tree.UpdateLayout();
             OnRootGameObjectAdd?.Invoke(this, value);
         }
 
@@ -69,11 +75,14 @@ namespace SharpEngineEditorControls.Components
             var gameObject = new GameObjectElement();
             gameObject.Object = value;
             gameObject.ItemObject = treeItem;
+            gameObject.OnDeleteClicked += (x) =>
+            {
+                Remove(x.ItemObject);
+            };
 
             treeItem.Header = gameObject;
 
             parent.Items.Add(treeItem);
-            //Tree.UpdateLayout();
 
             OnChildGameObjectAdd?.Invoke(this, value);
         }
@@ -81,7 +90,6 @@ namespace SharpEngineEditorControls.Components
         public void Clear()
         {
             Tree.Items.Clear();
-            //Tree.UpdateLayout();
 
             OnClear?.Invoke(this);
         }
@@ -93,18 +101,25 @@ namespace SharpEngineEditorControls.Components
             ContextMenu.Opened += OnContextMenuOpened;
             ContextMenu.Closed += OnContextMenuClosed;
 
-            CreateButton.Click += OnCreateButtonClicked; ;
+            CreateButton.Click += OnCreateButtonClicked;
+
+            Tree.SelectedItemChanged += OnSelectedItemChanged;
         }
 
-        private void OnCreateButtonClicked(object sender, RoutedEventArgs e)
+        private void OnSelectedItemChanged(object _, RoutedPropertyChangedEventArgs<object> __)
+        {
+            OnSelected?.Invoke(this, SelectedGameObject);
+        }
+
+        private void OnCreateButtonClicked(object _, RoutedEventArgs __)
         {
             OnCreateNewGameObjectClicked?.Invoke(this);
         }
 
-        private void OnContextMenuClosed(object sender, RoutedEventArgs e)
+        private void OnContextMenuClosed(object _, RoutedEventArgs __)
         {}
 
-        private void OnContextMenuOpened(object sender, RoutedEventArgs e)
+        private void OnContextMenuOpened(object _, RoutedEventArgs __)
         {}
 
         private void ContextMenuCreateNewGameObjectClicked(object sender, RoutedEventArgs e)
