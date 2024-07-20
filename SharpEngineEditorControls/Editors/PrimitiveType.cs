@@ -21,18 +21,12 @@ namespace SharpEngineEditorControls.Editors
             set
             {
                 SetValue(ValueProperty, value);
+                _fieldInfo?.SetValue(_parent, Value);
             }
         }
 
         public static readonly DependencyProperty ValueProperty =
             DependencyProperty.Register(nameof(Value), typeof(object), typeof(PrimitiveType));
-
-        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
-        {
-            base.OnPropertyChanged(e);
-
-            _fieldInfo.SetValue(_parent, Value);
-        }
 
 #nullable enable
         public PrimitiveType(object parent, FieldInfo? fieldInfo)

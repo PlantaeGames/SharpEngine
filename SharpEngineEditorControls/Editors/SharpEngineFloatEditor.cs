@@ -27,7 +27,6 @@ namespace SharpEngineEditorControls.Editors
             numBox.Maximum = float.MaxValue;
             numBox.Minimum = float.MinValue;
 
-
             BindingOperations.SetBinding(numBox,
                 HandyControl.Controls.NumericUpDown.ValueProperty,
                 new Binding(item.PropertyName)

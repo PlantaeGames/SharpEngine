@@ -4,5 +4,4 @@
 
     <SolidColorBrush x:Key="ElementBackgroundBrush" Color="#171716" Opacity="100"></SolidColorBrush>
     <Color x:Key="ElementBackgroundColor" R="23" G="23" B="22"></Color>
-    
 </ResourceDictionary>
