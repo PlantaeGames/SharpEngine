@@ -15,7 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ECS\" />
     <Folder Include="Modals\" />
     <Folder Include="Textures\" />
     <Folder Include="Structures\" />

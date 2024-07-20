@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -26,6 +27,11 @@ namespace SharpEngineEditor.Misc
 #nullable disable
         public event Action<SharpEngineView> OnEngineLoaded;
         public event Action<SharpEngineView> OnEngineUnloaded;
+
+        public Assembly EngineCoreAssembly => _host.EngineCoreAssembly;
+#nullable enable
+        public GameAssembly? GameAssembly => _host.GameAssembly;
+#nullable disable
 
         private SharpEngineHost _host;
 #nullable enable

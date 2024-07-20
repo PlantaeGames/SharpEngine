@@ -18,21 +18,21 @@
 
         <DockPanel Grid.Column="0" Background="Transparent">
             <Label Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Left" VerticalAlignment="Center">X : </Label>
-            <hc:NumericUpDown Name="X">
+            <hc:NumericUpDown Name="X" VerticalAlignment="Center">
             
             </hc:NumericUpDown>
         </DockPanel>
 
         <DockPanel Grid.Column="1" Background="Transparent">
             <Label Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Left" VerticalAlignment="Center">Y :</Label>
-            <hc:NumericUpDown Name="Y">
+            <hc:NumericUpDown Name="Y" VerticalAlignment="Center">
 
             </hc:NumericUpDown>
         </DockPanel>
 
         <DockPanel Grid.Column="2" Background="Transparent">
             <Label Background="Transparent" BorderBrush="Transparent" HorizontalAlignment="Left" VerticalAlignment="Center">Z :</Label>
-            <hc:NumericUpDown Name="Z">
+            <hc:NumericUpDown Name="Z" VerticalAlignment="Center">
 
             </hc:NumericUpDown>
         </DockPanel>

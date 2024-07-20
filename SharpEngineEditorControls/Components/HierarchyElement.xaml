@@ -29,7 +29,7 @@
             <Image Source="../Resources/Icons/Plus.bmp"></Image>
         </Button>
 
-        <hc:ScrollViewer Grid.ColumnSpan="2" Grid.Row="1" Grid.Column="1" Background="Transparent">
+        <hc:ScrollViewer Grid.ColumnSpan="2" Grid.Row="1" Grid.Column="2" Background="Transparent">
             <TreeView Name="Tree" Background="Transparent" BorderBrush="Transparent">
                 <TreeViewItem>
                     <TreeViewItem.Header>

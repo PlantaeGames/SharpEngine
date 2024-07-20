@@ -12,6 +12,8 @@ public sealed class GameAssembly
 	private MethodInfo _startMethod;
 	private MethodInfo _stopMethod;
 
+	public Assembly Assembly => _assembly;
+
 	public void StartExecution()
 	{
 		Debug.Assert(_assembly != null);

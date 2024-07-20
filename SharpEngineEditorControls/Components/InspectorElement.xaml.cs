@@ -22,6 +22,7 @@ namespace SharpEngineEditorControls.Components
     {
         public event Action<InspectorElement, object> OnObjectAdd;
         public event Action<InspectorElement, object> OnObjectRemoved;
+        public event Action<InspectorElement, string> OnAddComponentClicked;
 
         public event Action<InspectorElement, SharpEngineEditorResolver> OnEditorResolverChanged;
 
@@ -29,6 +30,8 @@ namespace SharpEngineEditorControls.Components
         public event Action<InspectorElement> OnClear;
 
         private List<object> _objects = new();
+
+        private AddComponentElement _addComponentElement;
 
         public SharpEngineEditorResolver EditorResolver
         {
@@ -99,11 +102,20 @@ namespace SharpEngineEditorControls.Components
 
                 ComponentsStack.Children.Add(componentElement);
             }
+
+            ComponentsStack.Children.Add(_addComponentElement);
         }
 
         protected override void OnInitialized(EventArgs e)
         {
             base.OnInitialized(e);
+
+            _addComponentElement = new AddComponentElement();
+            _addComponentElement.Margin = new System.Windows.Thickness(10);
+            _addComponentElement.OnAddClicked += (_, name) =>
+            {
+                OnAddComponentClicked?.Invoke(this, name);
+            };
         }
 
         public InspectorElement()

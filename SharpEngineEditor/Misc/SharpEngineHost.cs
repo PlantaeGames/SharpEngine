@@ -2,24 +2,35 @@
 using System.Windows.Interop;
 using TerraFX.Interop.Windows;
 
-using SharpEngineCore.Graphics;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace SharpEngineEditor.Misc
 {
     public sealed class SharpEngineHost : HwndHost
     {
-#nullable disable
         public event Action<SharpEngineHost> OnEngineLoaded;
         public event Action<SharpEngineHost> OnEngineUnloaded;
 
         private SharpEngineCore.Components.MainWindow _engineWindow;
         private Thread _engineThread;
+
+        public Assembly EngineCoreAssembly { get; private set; }
+
 #nullable enable
+        public GameAssembly? GameAssembly { get; private set; }
+#nullable disable
 
         private static object _engineThreadLock = new();
         private static object _engineThreadExitLock = new();
         private static bool _quitEngineThread;
+
+        protected override void OnInitialized(EventArgs e)
+        {
+            base.OnInitialized(e);
+
+            EngineCoreAssembly = Assembly.GetAssembly(typeof(SharpEngineCore.Components.MainWindow));
+        }
 
         public void ENGINE_ACTION_CALL(Action action)
         {
@@ -91,11 +102,11 @@ namespace SharpEngineEditor.Misc
 
         protected override HandleRef BuildWindowCore(HandleRef hwndParent)
         {
-            var game = new GameAssembly("SharpEngineGame.dll");
+            GameAssembly = new GameAssembly("SharpEngineGame.dll");
 
             unsafe
             {
-                _engineWindow = new SharpEngineCore.Components.MainWindow(game,
+                _engineWindow = new SharpEngineCore.Components.MainWindow(GameAssembly,
                     "SharpEngine", new(0, 0), new(1920, 1080), new HWND((void*)hwndParent.Handle));
             }
             _engineThread = new Thread(new ParameterizedThreadStart(EngineThread));
