@@ -135,29 +135,23 @@ public sealed class GameObject
 
         void ClearPendings()
         {
-            foreach(var component in _pendingAdds)
+            foreach (var component in _pendingAdds)
             {
                 _components.Add(component);
-                _pendingAdds.Remove(component);
-
-                if (component.IsEnabled == false ||
-                    IsActive == false)
-                    continue;
-
                 component.Awake();
             }
 
-            foreach(var component in _pendingRemove)
+            _pendingAdds.Clear();
+
+            foreach (var component in _pendingRemove)
             {
                 _components.Remove(component);
                 _pendingRemove.Remove(component);
 
-                if (component.IsEnabled == false ||
-                    IsActive            == false)
-                    continue;
-
                 component.OnDestroy();
             }
+
+            _pendingRemove.Clear();
         }
     }
 
@@ -189,6 +183,11 @@ public sealed class GameObject
         }
 
         return components.ToArray();
+    }
+
+    public Component[] GetAllComponents()
+    {
+        return [.. _components];
     }
 
     public T GetComponent<T>()

@@ -40,7 +40,7 @@ namespace SharpEngineEditorControls.Components
 
         public void Log(string msg, LogType type)
         {
-            Debug.Assert(msg == null);
+            Debug.Assert(msg != null);
 
             Log log = null;
 

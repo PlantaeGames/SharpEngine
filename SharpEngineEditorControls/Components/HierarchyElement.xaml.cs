@@ -26,13 +26,17 @@ namespace SharpEngineEditorControls.Components
         public event Action<HierarchyElement> OnCreateNewGameObjectClicked;
         public event Action<HierarchyElement, object> OnChildGameObjectAdd;
         public event Action<HierarchyElement, object> OnRootGameObjectAdd;
-        public event Action<HierarchyElement, object> OnSelected;
+#nullable enable
+        public event Action<HierarchyElement, object?> OnSelectedChanged;
+#nullable disable
 
         public event Action<HierarchyElement, object> OnGameObjectRemove;
 
         public event Action<HierarchyElement> OnClear;
 
-        public object SelectedGameObject => (ViewItem.Header as GameObjectElement).Object;
+#nullable enable
+        public object? SelectedGameObject => (ViewItem?.Header as GameObjectElement)?.Object;
+#nullable disable
         public TreeViewItem ViewItem => Tree.SelectedItem as TreeViewItem;
 
         public void Remove(TreeViewItem item)
@@ -108,7 +112,7 @@ namespace SharpEngineEditorControls.Components
 
         private void OnSelectedItemChanged(object _, RoutedPropertyChangedEventArgs<object> __)
         {
-            OnSelected?.Invoke(this, SelectedGameObject);
+            OnSelectedChanged?.Invoke(this, SelectedGameObject);
         }
 
         private void OnCreateButtonClicked(object _, RoutedEventArgs __)

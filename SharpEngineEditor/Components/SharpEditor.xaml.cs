@@ -4,6 +4,7 @@ using SharpEngineEditor.Misc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -28,6 +29,83 @@ namespace SharpEngineEditor.Components
         private SharpEngineEditorControls.Components.InspectorElement _inspector;
         private SharpEngineEditorControls.Components.ProjectElement _project;
         private SharpEngineView _engineView;
+
+        private void CreateBindings()
+        {
+            _hierarchy.OnCreateNewGameObjectClicked += OnCreateNewGameObjectClicked;
+            _hierarchy.OnRootGameObjectAdd          += OnRootGameObjectAdd;
+            _hierarchy.OnGameObjectRemove           += OnGameObjectRemove;
+            _hierarchy.OnClear                      += OnSceneClear;
+            _hierarchy.OnChildGameObjectAdd         += OnChildGameObjectAdd;
+            _hierarchy.OnSelectedChanged            += OnGameObjectSelected;
+
+            _console.Log("Engine Bindings Created.");
+        }
+
+        private void RemoveBindings()
+        {
+            _hierarchy.OnCreateNewGameObjectClicked     -= OnCreateNewGameObjectClicked;
+            _hierarchy.OnRootGameObjectAdd              -= OnRootGameObjectAdd;
+            _hierarchy.OnGameObjectRemove               -= OnGameObjectRemove;
+            _hierarchy.OnClear                          -= OnSceneClear;
+            _hierarchy.OnChildGameObjectAdd             -= OnChildGameObjectAdd;
+            _hierarchy.OnSelectedChanged                -= OnGameObjectSelected;
+
+            _console.Log("Engine Bindings Removed.");
+        }
+
+        #region BINDINGS
+#nullable enable
+        private void OnGameObjectSelected(SharpEngineEditorControls.Components.HierarchyElement hierarchy, object? @object)
+        {
+            if (@object == null)
+            {
+                _inspector.Clear();
+                return;
+            }
+
+            var gameObject = (GameObject)@object;
+
+            _inspector.Clear();
+            var components = gameObject.GetAllComponents();
+
+            foreach (var component in components)
+            {
+                _inspector.AddObject(component);
+            }
+
+        }
+#nullable disable
+
+        private void OnChildGameObjectAdd(SharpEngineEditorControls.Components.HierarchyElement arg1, object arg2)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnSceneClear(SharpEngineEditorControls.Components.HierarchyElement obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnGameObjectRemove(SharpEngineEditorControls.Components.HierarchyElement hierarchy, object @object)
+        {
+            var gameObject = (GameObject)@object;
+            SharpEngineCore.ECS.SceneManager.ActiveScene.ECS.Remove(gameObject);
+        }
+
+        private void OnRootGameObjectAdd(SharpEngineEditorControls.Components.HierarchyElement hierarchy, object @object)
+        {
+            var gameObject = (GameObject)@object;
+        }
+
+        private void OnCreateNewGameObjectClicked(SharpEngineEditorControls.Components.HierarchyElement hierarchy)
+        {
+            var gameObject = SharpEngineCore.ECS.SceneManager.ActiveScene.ECS.Create();
+            gameObject.name = "Game Object";
+
+            hierarchy.AddRootGameObject(gameObject.name, gameObject);
+        }
+        #endregion
 
         protected override void OnInitialized(EventArgs e)
         {
@@ -87,6 +165,25 @@ namespace SharpEngineEditor.Components
         public SharpEditor()
         {
             InitializeComponent();
+
+            _engineView.OnEngineLoaded += OnEngineLoaded;
+            _engineView.OnEngineUnloaded += OnEngineUnloaded;
+        }
+
+        private void OnEngineUnloaded(SharpEngineView obj)
+        {
+            _engineView.OnEngineUnloaded -= OnEngineUnloaded;
+
+            _console.Log("Engine Unloaded");
+            RemoveBindings();
+        }
+
+        private void OnEngineLoaded(SharpEngineView obj)
+        {
+            _engineView.OnEngineLoaded -= OnEngineLoaded;
+
+            _console.Log("Engine Loaded");
+            CreateBindings();
         }
     }
 }
