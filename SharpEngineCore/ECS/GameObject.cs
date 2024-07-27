@@ -14,6 +14,7 @@ public sealed class GameObject
     internal List<Component> _pendingRemove = new();
     internal List<Component> _components = new();
 
+    public Transform Transform { get; private set; }
     public bool IsActive { get; private set; }
 
     public void SetActive(bool active)
@@ -165,29 +166,38 @@ public sealed class GameObject
 
         var target = targets.First();
 
-        _pendingRemove.Add(target);
+        Debug.Assert(target as Transform == null,
+            $"Can't remove Transform component, {name}");
+
+        if(SceneManager.IsPlaying)
+            _pendingRemove.Add(target);
+        else
+            _components.Remove(target);
     }
 
     public T[] GetComponents<T>()
         where T : Component, new()
     {
-        var targets = _components
+        var components = new List<Component>();
+        components.AddRange(_components);
+        components.AddRange(_pendingAdds);
+
+        var targets = components
                 .Where(x => x as T != null);
+        
         Debug.Assert(targets.Count() > 0,
             $"Component: {nameof(T)} does not found on gameObject: {name}");
 
-        var components = new List<T>();
-        foreach (var component in targets)
-        {
-            components.Add((T)component);
-        }
-
-        return components.ToArray();
+        return targets.Cast<T>().ToArray();
     }
 
     public Component[] GetAllComponents()
     {
-        return [.. _components];
+        var components = new List<Component>();
+        components.AddRange(_components);
+        components.AddRange(_pendingAdds);
+
+        return [.. components];
     }
 
     public T GetComponent<T>()
@@ -200,6 +210,9 @@ public sealed class GameObject
     public T AddComponent<T>()
         where T : Component, new()
     {
+        Debug.Assert(Transform == null? true : typeof(T) != typeof(Transform),
+            "GameObjects can't have more than one Transform.");
+
         var component = new T();
         _pendingAdds.Add(component);
 
@@ -210,6 +223,6 @@ public sealed class GameObject
 
     internal GameObject()
     {
-        AddComponent<Transform>();
+        Transform = AddComponent<Transform>();
     }
 }

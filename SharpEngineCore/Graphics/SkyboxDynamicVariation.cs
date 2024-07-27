@@ -5,7 +5,9 @@ internal sealed class SkyboxDynamicVariation : PipelineVariation
     public SkyboxDynamicVariation(
         ShaderResourceView skyboxView,
         Sampler skyboxSampler,
-        Viewport viewport)
+        Viewport viewport,
+        DepthStencilView depthView,
+        RenderTargetView outputView)
     {
         PixelShaderStage = new PixelShaderStage()
         {
@@ -23,6 +25,14 @@ internal sealed class SkyboxDynamicVariation : PipelineVariation
             Flags = Rasterizer.BindFlags.Viewports
         };
 
-        _stages = [PixelShaderStage, Rasterizer];
+        OutputMerger = new OutputMerger()
+        {
+            DepthStencilView = depthView,
+            RenderTargetViews = [outputView],
+
+            Flags = OutputMerger.BindFlags.RenderTargetViewAndDepthView
+        };
+
+        _stages = [PixelShaderStage, Rasterizer, OutputMerger];
     }
 }

@@ -54,16 +54,12 @@ namespace SharpEngineEditorControls.Components
         public void AddObject(object @object)
         {
             _objects.Add(@object);
-            Refresh();
-
             OnObjectAdd?.Invoke(this, @object);
         }
 
         public void RemoveObject(object @object)
         {
             _objects.Remove(@object);
-            Refresh();
-
             OnObjectRemoved?.Invoke(this, @object);
         }
 
@@ -81,9 +77,9 @@ namespace SharpEngineEditorControls.Components
             ComponentsStack.Children.Clear();
             _resolver.Clean();
 
-            SerializeUI();
-
             OnRefresh?.Invoke(this);
+
+            SerializeUI();
         }
 
         private void SerializeUI()

@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-
+using System.Runtime.InteropServices;
 using TerraFX.Interop.DirectX;
 using TerraFX.Interop.Windows;
 
@@ -132,6 +132,35 @@ internal abstract class DeviceContext
 
                 Debug.Assert(GraphicsException.CheckIfAny() == false,
                     "Error in setting vertex shader samplers");
+            }
+        }
+    }
+
+    public void CopySubresourceRegion(Resource dst, int dstSubresourceIndex, int dstX, int dstY, int dstZ,
+        Resource src, int srcDestinationIndex, [Optional] D3D11_BOX srcBox)
+    {
+        NativeCopySubresourceRegion();
+
+        unsafe void NativeCopySubresourceRegion()
+        {
+            fixed (ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+
+                var box = new D3D11_BOX();
+                box.back = srcBox.back;
+                box.top = srcBox.top;
+                box.bottom = srcBox.bottom;
+                box.left = srcBox.left;
+                box.right = srcBox.right;
+                box.front = srcBox.front;
+
+                (*ppContext)->CopySubresourceRegion(dst.GetNativePtrAsResource(),
+                    (uint)dstSubresourceIndex, (uint)dstX, (uint)dstY, (uint)dstZ,
+                    src.GetNativePtrAsResource(), (uint)srcDestinationIndex, &box);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false,
+                    $"Error in coping sub resource region");
             }
         }
     }

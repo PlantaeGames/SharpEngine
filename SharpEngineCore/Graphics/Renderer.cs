@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
+using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
-
 
 internal class Renderer
 {
@@ -12,6 +12,19 @@ internal class Renderer
 
     protected RenderPipeline _pipeline;
     protected Swapchain _swapchain;
+
+    private Window _primaryWindow;
+
+    public CameraObject InitializeSecondaryWindow(SecondaryWindow window, CameraInfo cameraInfo)
+    {
+        var swapchain = Factory.GetInstance().CreateSwapchain(window, _device);
+        var camera = new CameraObject(cameraInfo.cameraTransform, cameraInfo.viewport, swapchain.GetBackTexture(), CameraObject.Flags.Secondary);
+
+        window.Initialize(swapchain, camera);
+
+        _pipeline.AddCamera(cameraInfo, _device, ref camera);
+        return camera;
+    }
 
     public GraphicsObject CreateGraphicsObject(GraphicsInfo info)
     {
@@ -31,7 +44,19 @@ internal class Renderer
 
     public CameraObject CreateCameraObject(CameraInfo info)
     {
-        var camera = new CameraObject(info.cameraTransform, info.viewport);
+        var renderTexture = _device.CreateTexture2D(
+            [new USurface(new((int)info.viewport.Info.Width, (int)info.viewport.Info.Height), Channels.Single)],
+            new TextureCreationInfo()
+            {
+                Format = TerraFX.Interop.DirectX.DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM,
+                UsageInfo = new ResourceUsageInfo()
+                {
+                    Usage = TerraFX.Interop.DirectX.D3D11_USAGE.D3D11_USAGE_DEFAULT,
+                    BindFlags = TerraFX.Interop.DirectX.D3D11_BIND_FLAG.D3D11_BIND_RENDER_TARGET
+                }
+            });
+
+        var camera = new CameraObject(info.cameraTransform, info.viewport, renderTexture);
         _pipeline.AddCamera(info, _device, ref camera);
 
         return camera;
@@ -88,10 +113,12 @@ internal class Renderer
         Debug.Assert(adapters.Length > 0,
             "No Graphics Adapter found.");
 
+        _primaryWindow = window;
+
         _device = new Device(adapters[DEFAULT_ADAPTER]);
         _context = _device.GetContext();
 
-        _swapchain = Factory.GetInstance().CreateSwapchain(window, _device);
+        _swapchain = Factory.GetInstance().CreateSwapchain(_primaryWindow, _device);
 
         _pipeline = new DefaultRenderPipeline(_swapchain.GetBackTexture());
         _pipeline.Initialize(_device, _context);

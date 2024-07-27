@@ -86,13 +86,19 @@ public static class Graphics
             });
     }
 
+    internal static CameraObject InitializeSecondaryWindow(SecondaryWindow window, CameraInfo info)
+    {
+        var camera = Renderer.InitializeSecondaryWindow(window, info);
+        return camera;
+    }
+
     internal static void Render()
     {
         Debug.Assert(_Initialized,
             "Graphics is not initialized yet.");
 
         Renderer.Render();
-        Swapchain.Present(1u);
+        Swapchain.Present();
     }
 
     internal static void Initialize(Window window)

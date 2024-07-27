@@ -38,10 +38,7 @@ public static class Input
     {
         Debug.Assert(_initialized);
 
-        foreach(var type in (DeviceType[])Enum.GetValues(typeof(DeviceType)))
-        {
-            _manager.Feed(msg, type);
-        }
+        _manager.Feed(msg);
     }
 
     internal static void Initialize(InputManager inputManager)

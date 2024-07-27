@@ -7,10 +7,24 @@ public static class SceneManager
     public static Scene ActiveScene { get; private set; }
 
     private static List<Scene> _scenes = new();
+    internal static bool IsPlaying { get; private set; }
+
+    internal static void Start()
+    {
+        IsPlaying = true;
+    }
+
+    internal static void Stop()
+    {
+        IsPlaying = false;
+    }
 
     internal static void Tick(TickType tick)
     {
-        ActiveScene.Tick(tick);
+        if (IsPlaying)
+        {
+            ActiveScene.Tick(tick);
+        }
     }
 
     public static void LoadScene(string name)

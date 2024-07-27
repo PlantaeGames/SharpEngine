@@ -8,12 +8,6 @@ internal sealed class SkyboxPass : Pass
     private const string SKYBOX_VERTEX_SHADER_NAME = "Shaders\\SkyboxVertexShader.hlsl";
     private const string SKYBOX_PIXEL_SHADER_NAME = "Shaders\\SkyboxPixelShader.hlsl";
 
-    private readonly Texture2D _outputTexture;
-    private Texture2D _depthTexture;
-
-    private RenderTargetView _renderTargetView;
-    private DepthStencilView _depthView;
-
     private ConstantBuffer _transformBuffer;
 
     private readonly List<CameraObject> _cameras;
@@ -24,10 +18,10 @@ internal sealed class SkyboxPass : Pass
     private ShaderResourceView _skyboxView;
     private Sampler _skyboxSampler;
 
-    public SkyboxPass(Texture2D outputTexture,
-        List<CameraObject> cameras)
+    private Dictionary<CameraObject, (DepthStencilView depthView, RenderTargetView outputView)> _outputViews = new();
+
+    public SkyboxPass(List<CameraObject> cameras)
     {
-        _outputTexture = outputTexture;
         _cameras = cameras;
     }
 
@@ -42,10 +36,12 @@ internal sealed class SkyboxPass : Pass
                     Attributes = camera.Data.Attributes
                 });
 
+            var views = _outputViews[camera];
             var dynamicVariation = new SkyboxDynamicVariation(
                 _skyboxView,
                 _skyboxSampler,
-                camera.Viewport);
+                camera.Viewport,
+                views.depthView, views.outputView);
 
             dynamicVariation.Bind(context);
 
@@ -58,32 +54,6 @@ internal sealed class SkyboxPass : Pass
 
     public override void OnInitialize(Device device, DeviceContext context)
     {
-        _depthTexture = device.CreateTexture2D(
-            [new FSurface(_outputTexture.Info.Size)],
-            new TextureCreationInfo()
-            {
-                Format = DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT,
-                UsageInfo = new ResourceUsageInfo()
-                {
-                    Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
-                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_DEPTH_STENCIL
-                }
-
-            });
-        _depthView = device.CreateDepthStencilView(_depthTexture,
-            new ViewCreationInfo()
-            {
-                Format = _depthTexture.Info.Format,
-                TextureMipLevels = _depthTexture.Info.MipLevels,
-            });
-
-        _renderTargetView = device.CreateRenderTargetView(_outputTexture,
-            new ViewCreationInfo()
-            {
-                Format = _outputTexture.Info.Format,
-                TextureMipLevels = _outputTexture.Info.MipLevels
-            });
-
         var vertexShader = device.CreateVertexShader(
             new ShaderModule(SKYBOX_VERTEX_SHADER_NAME));
         var pixelShader = device.CreatePixelShader(
@@ -165,8 +135,6 @@ internal sealed class SkyboxPass : Pass
             vertexShader,
             _transformBuffer,
             pixelShader,
-            _renderTargetView,
-            _depthView,
             rasterizerState
             );
 
@@ -215,12 +183,15 @@ internal sealed class SkyboxPass : Pass
 
     public override void OnReady(Device device, DeviceContext context)
     {
-        context.ClearRenderTargetView(_renderTargetView, new());
-        context.ClearDepthStencilView(_depthView, new DepthStencilClearInfo()
+        foreach (var views in _outputViews)
         {
-            ClearFlags = D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH,
-            Depth = 1f
-        });
+            context.ClearRenderTargetView(views.Value.outputView, new());
+            context.ClearDepthStencilView(views.Value.depthView, new DepthStencilClearInfo()
+            {
+                ClearFlags = D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH,
+                Depth = 1f
+            });
+        }
 
         _staticVariation.Bind(context);
     }
@@ -243,6 +214,33 @@ internal sealed class SkyboxPass : Pass
 
     public override void OnCameraAdd(CameraObject camera, Device device)
     {
+        var depthTexture = device.CreateTexture2D(
+                [new FSurface(camera.RenderTexture.Info.Size)],
+                new TextureCreationInfo()
+                {
+                    Format = DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT,
+                    UsageInfo = new ResourceUsageInfo()
+                    {
+                        Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
+                        BindFlags = D3D11_BIND_FLAG.D3D11_BIND_DEPTH_STENCIL
+                    }
+
+                });
+        var depthView = device.CreateDepthStencilView(depthTexture,
+                new ViewCreationInfo()
+                {
+                    Format = depthTexture.Info.Format,
+                    TextureMipLevels = depthTexture.Info.MipLevels,
+                });
+
+        var renderTargetView = device.CreateRenderTargetView(camera.RenderTexture,
+                new ViewCreationInfo()
+                {
+                    Format = camera.RenderTexture.Info.Format,
+                    TextureMipLevels = camera.RenderTexture.Info.MipLevels
+                });
+
+        _outputViews.Add(camera, (depthView, renderTargetView));
     }
 
     public override void OnCameraPause(CameraObject camera, Device device)
@@ -255,11 +253,11 @@ internal sealed class SkyboxPass : Pass
 
     public override void OnCameraRemove(CameraObject camera, Device device)
     {
+        _outputViews.Remove(camera);
     }
 
     public override void OnGraphicsAdd(GraphicsObject graphics, Device device)
-    {
-    }
+    {}
 
     public override void OnGraphicsRemove(GraphicsObject graphics, Device device)
     {

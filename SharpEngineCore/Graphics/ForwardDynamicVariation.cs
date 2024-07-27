@@ -4,7 +4,10 @@ namespace SharpEngineCore.Graphics;
 
 internal sealed class ForwardDynamicVariation : PipelineVariation
 {
-    public ForwardDynamicVariation(Viewport viewport)
+    public ForwardDynamicVariation(
+        DepthStencilView depthView,
+        RenderTargetView outputView,
+        Viewport viewport)
        : base()
     {
         Rasterizer = new Rasterizer()
@@ -14,6 +17,14 @@ internal sealed class ForwardDynamicVariation : PipelineVariation
             Flags = Rasterizer.BindFlags.Viewports
         };
 
-        _stages = [Rasterizer];
+        OutputMerger = new OutputMerger()
+        {
+            DepthStencilView = depthView,
+            RenderTargetViews = [outputView],
+
+            Flags = OutputMerger.BindFlags.RenderTargetViewAndDepthView
+        };
+        
+        _stages = [Rasterizer, OutputMerger];
     }
 }

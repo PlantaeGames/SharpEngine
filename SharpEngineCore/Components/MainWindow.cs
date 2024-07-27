@@ -24,14 +24,15 @@ public sealed class MainWindow : Window
     {
         _assembly.StartExecution();
 
+        SceneManager.Start();
         SceneManager.Tick(TickType.Start);
     }
 
     public void Stop()
     {
         // TODO: STOP TICK HERE OF SCENE MANAGER
-        
 
+        SceneManager.Stop();
         _assembly.StopExecution();
     }
 
@@ -71,6 +72,12 @@ public sealed class MainWindow : Window
         SceneManager.Initialize();
 
         _initialized = true;
+    }
+
+    public CameraObject InitializeSecondaryWindow(SecondaryWindow window, CameraInfo info)
+    {
+        var camera = Graphics.Graphics.InitializeSecondaryWindow(window, info);
+        return camera;
     }
 
     public override (bool availability, MSG msg) PeekAndDispatchMessage()

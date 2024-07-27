@@ -6,12 +6,6 @@ internal sealed class ForwardPass : Pass
 {
     private const float DEPTH_CLEAR_VALUE = 1f;
 
-    private readonly Texture2D _outputTexture;
-    private RenderTargetView _outputView;
-
-    private Texture2D _depthTexture;
-    private DepthStencilView _depthView;
-
     private readonly int _maxPerVariationLightsCount;
 
     private readonly List<LightObject> _lightObjects;
@@ -27,14 +21,15 @@ internal sealed class ForwardPass : Pass
 
     private ConstantBuffer _lightingSwitchCBuffer;
 
-    public ForwardPass(Texture2D outputTexture,
+    private Dictionary<CameraObject, (DepthStencilView depthView, RenderTargetView outputView)> _outputViews = new();
+
+    public ForwardPass(
         int maxPerVariationLightsCount,
         List<LightObject> lightObjects,
         List<CameraObject> cameraObjects,
         DepthPass depthPass) :
         base()
     {
-        _outputTexture = outputTexture;
         _maxPerVariationLightsCount = maxPerVariationLightsCount;
         _lightObjects = lightObjects;
         _cameraObjects = cameraObjects;
@@ -47,7 +42,11 @@ internal sealed class ForwardPass : Pass
         {
             _currentCameraCBuffer.Update(cameraData.Data);
 
-            var dynamicVariation = new ForwardDynamicVariation(cameraData.Viewport);
+            var views = _outputViews[cameraData];
+            var dynamicVariation = new ForwardDynamicVariation(
+                views.depthView,
+                views.outputView,
+                cameraData.Viewport);
 
             for (var i = 0; i < _lightObjects.Count; i++)
             {
@@ -128,32 +127,6 @@ internal sealed class ForwardPass : Pass
 
     public override void OnInitialize(Device device, DeviceContext context)
     {
-        _outputView = device.CreateRenderTargetView(
-            _outputTexture,
-            new ViewCreationInfo()
-            {
-                Format = _outputTexture.Info.Format
-            });
-
-        _depthTexture = device.CreateTexture2D(
-            [new FSurface(_outputTexture.Info.Size)],
-            new TextureCreationInfo()
-            {
-                Format = DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT,
-                UsageInfo = new ResourceUsageInfo()
-                {
-                    Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
-                    BindFlags = D3D11_BIND_FLAG.D3D11_BIND_DEPTH_STENCIL
-                }
-            });
-
-        _depthView = device.CreateDepthStencilView(
-            _depthTexture,
-            new ViewCreationInfo()
-            {
-                Format = _depthTexture.Info.Format
-            });
-
         var depthInfoOn = new DepthStencilStateInfo()
         {
             DepthEnabled = true,
@@ -191,8 +164,7 @@ internal sealed class ForwardPass : Pass
         blendInfo.RenderTargetBlendDescs[0].BlendEnable = false;
         var blendOff = device.CreateBlendState(blendInfo);
 
-        _staticVariation = new ForwardVariation(_outputView,
-                                                depthOn, depthOff, _depthView,
+        _staticVariation = new ForwardVariation(depthOn, depthOff,
                                                 blendOn, blendOff);
 
         _currentCameraCBuffer = Buffer.CreateConstantBuffer(
@@ -234,11 +206,14 @@ internal sealed class ForwardPass : Pass
 
     public override void OnReady(Device device, DeviceContext context)
     {
-        context.ClearDepthStencilView(_depthView, new DepthStencilClearInfo()
+        foreach (var view in _outputViews)
         {
-            ClearFlags = D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH,
-            Depth = DEPTH_CLEAR_VALUE,
-        });
+            context.ClearDepthStencilView(view.Value.depthView, new DepthStencilClearInfo()
+            {
+                ClearFlags = D3D11_CLEAR_FLAG.D3D11_CLEAR_DEPTH,
+                Depth = DEPTH_CLEAR_VALUE,
+            });
+        }
 
 /*        context.ClearRenderTargetView(_outputView,
             new(1,1,0.4f,1));*/
@@ -390,6 +365,33 @@ internal sealed class ForwardPass : Pass
 
     public override void OnCameraAdd(CameraObject camera, Device device)
     {
+        var depthTexture = device.CreateTexture2D(
+                [new FSurface(camera.RenderTexture.Info.Size)],
+                new TextureCreationInfo()
+                {
+                    Format = DXGI_FORMAT.DXGI_FORMAT_D32_FLOAT,
+                    UsageInfo = new ResourceUsageInfo()
+                    {
+                        Usage = D3D11_USAGE.D3D11_USAGE_DEFAULT,
+                        BindFlags = D3D11_BIND_FLAG.D3D11_BIND_DEPTH_STENCIL
+                    }
+
+                });
+        var depthView = device.CreateDepthStencilView(depthTexture,
+                new ViewCreationInfo()
+                {
+                    Format = depthTexture.Info.Format,
+                    TextureMipLevels = depthTexture.Info.MipLevels,
+                });
+
+        var renderTargetView = device.CreateRenderTargetView(camera.RenderTexture,
+                new ViewCreationInfo()
+                {
+                    Format = camera.RenderTexture.Info.Format,
+                    TextureMipLevels = camera.RenderTexture.Info.MipLevels
+                });
+
+        _outputViews.Add(camera, (depthView, renderTargetView));
     }
 
     public override void OnCameraPause(CameraObject camera, Device device)
@@ -398,6 +400,7 @@ internal sealed class ForwardPass : Pass
 
     public override void OnCameraRemove(CameraObject camera, Device device)
     {
+        _outputViews.Remove(camera);
     }
 
     public override void OnCameraResume(CameraObject camera, Device device)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpEngineCore.Graphics;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -34,7 +35,24 @@ namespace SharpEngineEditor.Misc
 #nullable disable
 
         private SharpEngineHost _host;
-#nullable enable
+        private SharpEngineSecondaryView _secondaryView;
+
+        public void RemoveSecondaryView()
+        {
+            Debug.Assert(_secondaryView != null);
+            _secondaryView = null;
+
+            _ = _host.AssignSecondaryWindow(null);
+        }
+
+        public CameraObject AssignSecondaryView(SharpEngineSecondaryView view)
+        {
+            Debug.Assert(view != null);
+            _secondaryView = view;
+
+            var camera = _host.AssignSecondaryWindow(_secondaryView.SecondaryWindow);
+            return camera;
+        }
 
         public void ENGINE_CALL(Action action)
         {

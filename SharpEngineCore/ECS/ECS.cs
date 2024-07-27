@@ -20,7 +20,10 @@ public sealed class ECS
 
     public void Remove(GameObject gameObject)
     {
-        _pendingRemoveGameObjects.Add(gameObject);
+        if(SceneManager.IsPlaying)
+            _pendingRemoveGameObjects.Add(gameObject);
+        else
+            _gameObjects.Remove(gameObject);
     }
 
     internal void Tick(TickType tick)

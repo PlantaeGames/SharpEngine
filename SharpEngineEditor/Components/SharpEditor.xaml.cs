@@ -2,13 +2,13 @@
 using Microsoft.Build.Framework;
 using NetDock.Controls;
 using SharpEngineCore.ECS;
+using SharpEngineCore.Graphics;
 using SharpEngineEditor.Misc;
 using SharpEngineEditor.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -35,11 +35,14 @@ public partial class SharpEditor : UserControl
     private SharpEngineEditorControls.Components.InspectorElement _inspector;
     private SharpEngineEditorControls.Components.ProjectElement _project;
     private SharpEngineView _engineView;
+    private SharpEngineSecondaryView _engineSecondaryView;
 
     private GameAssembly _gameAssembly;
     private Assembly _engineCoreAssembly;
 
     private TypeResolver _componentTypeResolver;
+
+    private CameraObject _sceneCamera;
 
     private void CreateBindings()
     {
@@ -51,13 +54,33 @@ public partial class SharpEditor : UserControl
         _hierarchy.OnSelectedChanged            += OnGameObjectSelected;
 
         _inspector.OnAddComponentClicked += OnAddComponentClicked;
+        _inspector.OnRefresh += OnInspectorRefresh;
 
         _console.Log("Engine Bindings Created.");
     }
 
+    private void OnInspectorRefresh(SharpEngineEditorControls.Components.InspectorElement inspector)
+    {
+        var gameObject = (GameObject)_hierarchy.SelectedGameObject;
+        if (gameObject == null)
+            return;
+
+        _inspector.Clear();
+        _engineView.ENGINE_CALL(() =>
+        {
+            var components = gameObject.GetAllComponents();
+
+            foreach (var component in components)
+            {
+                _inspector.AddObject(component);
+            }
+        });
+    }
+
     private void OnAddComponentClicked(SharpEngineEditorControls.Components.InspectorElement inspector, string componentName)
     {
-        if (componentName == null || componentName == string.Empty)
+        if (componentName == null ||
+            componentName == string.Empty)
             return;
 
         var type = _componentTypeResolver.Resolve(componentName);
@@ -76,7 +99,10 @@ public partial class SharpEditor : UserControl
         var gameObject = _hierarchy.SelectedGameObject;
 
         method = method.MakeGenericMethod(type);
-        method.Invoke(gameObject, null);
+        _engineView.ENGINE_CALL(() =>
+        {
+            method.Invoke(gameObject, null);
+        });
 
         _inspector.Refresh();
     }
@@ -99,22 +125,7 @@ public partial class SharpEditor : UserControl
 #nullable enable
     private void OnGameObjectSelected(SharpEngineEditorControls.Components.HierarchyElement hierarchy, object? @object)
     {
-        if (@object == null)
-        {
-            _inspector.Clear();
-            return;
-        }
-
-        var gameObject = (GameObject)@object;
-
-        _inspector.Clear();
-        var components = gameObject.GetAllComponents();
-
-        foreach (var component in components)
-        {
-            _inspector.AddObject(component);
-        }
-
+        _inspector.Refresh();
     }
 #nullable disable
 
@@ -130,8 +141,11 @@ public partial class SharpEditor : UserControl
 
     private void OnGameObjectRemove(SharpEngineEditorControls.Components.HierarchyElement hierarchy, object @object)
     {
-        var gameObject = (GameObject)@object;
-        SharpEngineCore.ECS.SceneManager.ActiveScene.ECS.Remove(gameObject);
+        _engineView.ENGINE_CALL(() =>
+        {
+            var gameObject = (GameObject)@object;
+            SharpEngineCore.ECS.SceneManager.ActiveScene.ECS.Remove(gameObject);
+        });
 
         _inspector.Clear();
     }
@@ -139,18 +153,27 @@ public partial class SharpEditor : UserControl
     private void OnRootGameObjectAdd(SharpEngineEditorControls.Components.HierarchyElement hierarchy, object @object)
     {
         var gameObject = (GameObject)@object;
+
+        var sharpEngineSecodnaryViewDockItem = new DockItem(_engineSecondaryView);
+        {
+            var name = _engineSecondaryView.Name;
+            sharpEngineSecodnaryViewDockItem.Name = name;
+            sharpEngineSecodnaryViewDockItem.TabName = name;
+        }
+        DockSurface.Add(sharpEngineSecodnaryViewDockItem, NetDock.Enums.DockDirection.Top);
     }
 
     private void OnCreateNewGameObjectClicked(SharpEngineEditorControls.Components.HierarchyElement hierarchy)
     {
-        var name = string.Empty;
+        _engineView.ENGINE_CALL(() =>
+        {
+            var gameObject = SharpEngineCore.ECS.SceneManager.ActiveScene.ECS.Create();
+            gameObject.name = "Game Object";
 
-        var gameObject = SharpEngineCore.ECS.SceneManager.ActiveScene.ECS.Create();
-        gameObject.name = "Game Object";
+            var name = new Span<Char>(gameObject.name.ToArray());
 
-        name = gameObject.name.Clone();
-
-        hierarchy.AddRootGameObject(name, gameObject);
+            hierarchy.AddRootGameObject(name.ToString(), gameObject);
+        });
     }
     #endregion
 
@@ -169,13 +192,6 @@ public partial class SharpEditor : UserControl
             var name = _console.Name;
             consoleDockItem.Name = name;
             consoleDockItem.TabName = name;
-        }
-
-        var sharpEngineViewDockItem = new DockItem(_engineView);
-        {
-            var name = _engineView.Name;
-            sharpEngineViewDockItem.Name = name;
-            sharpEngineViewDockItem.TabName = name;
         }
 
         var hierarchyDockItem = new DockItem(_hierarchy);
@@ -198,10 +214,16 @@ public partial class SharpEditor : UserControl
             projectDockItem.Name = name;
             projectDockItem.TabName = name;
         }
+        var sharpEngineViewDockItem = new DockItem(_engineView);
+        {
+            var name = _engineView.Name;
+            sharpEngineViewDockItem.Name = name;
+            sharpEngineViewDockItem.TabName = name;
+        }
 
+        DockSurface.Add(sharpEngineViewDockItem, NetDock.Enums.DockDirection.Top);
         DockSurface.Add(projectDockItem, NetDock.Enums.DockDirection.Bottom);
         DockSurface.Add(consoleDockItem, NetDock.Enums.DockDirection.Bottom);
-        DockSurface.Add(sharpEngineViewDockItem, NetDock.Enums.DockDirection.Top);
         DockSurface.Add(hierarchyDockItem, NetDock.Enums.DockDirection.Left);
         DockSurface.Add(inspectorDockItem, NetDock.Enums.DockDirection.Right);
 
@@ -217,7 +239,18 @@ public partial class SharpEditor : UserControl
         _engineView.OnEngineUnloaded += OnEngineUnloaded;
     }
 
-    private void OnEngineUnloaded(SharpEngineView obj)
+    private void OnEngineSecondaryWindowDestroyed(SharpEngineSecondaryView _)
+    {
+        _engineView.RemoveSecondaryView();
+    }
+
+    private void OnEngineSecondaryWindowCreated(SharpEngineSecondaryView _)
+    {
+        var camera = _engineView.AssignSecondaryView(_engineSecondaryView);
+        _sceneCamera = camera;
+    }
+
+    private void OnEngineUnloaded(SharpEngineView _)
     {
         _engineView.OnEngineUnloaded -= OnEngineUnloaded;
 
@@ -225,10 +258,14 @@ public partial class SharpEditor : UserControl
         RemoveBindings();
     }
 
-    private void OnEngineLoaded(SharpEngineView obj)
+    private void OnEngineLoaded(SharpEngineView _)
     {
         _engineView.OnEngineLoaded -= OnEngineLoaded;
         _console.Log("Engine Loaded");
+
+        _engineSecondaryView = new SharpEngineSecondaryView();
+        _engineSecondaryView.OnWindowCreated += OnEngineSecondaryWindowCreated;
+        _engineSecondaryView.OnWindowDestroyed += OnEngineSecondaryWindowDestroyed;
 
         _engineCoreAssembly = _engineView.EngineCoreAssembly;
         _gameAssembly = _engineView.GameAssembly;
@@ -236,13 +273,11 @@ public partial class SharpEditor : UserControl
         _componentTypeResolver = new TypeResolver([_gameAssembly.Assembly, _engineCoreAssembly],
             typeof(SharpEngineCore.ECS.Component));
 
-        var currentSceneName = string.Empty;
         _engineView.ENGINE_CALL(() =>
         {
-            currentSceneName = SceneManager.ActiveScene.name;
+            var currentSceneName = new Span<char>(SceneManager.ActiveScene.name.ToCharArray());
+            _console.Log($"Loaded: {currentSceneName}");
         });
-
-        _console.Log($"Loaded: {currentSceneName}");
 
         CreateBindings();
     }

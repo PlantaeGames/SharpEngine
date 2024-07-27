@@ -4,15 +4,21 @@ using TerraFX.Interop.Windows;
 
 using System.Diagnostics;
 using System.Reflection;
+using SharpEngineCore.Graphics;
+using System.Windows.Media.Media3D;
 
 namespace SharpEngineEditor.Misc
 {
     public sealed class SharpEngineHost : HwndHost
     {
+        private const float WIDTH = 1920f;
+        private const float HEIGHT = 1080f;
+
         public event Action<SharpEngineHost> OnEngineLoaded;
         public event Action<SharpEngineHost> OnEngineUnloaded;
 
         private SharpEngineCore.Components.MainWindow _engineWindow;
+        private SharpEngineCore.Graphics.SecondaryWindow _engineSecondaryWindow;
         private Thread _engineThread;
 
         public Assembly EngineCoreAssembly { get; private set; }
@@ -24,6 +30,43 @@ namespace SharpEngineEditor.Misc
         private static object _engineThreadLock = new();
         private static object _engineThreadExitLock = new();
         private static bool _quitEngineThread;
+
+#nullable enable
+        public CameraObject? AssignSecondaryWindow(SecondaryWindow secondaryWindow)
+        {
+            lock (_engineThreadLock)
+            {
+                _engineSecondaryWindow = secondaryWindow;
+
+                if (_engineSecondaryWindow == null)
+                    return null;
+
+                var viewport = new Viewport(new()
+                {
+                    MaxDepth = 1f,
+                    Height = HEIGHT,
+                    Width = WIDTH
+                });
+
+                var cameraData = new CameraConstantData()
+                {
+                    Position = new(-3, 0, 0, 0),
+                    Rotation = new(20, 0, 0, 0),
+                    Scale = new(20, 20, 1000, 1),
+                    Projection = CameraInfo.Perspective,
+                    Attributes = new(viewport.AspectRatio, 90, 0.03f, 1000f)
+                };
+
+                var camera = _engineWindow.InitializeSecondaryWindow(_engineSecondaryWindow, new()
+                {
+                    cameraTransform = cameraData,
+                    viewport = viewport
+                });
+
+                return camera;
+            }
+        }
+#nullable disable
 
         protected override void OnInitialized(EventArgs e)
         {
@@ -52,15 +95,14 @@ namespace SharpEngineEditor.Misc
             }
         }
 
-        private void EngineThread(object? _engineWindow)
+        private void EngineThread()
         {
             Debug.Assert(_engineThread != null);
 
-#nullable disable
             SharpEngineCore.Components.MainWindow window = null;
             lock (_engineThreadLock)
             {
-                window = (SharpEngineCore.Components.MainWindow)_engineWindow;
+                window = _engineWindow;
             }
 
             while (true)
@@ -86,6 +128,24 @@ namespace SharpEngineEditor.Misc
                     if (stop)
                         break;
 
+                    if (_engineSecondaryWindow != null)
+                    {
+                        while (true)
+                        {
+                            var result = _engineSecondaryWindow.PeekAndDispatchMessage();
+
+                            if (result.availability == false)
+                                break;
+
+                            if (result.msg.message == WM.WM_QUIT)
+                            {
+                                stop = true;
+                                break;
+                            }
+                        }
+                    }
+
+
                     lock (_engineThreadExitLock)
                     {
                         if (_quitEngineThread)
@@ -94,10 +154,10 @@ namespace SharpEngineEditor.Misc
 
                     // other code here.
                     window.Update();
+                    _engineSecondaryWindow?.Update();
                     //          //
                 }
             }
-#nullable enable
         }
 
         protected override HandleRef BuildWindowCore(HandleRef hwndParent)
@@ -107,10 +167,10 @@ namespace SharpEngineEditor.Misc
             unsafe
             {
                 _engineWindow = new SharpEngineCore.Components.MainWindow(GameAssembly,
-                    "SharpEngine", new(0, 0), new(1920, 1080), new HWND((void*)hwndParent.Handle));
+                    "SharpEngine", new(0, 0), new((int)HEIGHT, (int)WIDTH), new HWND((void*)hwndParent.Handle));
             }
-            _engineThread = new Thread(new ParameterizedThreadStart(EngineThread));
-            _engineThread.Start(_engineWindow);
+            _engineThread = new Thread(new ThreadStart(EngineThread));
+            _engineThread.Start();
 
             OnEngineLoaded?.Invoke(this);
 
