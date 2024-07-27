@@ -7,6 +7,7 @@ using SharpEngineEditor.Misc;
 using SharpEngineEditor.Utilities;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -51,6 +52,7 @@ public partial class SharpEditor : UserControl
         _hierarchy.OnClear                      += OnSceneClear;
         _hierarchy.OnChildGameObjectAdd         += OnChildGameObjectAdd;
         _hierarchy.OnSelectedChanged            += OnGameObjectSelected;
+        _hierarchy.OnRootGameObjectAdd          += OnRootGameObjectAdd;
 
         _inspector.OnAddClicked                 += OnAddComponentClicked;
         _inspector.OnRefresh                    += OnInspectorRefresh;
@@ -66,6 +68,7 @@ public partial class SharpEditor : UserControl
         _hierarchy.OnClear                          -= OnSceneClear;
         _hierarchy.OnChildGameObjectAdd             -= OnChildGameObjectAdd;
         _hierarchy.OnSelectedChanged                -= OnGameObjectSelected;
+        _hierarchy.OnRootGameObjectAdd              -= OnRootGameObjectAdd;
 
         _inspector.OnAddClicked                     -= OnAddComponentClicked;
         _inspector.OnRefresh                        -= OnInspectorRefresh;
@@ -86,7 +89,8 @@ public partial class SharpEditor : UserControl
 
         _engineView.ENGINE_CALL(() =>
         {
-            method.Invoke(gameObject, null);
+            var component = method.Invoke(gameObject, null);
+            ((SharpEngineCore.ECS.Component)component).OnExternalDestroy();
         });
 
         inspector.RemoveObject(gameObject);
@@ -139,7 +143,8 @@ public partial class SharpEditor : UserControl
         method = method.MakeGenericMethod(type);
         _engineView.ENGINE_CALL(() =>
         {
-            method.Invoke(gameObject, null);
+            var component = method.Invoke(gameObject, null);
+            ((SharpEngineCore.ECS.Component)component).OnExternalAwake();
         });
 
         _inspector.Refresh();
@@ -151,6 +156,11 @@ public partial class SharpEditor : UserControl
         _inspector.Refresh();
     }
 #nullable disable
+
+    private void OnRootGameObjectAdd(SharpEngineEditorControls.Components.HierarchyElement arg1, object arg2)
+    {
+        throw new NotImplementedException();
+    }
 
     private void OnChildGameObjectAdd(SharpEngineEditorControls.Components.HierarchyElement arg1, object arg2)
     {
@@ -167,6 +177,12 @@ public partial class SharpEditor : UserControl
         _engineView.ENGINE_CALL(() =>
         {
             var gameObject = (GameObject)@object;
+
+            foreach(var component in gameObject.GetAllComponents())
+            {
+                component.OnExternalDestroy();
+            }
+
             SharpEngineCore.ECS.SceneManager.ActiveScene.ECS.Remove(gameObject);
         });
 

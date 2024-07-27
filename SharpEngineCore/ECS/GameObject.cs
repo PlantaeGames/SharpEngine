@@ -169,10 +169,12 @@ public sealed class GameObject
         Debug.Assert(target as Transform == null,
             $"Can't remove Transform component, {name}");
 
-        if(SceneManager.IsPlaying)
+        if (SceneManager.IsPlaying)
             _pendingRemove.Add(target);
         else
+        {
             _pendingAdds.Remove(target);
+        }
     }
 
     public T[] GetComponents<T>()

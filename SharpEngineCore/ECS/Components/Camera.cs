@@ -1,13 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices.Marshalling;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SharpEngineCore.Misc;
 
-namespace SharpEngineCore.ECS.Components
+namespace SharpEngineCore.ECS.Components;
+
+public class Camera : Component, IDustable
 {
-    public class Camera : Component
+    private bool _isDusty;
+
+
+
+
+    public void SetDusty()
     {
+        _isDusty = true;
     }
 }

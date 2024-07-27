@@ -30,4 +30,9 @@ public abstract class Component
 
     public virtual void OnDisable() 
     { }
+
+    public virtual void OnExternalAwake()
+    { }
+    public virtual void OnExternalDestroy()
+    { }
 }
