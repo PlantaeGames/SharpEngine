@@ -21,10 +21,7 @@ public static class SceneManager
 
     internal static void Tick(TickType tick)
     {
-        if (IsPlaying)
-        {
-            ActiveScene.Tick(tick);
-        }
+        ActiveScene.Tick(tick);
     }
 
     public static void LoadScene(string name)

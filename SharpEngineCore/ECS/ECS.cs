@@ -40,10 +40,31 @@ public sealed class ECS
             case TickType.Update:
                 UpdateTick();
                 break;
+            case TickType.OnPreRender:
+                OnPreRenderTick();
+                break;
+            case TickType.OnPostRender:
+                OnPostRenderTick();
+                break;
             default:
                 Debug.Assert(false,
                             $"{nameof(ECS)}: Unknown {nameof(TickType)}, {tick}");
                 break;
+        }
+
+        void OnPreRenderTick()
+        {
+            foreach (var gameObj in _gameObjects)
+            {
+                gameObj.Tick(tick);
+            }
+        }
+        void OnPostRenderTick()
+        {
+            foreach (var gameObj in _gameObjects)
+            {
+                gameObj.Tick(tick);
+            }
         }
 
         void StartTick()

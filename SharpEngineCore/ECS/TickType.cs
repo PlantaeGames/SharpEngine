@@ -7,5 +7,7 @@ internal enum TickType
     OnSpawn,
     OnDespawn,
     OnEnable,
-    OnDisable
+    OnDisable,
+    OnPreRender,
+    OnPostRender
 }

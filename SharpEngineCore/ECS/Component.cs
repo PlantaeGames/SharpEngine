@@ -31,6 +31,11 @@ public abstract class Component
     public virtual void OnDisable() 
     { }
 
+    public virtual void OnPreRender()
+    { }
+    public virtual void OnPostRender()
+    { }
+
     public virtual void OnExternalAwake()
     { }
     public virtual void OnExternalDestroy()

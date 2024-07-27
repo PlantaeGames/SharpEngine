@@ -46,10 +46,43 @@ public sealed class GameObject
             case TickType.OnDisable:
                 OnDisable();
                 break;
+            case TickType.OnPreRender:
+                OnPreRender();
+                break;
+            case TickType.OnPostRender:
+                OnPostRender();
+                break;
             default:
                 Debug.Assert(false,
                     $"Unknown tick type for gameObject, {tick}");
                 break;
+        }
+
+        void OnPreRender()
+        {
+            if (IsActive == false)
+                return;
+
+            foreach (var component in _components)
+            {
+                if (component.IsEnabled == false)
+                    continue;
+
+                component.OnPreRender();
+            }
+        }
+        void OnPostRender()
+        {
+            if (IsActive == false)
+                return;
+
+            foreach (var component in _components)
+            {
+                if (component.IsEnabled == false)
+                    continue;
+
+                component.OnPostRender();
+            }
         }
 
         void Start()

@@ -19,6 +19,7 @@ public sealed class MainWindow : Window
     private readonly GameAssembly _assembly;
 
     private bool _initialized;
+    private bool _isPlaying;
 
     public void Start()
     {
@@ -26,6 +27,8 @@ public sealed class MainWindow : Window
 
         SceneManager.Start();
         SceneManager.Tick(TickType.Start);
+
+        _isPlaying = true;
     }
 
     public void Stop()
@@ -34,12 +37,20 @@ public sealed class MainWindow : Window
 
         SceneManager.Stop();
         _assembly.StopExecution();
+
+        _isPlaying = false;
     }
 
     public void Update()
     {
-        SceneManager.Tick(TickType.Update);
+        if (_isPlaying)
+        {
+            SceneManager.Tick(TickType.Update);
+        }
+
+        SceneManager.Tick(TickType.OnPreRender);
         Graphics.Graphics.Render();
+        SceneManager.Tick(TickType.OnPostRender);
 
         ClearInputSinks();
 
