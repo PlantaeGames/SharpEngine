@@ -22,7 +22,8 @@ namespace SharpEngineEditorControls.Components
     {
         public event Action<InspectorElement, object> OnObjectAdd;
         public event Action<InspectorElement, object> OnObjectRemoved;
-        public event Action<InspectorElement, string> OnAddComponentClicked;
+        public event Action<InspectorElement, string> OnAddClicked;
+        public event Action<InspectorElement, string> OnRemoveClicked;
 
         public event Action<InspectorElement, SharpEngineEditorResolver> OnEditorResolverChanged;
 
@@ -96,6 +97,11 @@ namespace SharpEngineEditorControls.Components
                 componentElement.ToggleExpend(true);
                 componentElement.Margin = new System.Windows.Thickness(0, 10, 0, 0);
 
+                componentElement.OnRemove += x =>
+                {
+                    OnRemoveClicked?.Invoke(this, x.Name);
+                };
+
                 ComponentsStack.Children.Add(componentElement);
             }
 
@@ -110,7 +116,7 @@ namespace SharpEngineEditorControls.Components
             _addComponentElement.Margin = new System.Windows.Thickness(10);
             _addComponentElement.OnAddClicked += (_, name) =>
             {
-                OnAddComponentClicked?.Invoke(this, name);
+                OnAddClicked?.Invoke(this, name);
             };
         }
 

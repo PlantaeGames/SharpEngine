@@ -47,25 +47,63 @@ public partial class SharpEditor : UserControl
     private void CreateBindings()
     {
         _hierarchy.OnCreateNewGameObjectClicked += OnCreateNewGameObjectClicked;
-        _hierarchy.OnRootGameObjectAdd          += OnRootGameObjectAdd;
         _hierarchy.OnGameObjectRemove           += OnGameObjectRemove;
         _hierarchy.OnClear                      += OnSceneClear;
         _hierarchy.OnChildGameObjectAdd         += OnChildGameObjectAdd;
         _hierarchy.OnSelectedChanged            += OnGameObjectSelected;
 
-        _inspector.OnAddComponentClicked += OnAddComponentClicked;
-        _inspector.OnRefresh += OnInspectorRefresh;
+        _inspector.OnAddClicked                 += OnAddComponentClicked;
+        _inspector.OnRefresh                    += OnInspectorRefresh;
+        _inspector.OnRemoveClicked              += OnRemoveComponentClicked;
 
         _console.Log("Engine Bindings Created.");
+    }
+
+    private void RemoveBindings()
+    {
+        _hierarchy.OnCreateNewGameObjectClicked     -= OnCreateNewGameObjectClicked;
+        _hierarchy.OnGameObjectRemove               -= OnGameObjectRemove;
+        _hierarchy.OnClear                          -= OnSceneClear;
+        _hierarchy.OnChildGameObjectAdd             -= OnChildGameObjectAdd;
+        _hierarchy.OnSelectedChanged                -= OnGameObjectSelected;
+
+        _inspector.OnAddClicked                     -= OnAddComponentClicked;
+        _inspector.OnRefresh                        -= OnInspectorRefresh;
+        _inspector.OnRemoveClicked                  -= OnRemoveComponentClicked;
+
+        _console.Log("Engine Bindings Removed.");
+    }
+
+    #region BINDINGS
+
+    private void OnRemoveComponentClicked(SharpEngineEditorControls.Components.InspectorElement inspector, string name)
+    {
+        var gameObject = (GameObject)_hierarchy.SelectedGameObject;
+
+        var type = _componentTypeResolver.Resolve(name);
+        var method = typeof(GameObject).GetMethod(nameof(GameObject.RemoveComponent));
+        method = method.MakeGenericMethod(type);
+
+        _engineView.ENGINE_CALL(() =>
+        {
+            method.Invoke(gameObject, null);
+        });
+
+        inspector.RemoveObject(gameObject);
+        inspector.Refresh();
     }
 
     private void OnInspectorRefresh(SharpEngineEditorControls.Components.InspectorElement inspector)
     {
         var gameObject = (GameObject)_hierarchy.SelectedGameObject;
         if (gameObject == null)
+        {
+            _inspector.Clear();
             return;
+        }
 
         _inspector.Clear();
+
         _engineView.ENGINE_CALL(() =>
         {
             var components = gameObject.GetAllComponents();
@@ -84,10 +122,10 @@ public partial class SharpEditor : UserControl
             return;
 
         var type = _componentTypeResolver.Resolve(componentName);
-        if(type == null)
+        if (type == null)
         {
             _console.Log($"Failed to add component, {componentName}" +
-                         $"\nComponent not found.", 
+                         $"\nComponent not found.",
                          SharpEngineEditorControls.Components.ConsoleElement.LogType.Error);
 
             return;
@@ -107,21 +145,6 @@ public partial class SharpEditor : UserControl
         _inspector.Refresh();
     }
 
-    private void RemoveBindings()
-    {
-        _hierarchy.OnCreateNewGameObjectClicked     -= OnCreateNewGameObjectClicked;
-        _hierarchy.OnRootGameObjectAdd              -= OnRootGameObjectAdd;
-        _hierarchy.OnGameObjectRemove               -= OnGameObjectRemove;
-        _hierarchy.OnClear                          -= OnSceneClear;
-        _hierarchy.OnChildGameObjectAdd             -= OnChildGameObjectAdd;
-        _hierarchy.OnSelectedChanged                -= OnGameObjectSelected;
-
-        _inspector.OnAddComponentClicked -= OnAddComponentClicked;
-
-        _console.Log("Engine Bindings Removed.");
-    }
-
-    #region BINDINGS
 #nullable enable
     private void OnGameObjectSelected(SharpEngineEditorControls.Components.HierarchyElement hierarchy, object? @object)
     {
@@ -150,19 +173,6 @@ public partial class SharpEditor : UserControl
         _inspector.Clear();
     }
 
-    private void OnRootGameObjectAdd(SharpEngineEditorControls.Components.HierarchyElement hierarchy, object @object)
-    {
-        var gameObject = (GameObject)@object;
-
-        var sharpEngineSecodnaryViewDockItem = new DockItem(_engineSecondaryView);
-        {
-            var name = _engineSecondaryView.Name;
-            sharpEngineSecodnaryViewDockItem.Name = name;
-            sharpEngineSecodnaryViewDockItem.TabName = name;
-        }
-        DockSurface.Add(sharpEngineSecodnaryViewDockItem, NetDock.Enums.DockDirection.Top);
-    }
-
     private void OnCreateNewGameObjectClicked(SharpEngineEditorControls.Components.HierarchyElement hierarchy)
     {
         _engineView.ENGINE_CALL(() =>
@@ -186,6 +196,7 @@ public partial class SharpEditor : UserControl
         _inspector = new SharpEngineEditorControls.Components.InspectorElement();
         _project = new SharpEngineEditorControls.Components.ProjectElement();
         _engineView = new SharpEngineView();
+        _engineSecondaryView = new SharpEngineSecondaryView();
 
         var consoleDockItem = new DockItem(_console);
         {
@@ -220,7 +231,14 @@ public partial class SharpEditor : UserControl
             sharpEngineViewDockItem.Name = name;
             sharpEngineViewDockItem.TabName = name;
         }
+        var sharpEngineSecodnaryViewDockItem = new DockItem(_engineSecondaryView);
+        {
+            var name = _engineSecondaryView.Name;
+            sharpEngineSecodnaryViewDockItem.Name = name;
+            sharpEngineSecodnaryViewDockItem.TabName = name;
+        }
 
+        DockSurface.Add(sharpEngineSecodnaryViewDockItem, NetDock.Enums.DockDirection.Top);
         DockSurface.Add(sharpEngineViewDockItem, NetDock.Enums.DockDirection.Top);
         DockSurface.Add(projectDockItem, NetDock.Enums.DockDirection.Bottom);
         DockSurface.Add(consoleDockItem, NetDock.Enums.DockDirection.Bottom);
@@ -237,6 +255,9 @@ public partial class SharpEditor : UserControl
 
         _engineView.OnEngineLoaded += OnEngineLoaded;
         _engineView.OnEngineUnloaded += OnEngineUnloaded;
+
+        _engineSecondaryView.OnWindowCreated += OnEngineSecondaryWindowCreated;
+        _engineSecondaryView.OnWindowDestroyed += OnEngineSecondaryWindowDestroyed;
     }
 
     private void OnEngineSecondaryWindowDestroyed(SharpEngineSecondaryView _)
@@ -263,9 +284,7 @@ public partial class SharpEditor : UserControl
         _engineView.OnEngineLoaded -= OnEngineLoaded;
         _console.Log("Engine Loaded");
 
-        _engineSecondaryView = new SharpEngineSecondaryView();
-        _engineSecondaryView.OnWindowCreated += OnEngineSecondaryWindowCreated;
-        _engineSecondaryView.OnWindowDestroyed += OnEngineSecondaryWindowDestroyed;
+        _engineSecondaryView.Initialize();
 
         _engineCoreAssembly = _engineView.EngineCoreAssembly;
         _gameAssembly = _engineView.GameAssembly;

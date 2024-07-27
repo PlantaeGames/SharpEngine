@@ -24,6 +24,8 @@ namespace SharpEngineEditorControls.Controls
     {
         public new string Name;
 
+        public event Action<ComponentElement> OnRemove;
+
         public void ToggleExpend(bool expend)
         {
             ComponentNameHeader.IsExpanded = expend;
@@ -43,6 +45,11 @@ namespace SharpEngineEditorControls.Controls
         public ComponentElement()
         {
             InitializeComponent();
+        }
+
+        private void OnRemoveClicked(object sender, RoutedEventArgs e)
+        {
+            OnRemove?.Invoke(this);
         }
     }
 }

@@ -90,6 +90,7 @@ internal sealed class ShaderCompiler
 
 #if DEBUG
             flags |= D3DCOMPILE.D3DCOMPILE_DEBUG;
+            flags |= D3DCOMPILE.D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
             string fifthVersion = "_5_0";
             string fourthVersion = "_4_0";

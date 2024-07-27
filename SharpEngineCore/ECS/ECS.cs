@@ -23,7 +23,7 @@ public sealed class ECS
         if(SceneManager.IsPlaying)
             _pendingRemoveGameObjects.Add(gameObject);
         else
-            _gameObjects.Remove(gameObject);
+            _pendingAddGameObjects.Remove(gameObject);
     }
 
     internal void Tick(TickType tick)

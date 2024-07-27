@@ -172,7 +172,7 @@ public sealed class GameObject
         if(SceneManager.IsPlaying)
             _pendingRemove.Add(target);
         else
-            _components.Remove(target);
+            _pendingAdds.Remove(target);
     }
 
     public T[] GetComponents<T>()

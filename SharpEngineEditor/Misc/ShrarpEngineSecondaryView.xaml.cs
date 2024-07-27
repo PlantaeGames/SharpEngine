@@ -32,14 +32,10 @@ namespace SharpEngineEditor.Misc
         public SharpEngineSecondaryView()
         {
             InitializeComponent();
-
-            Loaded += OnLoaded;
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
+        public void Initialize()
         {
-            Loaded -= OnLoaded;
-
             _host = new();
             _host.OnBuildCore += OnWindowLoaded;
             _host.OnDestoryCore += OnWindowUnloaded;
