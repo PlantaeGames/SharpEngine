@@ -8,16 +8,18 @@ using System.Windows.Controls;
 namespace SharpEngineEditorControls.Editors
 {
     [SharpEngineEditor(typeof(string))]
-    public sealed class SharpEngineStringEditor : SharpEngineEditor
+    public sealed class SharpEngineStringEditor :
+        SharpEngineEditor
     {
-        public override UICollection CreateUI(SharpEngineEditorResolver resolver, PrimitiveType item)
+        public override UICollection CreateUI(SharpEngineEditorResolver resolver,
+            PrimitiveBinding binding)
         {
-            _record.Push(item);
+            _record.Push(binding);
 
             var collection = new UICollection();
 
             var label = new Label();
-            label.Content = $"{item.FieldInfo.Name} : ";
+            label.Content = $"{binding.Name} : ";
             label.HorizontalAlignment = HorizontalAlignment.Left;
             label.Background = new SolidColorBrush(Color.FromArgb(0, 0, 0, 0));
             label.BorderBrush = new SolidColorBrush(Color.FromArgb(0, 0, 0, 0));
@@ -25,15 +27,17 @@ namespace SharpEngineEditorControls.Editors
             var textBox = new HandyControl.Controls.TextBox();
             textBox.TextWrapping = TextWrapping.Wrap;
 
-            BindingOperations.SetBinding(textBox,
-                TextBox.TextProperty,
-                new Binding($"Value")
-                {
-                    Converter = null,
-                    Source = item,
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                });
+            binding.OnRefresh += x =>
+            {
+                textBox.Text = (string)x.Value;
+            };
+
+            textBox.TextChanged += (source, __) =>
+            {
+                binding.UpdateByUI(textBox.Text);
+            };
+
+            binding.Refresh();
 
             var panel = new System.Windows.Controls.DockPanel();
             panel.Children.Add(label);

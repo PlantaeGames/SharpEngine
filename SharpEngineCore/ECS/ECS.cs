@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.ECS;
 
@@ -13,7 +14,13 @@ public sealed class ECS
     {
         var gameObject = new GameObject();
 
-        _pendingAddGameObjects.Add(gameObject);
+        if(SceneManager.IsPlaying)
+            _pendingAddGameObjects.Add(gameObject);
+        else
+        {
+            _gameObjects.Add(gameObject);
+        }
+        gameObject.SetActive(true);
 
         return gameObject;
     }
@@ -24,7 +31,7 @@ public sealed class ECS
             _pendingRemoveGameObjects.Add(gameObject);
         else
         {
-            _pendingAddGameObjects.Remove(gameObject);
+            _gameObjects.Remove(gameObject);
         }
     }
 
@@ -61,6 +68,14 @@ public sealed class ECS
         }
         void OnPostRenderTick()
         {
+            if (SceneManager.IsPlaying == false)
+            {
+                foreach (var gameObj in _pendingAddGameObjects)
+                {
+                    gameObj.Tick(tick);
+                }
+            }
+
             foreach (var gameObj in _gameObjects)
             {
                 gameObj.Tick(tick);

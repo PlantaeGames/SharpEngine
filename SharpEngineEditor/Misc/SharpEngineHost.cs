@@ -167,7 +167,7 @@ namespace SharpEngineEditor.Misc
             unsafe
             {
                 _engineWindow = new SharpEngineCore.Components.MainWindow(GameAssembly,
-                    "SharpEngine", new(0, 0), new((int)HEIGHT, (int)WIDTH), new HWND((void*)hwndParent.Handle));
+                    "SharpEngine", new(0, 0), new((int)WIDTH, (int)HEIGHT), new HWND((void*)hwndParent.Handle));
             }
             _engineThread = new Thread(new ThreadStart(EngineThread));
             _engineThread.Start();

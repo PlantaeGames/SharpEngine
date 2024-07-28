@@ -7,5 +7,5 @@ public class Transform : Component
 {
     public Vector3 Position;
     public Vector3 Rotation;
-    public Vector3 Scale;
+    public Vector3 Scale = Vector3.One;
 }

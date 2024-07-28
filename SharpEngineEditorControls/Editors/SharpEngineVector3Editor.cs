@@ -1,38 +1,43 @@
 ﻿using SharpEngineEditorControls.Attributes;
 using SharpEngineEditorControls.Controls;
-using SharpEngineEditorControls.Convertors;
 using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SharpEngineEditorControls.Editors;
 
 [SharpEngineEditor(typeof(Vector3))]
-internal sealed class SharpEngineVector3Editor : SharpEngineEditor
+internal sealed class SharpEngineVector3Editor :
+    SharpEngineEditor
 {
-    public override UICollection CreateUI(SharpEngineEditorResolver resolver, PrimitiveType item)
+    public override UICollection CreateUI(SharpEngineEditorResolver resolver, 
+        PrimitiveBinding binding)
     {
-        _record.Push(item);
+        _record.Push(binding);
 
         var collection = new UICollection();
         var panel = new DockPanel();
 
         var label = new Label();
-        label.Content = $"{item.FieldInfo.Name}: ";
+        label.Content = $"{binding.Name}: ";
         label.HorizontalAlignment = HorizontalAlignment.Left;
         label.Background = new SolidColorBrush(Color.FromArgb(0, 0, 0, 0));
         label.BorderBrush = new SolidColorBrush(Color.FromArgb(0, 0, 0, 0));
 
         var vector3 = new Vector3Element();
-        vector3.Value = (Vector3)item.FieldInfo.GetValue(item.Parent);
+
+        binding.OnRefresh += x =>
+        {
+            vector3.Value = (Vector3)x.Value;
+        };
 
         vector3.OnChange += (_, value) =>
         {
-            item.FieldInfo.SetValue(item.Parent, value);
+            binding.UpdateByUI(value);
         };
+        binding.Refresh();
 
         panel.Children.Add(label);
         panel.Children.Add(vector3);

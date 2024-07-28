@@ -22,6 +22,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using TerraFX.Interop.Windows;
 using TerraFX.Interop.WinRT;
 
 namespace SharpEngineEditor.Components;
@@ -159,7 +160,7 @@ public partial class SharpEditor : UserControl
 
     private void OnRootGameObjectAdd(SharpEngineEditorControls.Components.HierarchyElement arg1, object arg2)
     {
-        throw new NotImplementedException();
+        // TODO: NOT IMPLEMENTED //
     }
 
     private void OnChildGameObjectAdd(SharpEngineEditorControls.Components.HierarchyElement arg1, object arg2)
@@ -315,5 +316,24 @@ public partial class SharpEditor : UserControl
         });
 
         CreateBindings();
+    }
+
+    protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+    {
+        base.OnMouseLeftButtonDown(e);
+    }
+
+    testa a = new();
+    testb b = new();
+
+    class testa
+    {
+        public int ac = 3;
+    }
+
+    class testb
+    {
+        public float b = 23;
+        public string bs = "dfl";
     }
 }

@@ -9,26 +9,28 @@ namespace SharpEngineEditorControls.Editors
 {
     public abstract class SharpEngineEditor
     {
-        protected Stack<PrimitiveType> _record = new();
+        protected Stack<PrimitiveBinding> _record = new();
 
         public void Clear()
         {
             _record.Clear();
         }
 
-        public virtual UICollection CreateUI(SharpEngineEditorResolver resolver, PrimitiveType item)
+        public virtual UICollection CreateUI(SharpEngineEditorResolver resolver,
+            PrimitiveBinding binding)
         {
-            if (item.Parent == null)
+            if (binding.Parent == null)
                 return UICollection.Empty();
 
             var collection = new UICollection();
 
-            var isCollection = item.FieldInfo == null;
-            var parent = isCollection ? item.Parent : item.Value;
+            var isCollection = binding.Valid == false;
+            var parent = isCollection ? binding.Parent : binding.Value;
 
             var instanceType = parent.GetType();
 
-            foreach (var field in instanceType.GetFields(BindingFlags.Public | BindingFlags.Instance))
+            foreach (var field in instanceType.GetFields(
+                BindingFlags.Public | BindingFlags.Instance))
             {
                 var fieldType = field.FieldType;
 

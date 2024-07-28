@@ -31,8 +31,11 @@ internal sealed class OutputPass : Pass
             box.top = (uint)offetY;
             box.right = (uint)(camera.Viewport.Info.Width - offetX);
             box.bottom = (uint)(camera.Viewport.Info.Height - offetY);
+            box.back = 1u;
 
-            context.CopySubresourceRegion(_outputTexture, 0, offetX, offetY, 0,
+            //context.CopyResource(camera.RenderTexture, _outputTexture);
+
+           context.CopySubresourceRegion(_outputTexture, 0, offetX, offetY, 0,
                 camera.RenderTexture, 0, box);
         }
     }

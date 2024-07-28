@@ -5,20 +5,23 @@ using System.Windows.Media;
 using SharpEngineEditorControls.Attributes;
 using System.Windows.Controls;
 using SharpEngineEditorControls.Convertors;
+using System;
 
 namespace SharpEngineEditorControls.Editors
 {
     [SharpEngineEditor(typeof(float))]
-    public sealed class SharpEngineFloatEditor : SharpEngineEditor
+    public sealed class SharpEngineFloatEditor : 
+        SharpEngineEditor
     {
-        public override UICollection CreateUI(SharpEngineEditorResolver resolver, PrimitiveType item)
+        public override UICollection CreateUI(SharpEngineEditorResolver resolver,
+            PrimitiveBinding binding)
         {
-            _record.Push(item);
+            _record.Push(binding);
 
             var collection = new UICollection();
 
             var label = new Label();
-            label.Content = $"{item.FieldInfo.Name}: ";
+            label.Content = $"{binding.Name}: ";
             label.HorizontalAlignment = HorizontalAlignment.Left;
             label.Background = new SolidColorBrush(Color.FromArgb(0, 0, 0, 0));
             label.BorderBrush = new SolidColorBrush(Color.FromArgb(0, 0, 0, 0));
@@ -27,15 +30,17 @@ namespace SharpEngineEditorControls.Editors
             numBox.Maximum = float.MaxValue;
             numBox.Minimum = float.MinValue;
 
-            BindingOperations.SetBinding(numBox,
-                HandyControl.Controls.NumericUpDown.ValueProperty,
-                new Binding(item.PropertyName)
-                {
-                    Converter = new DoubleToFloatConvertor(),
-                    Source = item,
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                });
+            binding.OnRefresh += x =>
+            {
+                numBox.Value = Convert.ToDouble(binding.Value);
+            };
+
+            numBox.ValueChanged += (source, _) =>
+            {
+                binding.UpdateByUI((float)numBox.Value);
+            };
+
+            binding.Refresh();
 
             var panel = new System.Windows.Controls.DockPanel();
             panel.Children.Add(label);

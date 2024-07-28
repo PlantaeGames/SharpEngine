@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using TerraFX.Interop.Windows;
 
@@ -62,6 +63,20 @@ public struct FColor4 : IFragmentable
     {
         return !(a == b);
     }
+
+    public static implicit operator FColor4(Vector3 vector)
+    {
+        var color = new FColor4(
+            vector.X, vector.Y, vector.Z, 0);
+        return color;
+    }
+    public static implicit operator Vector3(FColor4 color)
+    {
+        var vector = new Vector3(
+            color.r, color.g, color.b);
+        return vector;
+    }
+
 
     public override bool Equals([NotNullWhen(true)] object obj)
     {
