@@ -16,6 +16,14 @@ namespace SharpEngineEditorControls.Editors
             _record.Clear();
         }
 
+        public void Refresh()
+        {
+            foreach(var entry in _record)
+            {
+                entry.Refresh();
+            }
+        }
+
         public virtual UICollection CreateUI(SharpEngineEditorResolver resolver,
             PrimitiveBinding binding)
         {
@@ -36,7 +44,7 @@ namespace SharpEngineEditorControls.Editors
 
                 var editor = resolver.Resolve(fieldType);
 
-                var more = editor.CreateUI(resolver, new(parent, field));
+                var more = editor.CreateUI(resolver, new(parent, field, binding.Lock));
                 more.Margin = new(0, 10, 0, 0);
                 collection += more;
             }

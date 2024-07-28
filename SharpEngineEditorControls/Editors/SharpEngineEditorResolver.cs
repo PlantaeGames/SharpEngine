@@ -27,6 +27,14 @@ namespace SharpEngineEditorControls.Editors
             }
         }
 
+        public void Refresh()
+        {
+            foreach (SharpEngineEditorCollection.Pair pair in _editors)
+            {
+                pair.Editor.Refresh();
+            }
+        }
+
         public SharpEngineEditorResolver()
         {
             Initialize([Assembly.GetExecutingAssembly()]);

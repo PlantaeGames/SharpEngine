@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Threading;
 
 namespace SharpEngineEditorControls.Editors;
 
@@ -13,6 +14,8 @@ public sealed class PrimitiveBinding
 
     public bool Valid => _fieldInfo != null;
 
+    public object Lock { get; private set; }
+
 #nullable enable
     public object? Value => _fieldInfo?.GetValue(_parent);
 #nullable disable
@@ -21,19 +24,28 @@ public sealed class PrimitiveBinding
 
     public void Refresh()
     {
-        OnRefresh?.Invoke(this);
+        lock (Lock)
+        {
+            OnRefresh?.Invoke(this);
+        }
     }
 
     public void UpdateByUI(object value)
     {
-        _fieldInfo?.SetValue(_parent, value);
+        lock (Lock)
+        {
+            _fieldInfo?.SetValue(_parent, value);
+        }
     }
 
 #nullable enable
-    public PrimitiveBinding(object parent, FieldInfo? fieldInfo)
+    public PrimitiveBinding(object parent, FieldInfo? fieldInfo,
+        object @lock)
     {
         _parent = parent;
         _fieldInfo = fieldInfo;
+
+        Lock = @lock;
     }
 #nullable disable
 }

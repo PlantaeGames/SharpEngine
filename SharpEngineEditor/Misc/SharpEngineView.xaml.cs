@@ -37,6 +37,8 @@ namespace SharpEngineEditor.Misc
         private SharpEngineHost _host;
         private SharpEngineSecondaryView _secondaryView;
 
+        public object EngineThreadLock => _host.EngineThreadLock;
+
         public void RemoveSecondaryView()
         {
             Debug.Assert(_secondaryView != null);
@@ -67,13 +69,6 @@ namespace SharpEngineEditor.Misc
         public SharpEngineView()
         {
             InitializeComponent();
-
-            Loaded += OnLoaded;
-        }
-
-        private void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            Loaded -= OnLoaded;
 
             _host = new SharpEngineHost();
 

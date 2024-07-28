@@ -210,10 +210,11 @@ public partial class SharpEditor : UserControl
 
         _hierarchy = new SharpEngineEditorControls.Components.HierarchyElement();
         _console = new SharpEngineEditorControls.Components.ConsoleElement();
-        _inspector = new SharpEngineEditorControls.Components.InspectorElement();
         _project = new SharpEngineEditorControls.Components.ProjectElement();
         _engineView = new SharpEngineView();
         _engineSecondaryView = new SharpEngineSecondaryView();
+        _inspector = new SharpEngineEditorControls.Components.InspectorElement(
+            _engineView.EngineThreadLock);
 
         var consoleDockItem = new DockItem(_console);
         {
@@ -316,24 +317,5 @@ public partial class SharpEditor : UserControl
         });
 
         CreateBindings();
-    }
-
-    protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
-    {
-        base.OnMouseLeftButtonDown(e);
-    }
-
-    testa a = new();
-    testb b = new();
-
-    class testa
-    {
-        public int ac = 3;
-    }
-
-    class testb
-    {
-        public float b = 23;
-        public string bs = "dfl";
     }
 }

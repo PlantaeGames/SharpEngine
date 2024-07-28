@@ -102,6 +102,8 @@ public class Camera : Component
             Rotation = transform.Rotation,
             Scale = transform.Scale
         });
+
+        transform.Position.X++;
     }
 
     public override void OnDisable()

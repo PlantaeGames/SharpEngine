@@ -27,14 +27,15 @@ namespace SharpEngineEditor.Misc
         public GameAssembly? GameAssembly { get; private set; }
 #nullable disable
 
-        private static object _engineThreadLock = new();
+        public object EngineThreadLock { get; private set; } = new();
+
         private static object _engineThreadExitLock = new();
         private static bool _quitEngineThread;
 
 #nullable enable
         public CameraObject? AssignSecondaryWindow(SecondaryWindow secondaryWindow)
         {
-            lock (_engineThreadLock)
+            lock (EngineThreadLock)
             {
                 _engineSecondaryWindow = secondaryWindow;
 
@@ -79,7 +80,7 @@ namespace SharpEngineEditor.Misc
         {
             Debug.Assert(action != null);
 
-            lock(_engineThreadLock)
+            lock(EngineThreadLock)
             {
                 action.Invoke();
             }
@@ -89,7 +90,7 @@ namespace SharpEngineEditor.Misc
         {
             Debug.Assert(function != null);
 
-            lock (_engineThreadLock)
+            lock (EngineThreadLock)
             {
                 return function.Invoke();
             }
@@ -100,14 +101,14 @@ namespace SharpEngineEditor.Misc
             Debug.Assert(_engineThread != null);
 
             SharpEngineCore.Components.MainWindow window = null;
-            lock (_engineThreadLock)
+            lock (EngineThreadLock)
             {
                 window = _engineWindow;
             }
 
             while (true)
             {
-                lock (_engineThreadLock)
+                lock (EngineThreadLock)
                 {
                     bool stop = false;
                     // message loop
@@ -174,7 +175,7 @@ namespace SharpEngineEditor.Misc
 
             OnEngineLoaded?.Invoke(this);
 
-            lock (_engineThreadLock)
+            lock (EngineThreadLock)
             {
                 return new(null, _engineWindow.HWnd);
             }

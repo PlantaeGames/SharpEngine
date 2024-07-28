@@ -29,6 +29,7 @@ namespace SharpEngineEditorControls.Editors
 
             binding.OnRefresh += x =>
             {
+                
                 textBox.Text = (string)x.Value;
             };
 

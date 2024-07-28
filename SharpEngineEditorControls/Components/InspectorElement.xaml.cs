@@ -1,17 +1,9 @@
-﻿using HandyControl.Controls;
-using SharpEngineEditorControls.Editors;
+﻿using SharpEngineEditorControls.Editors;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.Design;
 using System.Diagnostics;
-using System.Runtime.Serialization;
-using System.Security.Policy;
-using System.Windows.Input;
-using System.Windows.Media.Animation;
-using System.Runtime.CompilerServices;
 using SharpEngineEditorControls.Controls;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
+using System.Windows.Media;
 
 namespace SharpEngineEditorControls.Components
 {
@@ -31,6 +23,8 @@ namespace SharpEngineEditorControls.Components
         public event Action<InspectorElement> OnClear;
 
         private List<object> _objects = new();
+
+        private readonly object _lock;
 
         private AddComponentElement _addComponentElement;
 
@@ -90,7 +84,8 @@ namespace SharpEngineEditorControls.Components
                 var type = @object.GetType();
                 var editor = _resolver.Resolve(type);
 
-                var uiCollection = editor.CreateUI(_resolver, new(@object, null));
+                var uiCollection = editor.CreateUI(
+                    _resolver, new(@object, null, _lock));
 
                 var componentElement = new ComponentElement();
                 componentElement.AddCollection(type.Name, uiCollection);
@@ -120,9 +115,18 @@ namespace SharpEngineEditorControls.Components
             };
         }
 
-        public InspectorElement()
+        public InspectorElement(object @lock)
         {
+            _lock = @lock;
+
             InitializeComponent();
+
+            CompositionTarget.Rendering += OnUIRender;
+        }
+
+        private void OnUIRender(object _, EventArgs __)
+        {
+            _resolver.Refresh();
         }
     }
 }
