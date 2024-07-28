@@ -22,16 +22,22 @@ public sealed class PrimitiveBinding
 
     public event Action<PrimitiveBinding> OnRefresh;
 
+    private bool _refreshing;
+
     public void Refresh()
     {
-        lock (Lock)
-        {
-            OnRefresh?.Invoke(this);
-        }
+        _refreshing = true;
+
+        OnRefresh?.Invoke(this);
+
+        _refreshing = false;
     }
 
     public void UpdateByUI(object value)
     {
+        if(_refreshing) 
+            return;
+
         lock (Lock)
         {
             _fieldInfo?.SetValue(_parent, value);

@@ -4,6 +4,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using SharpEngineEditorControls.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
+using System.IO;
+using System.Threading;
+using System.Windows;
+using System.Windows.Input;
 
 namespace SharpEngineEditorControls.Components
 {
@@ -103,9 +108,19 @@ namespace SharpEngineEditorControls.Components
             ComponentsStack.Children.Add(_addComponentElement);
         }
 
-        protected override void OnInitialized(EventArgs e)
+
+        public InspectorElement(object @lock)
         {
-            base.OnInitialized(e);
+            _lock = @lock;
+
+            this.Loaded += OnLoaded;
+
+            InitializeComponent();
+        }
+
+        private void OnLoaded(object _, System.Windows.RoutedEventArgs __)
+        {
+            this.Loaded -= OnLoaded;
 
             _addComponentElement = new AddComponentElement();
             _addComponentElement.Margin = new System.Windows.Thickness(10);
@@ -113,18 +128,11 @@ namespace SharpEngineEditorControls.Components
             {
                 OnAddClicked?.Invoke(this, name);
             };
+
+            CompositionTarget.Rendering += CompositionTarget_Rendering;
         }
 
-        public InspectorElement(object @lock)
-        {
-            _lock = @lock;
-
-            InitializeComponent();
-
-            CompositionTarget.Rendering += OnUIRender;
-        }
-
-        private void OnUIRender(object _, EventArgs __)
+        private void CompositionTarget_Rendering(object sender, EventArgs e)
         {
             _resolver.Refresh();
         }
