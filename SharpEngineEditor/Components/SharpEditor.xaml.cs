@@ -280,13 +280,19 @@ public partial class SharpEditor : UserControl
 
     private void OnEngineSecondaryWindowDestroyed(SharpEngineSecondaryView _)
     {
-        _engineView.RemoveSecondaryView();
+        _engineView.ENGINE_CALL(() =>
+        {
+            _engineView.RemoveSecondaryView();
+        });
     }
 
     private void OnEngineSecondaryWindowCreated(SharpEngineSecondaryView _)
     {
-        var camera = _engineView.AssignSecondaryView(_engineSecondaryView);
-        _sceneCamera = camera;
+        _engineView.ENGINE_CALL(() =>
+        {
+            var camera = _engineView.AssignSecondaryView(_engineSecondaryView);
+            _sceneCamera = camera;
+        });
     }
 
     private void OnEngineUnloaded(SharpEngineView _)
