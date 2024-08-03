@@ -146,8 +146,6 @@ namespace SharpEngineEditorControls.Components
                 OnAddClicked?.Invoke(this, name);
             };
 
-            //CompositionTarget.Rendering += CompositionTarget_Rendering;
-
             _refreshThread = new Thread(new ThreadStart(() =>
             {
                 while (true)
@@ -163,14 +161,9 @@ namespace SharpEngineEditorControls.Components
                         _resolver.Refresh();
                     });
 
-                    Thread.Sleep(1 / REFRESH_RATE * 1000);
+                    Thread.Sleep((int)((1f / REFRESH_RATE) * 1000));
                 }
             }));
-        }
-
-        private void CompositionTarget_Rendering(object _, EventArgs __)
-        {
-            _resolver.Refresh();
         }
     }
 }
