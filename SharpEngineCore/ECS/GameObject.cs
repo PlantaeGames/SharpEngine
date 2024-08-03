@@ -24,7 +24,8 @@ public sealed class GameObject
 
     internal void Tick(TickType tick)
     {
-        ClearPendings();
+        if(SceneManager.IsPlaying)
+            ClearPendings();
 
         switch (tick)
         {
@@ -63,12 +64,25 @@ public sealed class GameObject
             if (IsActive == false)
                 return;
 
-            foreach (var component in _components)
+            if (SceneManager.IsPlaying)
             {
-                if (component.IsEnabled == false)
-                    continue;
+                foreach (var component in _components)
+                {
+                    if (component.IsEnabled == false)
+                        continue;
 
-                component.OnPreRender();
+                    component.OnPreRender();
+                }
+            }
+            else
+            {
+                foreach (var component in _pendingAdds)
+                {
+                    if (component.IsEnabled == false)
+                        continue;
+
+                    component.OnPreRender();
+                }
             }
         }
         void OnPostRender()
@@ -76,12 +90,25 @@ public sealed class GameObject
             if (IsActive == false)
                 return;
 
-            foreach (var component in _components)
+            if (SceneManager.IsPlaying)
             {
-                if (component.IsEnabled == false)
-                    continue;
+                foreach (var component in _components)
+                {
+                    if (component.IsEnabled == false)
+                        continue;
 
-                component.OnPostRender();
+                    component.OnPostRender();
+                }
+            }
+            else
+            {
+                foreach (var component in _pendingAdds)
+                {
+                    if (component.IsEnabled == false)
+                        continue;
+
+                    component.OnPostRender();
+                }
             }
         }
 

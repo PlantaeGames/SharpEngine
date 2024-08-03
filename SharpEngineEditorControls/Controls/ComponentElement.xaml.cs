@@ -23,6 +23,7 @@ namespace SharpEngineEditorControls.Controls
     public partial class ComponentElement : UserControl
     {
         public new string Name;
+        public object Object { get; private set; }
 
         public event Action<ComponentElement> OnRemove;
 
@@ -31,12 +32,15 @@ namespace SharpEngineEditorControls.Controls
             ComponentNameHeader.IsExpanded = expend;
         }
 
-        public void AddCollection(string name, UICollection uiCollection)
+        public void AddCollection(string name, UICollection uiCollection,
+            object @object)
         {
             Debug.Assert(name != null);
             Debug.Assert(uiCollection != null);
+            Debug.Assert(@object != null);
 
             Name = name;
+            Object = @object;
 
             ComponentNameHeader.Header = Name;
             FieldsStack.Children.Add(uiCollection);

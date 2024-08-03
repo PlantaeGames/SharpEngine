@@ -9,6 +9,7 @@ using System.IO;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
+using System.Linq.Expressions;
 
 namespace SharpEngineEditorControls.Components
 {
@@ -20,7 +21,7 @@ namespace SharpEngineEditorControls.Components
         public event Action<InspectorElement, object> OnObjectAdd;
         public event Action<InspectorElement, object> OnObjectRemoved;
         public event Action<InspectorElement, string> OnAddClicked;
-        public event Action<InspectorElement, string> OnRemoveClicked;
+        public event Action<InspectorElement, string, object> OnRemoveClicked;
 
         public event Action<InspectorElement, SharpEngineEditorResolver> OnEditorResolverChanged;
 
@@ -50,6 +51,12 @@ namespace SharpEngineEditorControls.Components
             }
         }
         private SharpEngineEditorResolver _resolver = new();
+
+        private Thread _refreshThread;
+        private bool _refreshThreadQuitRequested;
+        private object _refreshExitLock = new();
+
+        private const int REFRESH_RATE = 10;
 
         public void AddObject(object @object)
         {
@@ -93,13 +100,13 @@ namespace SharpEngineEditorControls.Components
                     _resolver, new(@object, null, _lock));
 
                 var componentElement = new ComponentElement();
-                componentElement.AddCollection(type.Name, uiCollection);
+                componentElement.AddCollection(type.Name, uiCollection, @object);
                 componentElement.ToggleExpend(true);
                 componentElement.Margin = new System.Windows.Thickness(0, 10, 0, 0);
 
                 componentElement.OnRemove += x =>
                 {
-                    OnRemoveClicked?.Invoke(this, x.Name);
+                    OnRemoveClicked?.Invoke(this, x.Name, @object);
                 };
 
                 ComponentsStack.Children.Add(componentElement);
@@ -108,14 +115,24 @@ namespace SharpEngineEditorControls.Components
             ComponentsStack.Children.Add(_addComponentElement);
         }
 
-
         public InspectorElement(object @lock)
         {
             _lock = @lock;
 
             this.Loaded += OnLoaded;
+            this.Unloaded += OnUnLoaded;
 
             InitializeComponent();
+        }
+
+        private void OnUnLoaded(object _, RoutedEventArgs __)
+        {
+            lock (_refreshExitLock)
+            {
+                _refreshThreadQuitRequested = true;
+            }
+
+            _refreshThread.Join();
         }
 
         private void OnLoaded(object _, System.Windows.RoutedEventArgs __)
@@ -129,10 +146,29 @@ namespace SharpEngineEditorControls.Components
                 OnAddClicked?.Invoke(this, name);
             };
 
-            CompositionTarget.Rendering += CompositionTarget_Rendering;
+            //CompositionTarget.Rendering += CompositionTarget_Rendering;
+
+            _refreshThread = new Thread(new ThreadStart(() =>
+            {
+                while (true)
+                {
+                    lock(_refreshExitLock)
+                    {
+                        if (_refreshThreadQuitRequested)
+                            break;
+                    }
+
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        _resolver.Refresh();
+                    });
+
+                    Thread.Sleep(1 / REFRESH_RATE * 1000);
+                }
+            }));
         }
 
-        private void CompositionTarget_Rendering(object sender, EventArgs e)
+        private void CompositionTarget_Rendering(object _, EventArgs __)
         {
             _resolver.Refresh();
         }

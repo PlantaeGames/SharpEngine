@@ -96,6 +96,7 @@ namespace SharpEngineEditor.Misc
             }
         }
 
+        Stopwatch watch = new();
         private void EngineThread()
         {
             Debug.Assert(_engineThread != null);
@@ -108,6 +109,9 @@ namespace SharpEngineEditor.Misc
 
             while (true)
             {
+
+                watch.Reset();
+                watch.Start();
                 lock (EngineThreadLock)
                 {
                     bool stop = false;
@@ -146,7 +150,6 @@ namespace SharpEngineEditor.Misc
                         }
                     }
 
-
                     lock (_engineThreadExitLock)
                     {
                         if (_quitEngineThread)
@@ -158,6 +161,9 @@ namespace SharpEngineEditor.Misc
                     _engineSecondaryWindow?.Update();
                     //          //
                 }
+
+                watch.Stop();
+                Debug.Print(watch.Elapsed.Milliseconds.ToString());
             }
         }
 

@@ -14,12 +14,7 @@ public sealed class ECS
     {
         var gameObject = new GameObject();
 
-        if(SceneManager.IsPlaying)
-            _pendingAddGameObjects.Add(gameObject);
-        else
-        {
-            _gameObjects.Add(gameObject);
-        }
+        _pendingAddGameObjects.Add(gameObject);
         gameObject.SetActive(true);
 
         return gameObject;
@@ -27,17 +22,16 @@ public sealed class ECS
 
     public void Remove(GameObject gameObject)
     {
-        if (SceneManager.IsPlaying)
+        if(SceneManager.IsPlaying)
             _pendingRemoveGameObjects.Add(gameObject);
         else
-        {
-            _gameObjects.Remove(gameObject);
-        }
+            _pendingAddGameObjects.Remove(gameObject);
     }
 
     internal void Tick(TickType tick)
     {
-        ClearPendings();
+        if(SceneManager.IsPlaying)
+            ClearPendings();
 
         switch (tick)
         {
@@ -61,24 +55,36 @@ public sealed class ECS
 
         void OnPreRenderTick()
         {
-            foreach (var gameObj in _gameObjects)
+            if (SceneManager.IsPlaying)
             {
-                gameObj.Tick(tick);
+                foreach (var gameObj in _gameObjects)
+                {
+                    gameObj.Tick(tick);
+                }
             }
-        }
-        void OnPostRenderTick()
-        {
-            if (SceneManager.IsPlaying == false)
+            else
             {
                 foreach (var gameObj in _pendingAddGameObjects)
                 {
                     gameObj.Tick(tick);
                 }
             }
-
-            foreach (var gameObj in _gameObjects)
+        }
+        void OnPostRenderTick()
+        {
+            if (SceneManager.IsPlaying)
             {
-                gameObj.Tick(tick);
+                foreach (var gameObj in _gameObjects)
+                {
+                    gameObj.Tick(tick);
+                }
+            }
+            else
+            {
+                foreach (var gameObj in _pendingAddGameObjects)
+                {
+                    gameObj.Tick(tick);
+                }
             }
         }
 

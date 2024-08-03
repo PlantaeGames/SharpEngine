@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 
@@ -24,15 +25,25 @@ public sealed class PrimitiveBinding
 
     private bool _refreshing;
 
+
+
     public void Refresh()
     {
         _refreshing = true;
 
-        OnRefresh?.Invoke(this);
+
+        watch.Reset();
+        watch.Start();
+        lock (Lock)
+        {
+            OnRefresh?.Invoke(this);
+        }
+
+        watch.Stop();
 
         _refreshing = false;
     }
-
+    private Stopwatch watch = new();
     public void UpdateByUI(object value)
     {
         if(_refreshing) 

@@ -80,7 +80,9 @@ public partial class SharpEditor : UserControl
 
     #region BINDINGS
 
-    private void OnRemoveComponentClicked(SharpEngineEditorControls.Components.InspectorElement inspector, string name)
+    private void OnRemoveComponentClicked(
+        SharpEngineEditorControls.Components.InspectorElement inspector, string name,
+        object @object)
     {
         var gameObject = (GameObject)_hierarchy.SelectedGameObject;
 
@@ -90,8 +92,8 @@ public partial class SharpEditor : UserControl
 
         _engineView.ENGINE_CALL(() =>
         {
-            var component = method.Invoke(gameObject, null);
-            ((SharpEngineCore.ECS.Component)component).OnExternalDestroy();
+            method.Invoke(gameObject, null);
+            ((SharpEngineCore.ECS.Component)@object).OnExternalDestroy();
         });
 
         inspector.RemoveObject(gameObject);

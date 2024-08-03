@@ -295,7 +295,7 @@ internal abstract class RenderPipeline : PipelineEvents
                     toResume.Add(i);
                 }
             }
-            for (var i = 0; i < toRemove.Count; i++)
+            for (var i = 0; i < toResume.Count; i++)
             {
                 _cameraObjects.Add(_pausedCameraObjects[toResume[i]]);
                 _pausedCameraObjects.RemoveAt(toResume[i]);
