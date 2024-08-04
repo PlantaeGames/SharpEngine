@@ -79,7 +79,7 @@ public sealed class MainWindow : Window
         _inputManager.AddDevice(keybaord);
 
         Graphics.Graphics.Initialize(this);
-        Input.Input.Initialize(_inputManager);
+        Input.Input.Add(_inputManager);
         SceneManager.Initialize();
 
         _initialized = true;
@@ -91,20 +91,19 @@ public sealed class MainWindow : Window
         return camera;
     }
 
-    public override (bool availability, MSG msg) PeekAndDispatchMessage()
-    {
-        var result = base.PeekAndDispatchMessage();
-
-        if (_initialized)
-        {
-            _inputManager.Feed(result.msg);
-        }
-
-        return result;
-    }
-
     protected override LRESULT WndProc(HWND hWND, uint msg, WPARAM wParam, LPARAM lParam)
     {
+        if (_initialized)
+        {
+            _inputManager.Feed(new MSG()
+            {
+                hwnd = hWND,
+                message = msg,
+                wParam = wParam,
+                lParam = lParam
+            });
+        }
+
         return base.WndProc(hWND, msg, wParam, lParam);
     }
 }

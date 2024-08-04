@@ -273,6 +273,12 @@ public partial class SharpEditor : UserControl
     {
         InitializeComponent();
 
+        KeyboardNavigation.SetControlTabNavigation(this, KeyboardNavigationMode.None);
+        KeyboardNavigation.SetTabNavigation(this, KeyboardNavigationMode.None);
+        KeyboardNavigation.SetDirectionalNavigation(this, KeyboardNavigationMode.None);
+        KeyboardNavigation.SetAcceptsReturn(this, false);
+        KeyboardNavigation.SetIsTabStop(this, false);
+
         _engineView.OnEngineLoaded += OnEngineLoaded;
         _engineView.OnEngineUnloaded += OnEngineUnloaded;
 

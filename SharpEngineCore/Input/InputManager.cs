@@ -74,7 +74,7 @@ internal sealed class InputManager : IEnumerable<InputDevice>
     internal sealed class Enumerator : IEnumerator<InputDevice>
     {
         private InputDevice[] _devices;
-        private int _index;
+        private int _index = -1;
 
         public Enumerator(InputDevice[] devices)
         {

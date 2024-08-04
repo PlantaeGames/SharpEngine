@@ -66,7 +66,7 @@ internal sealed class Swapchain
         }
     }
 
-    public void Present(uint syncInterval = 1u)
+    public void Present(uint syncInterval = 0u)
     {
         NativePresent();
 

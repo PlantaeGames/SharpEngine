@@ -10,12 +10,17 @@ namespace SharpEngineCore.Graphics;
 
 public class Window
 {
+    public static void Test()
+    {
+
+    }
+
+
     [UnmanagedCallersOnly]
     public static LRESULT WndProcStub(HWND hWnd, uint msg, WPARAM wParam, LPARAM lPraram)
     {
         var window = (Window)GCHandle.FromIntPtr(GetWindowLongPtrW(hWnd, GWLP.GWLP_USERDATA)).Target;
         LRESULT result = window.WndProc(hWnd, msg, wParam, lPraram);
-
         return result;
     }
 

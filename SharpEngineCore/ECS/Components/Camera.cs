@@ -88,9 +88,9 @@ public class Camera : Component
 
         var transform = gameObject.Transform;
 
-        if(Input.Input.GetKey(Input.Key.Down))
+        if(Input.Input.GetKey(Input.Key.B))
         {
-            transform.Position.X -= 1f;
+            transform.Rotation.X -= 1f;
         }
 
         _state.UpdateCamera(new CameraConstantData()
@@ -103,7 +103,7 @@ public class Camera : Component
             Scale = transform.Scale
         });
 
-        transform.Position.X++;
+        //transform.Position.X++;
     }
 
     public override void OnDisable()

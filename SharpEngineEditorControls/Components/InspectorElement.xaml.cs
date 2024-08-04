@@ -10,6 +10,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace SharpEngineEditorControls.Components
 {
@@ -56,7 +57,7 @@ namespace SharpEngineEditorControls.Components
         private bool _refreshThreadQuitRequested;
         private object _refreshExitLock = new();
 
-        private const int REFRESH_RATE = 10;
+        private const int REFRESH_RATE = 1;
 
         public void AddObject(object @object)
         {
@@ -127,6 +128,8 @@ namespace SharpEngineEditorControls.Components
 
         private void OnUnLoaded(object _, RoutedEventArgs __)
         {
+            this.Unloaded -= OnUnLoaded;
+
             lock (_refreshExitLock)
             {
                 _refreshThreadQuitRequested = true;
@@ -156,14 +159,24 @@ namespace SharpEngineEditorControls.Components
                             break;
                     }
 
-                    this.Dispatcher.Invoke(() =>
+                    if (Dispatcher.HasShutdownStarted)
+                        break;
+
+                    try
                     {
-                        _resolver.Refresh();
-                    });
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            lock (_lock)
+                                _resolver.Refresh();
+                        }, DispatcherPriority.ApplicationIdle);
+                    }
+                    catch(TaskCanceledException _)
+                    {}
 
                     Thread.Sleep((int)((1f / REFRESH_RATE) * 1000));
                 }
             }));
+            _refreshThread.Start();
         }
     }
 }

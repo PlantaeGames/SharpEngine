@@ -18,7 +18,7 @@ public abstract class InputDevice
 
     protected virtual void UpdateKey(Key key, bool up)
     {
-        if (up)
+        if (up == false)
         {
             if (GetKey(key))
                 return;
@@ -32,6 +32,7 @@ public abstract class InputDevice
                 return;
 
             _upKeys.Add(key);
+            _holdKeys.Remove(key);
         }
     }
 

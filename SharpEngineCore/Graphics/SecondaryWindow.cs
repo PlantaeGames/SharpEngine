@@ -9,11 +9,22 @@ public sealed class SecondaryWindow : Window
     private CameraObject _camera;
     private Swapchain _swapchain;
 
+    private InputManager _inputManager;
+
     private bool _initialized;
 
     public SecondaryWindow(string name, Point location, Size size, HWND parent)
         : base(name, location, size, parent)
     {
+        _inputManager = new InputManager();
+
+        var mouse = new Mouse(this);
+        var keybaord = new Keyboard(this);
+
+        _inputManager.AddDevice(mouse);
+        _inputManager.AddDevice(keybaord);
+
+        //Input.Input.Add(_inputManager);
     }
 
     internal void Initialize(Swapchain swapchain, CameraObject camera)
@@ -32,22 +43,26 @@ public sealed class SecondaryWindow : Window
         Debug.Assert(_initialized);
 
         _swapchain.Present();
-    }
 
-    public override (bool availability, MSG msg) PeekAndDispatchMessage()
-    {
-        var result = base.PeekAndDispatchMessage();
-
-        if (_initialized)
+        foreach(var device in _inputManager)
         {
-            Input.Input.Feed(result.msg);
+            device.Clear();
         }
-
-        return result;
     }
 
     protected override LRESULT WndProc(HWND hWND, uint msg, WPARAM wParam, LPARAM lParam)
     {
+        if (_initialized)
+        {
+            _inputManager.Feed(new MSG()
+            {
+                hwnd = hWND,
+                message = msg,
+                wParam = wParam,
+                lParam = lParam
+            });
+        }
+
         return base.WndProc(hWND, msg, wParam, lParam);
     }
 }

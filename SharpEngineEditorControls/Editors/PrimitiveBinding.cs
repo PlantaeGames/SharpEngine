@@ -29,10 +29,8 @@ public sealed class PrimitiveBinding
     {
         _refreshing = true;
 
-        lock (Lock)
-        {
-            OnRefresh?.Invoke(this);
-        }
+        OnRefresh?.Invoke(this);
+
         _refreshing = false;
     }
 
