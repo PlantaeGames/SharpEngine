@@ -1,6 +1,1 @@
-To contribute:
-
-Remaining Features:
-	-> Input.
-	-> ECS.
-	-> Audio.
+# Stand with Palestine!
