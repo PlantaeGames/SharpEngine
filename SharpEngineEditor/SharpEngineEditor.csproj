@@ -1,19 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UseWPF>true</UseWPF>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>disable</Nullable>
+	  <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\NetDock\NetDock.csproj" />
-    <ProjectReference Include="..\SharpEngineBuildSystem\SharpEngineBuildSystem.csproj" />
-    <ProjectReference Include="..\SharpEngineCore\SharpEngineCore.csproj" />
-    <ProjectReference Include="..\SharpEngineEditorControls\SharpEngineEditorControls.csproj" />
+    <PackageReference Include="ImGui.NET" Version="1.91.0.1" />
   </ItemGroup>
-
+  <ItemGroup>
+    <ProjectReference Include="..\SharpEngineCore\SharpEngineCore.csproj" />
+    <ProjectReference Include="..\SharpEngineGame\SharpEngineGame.csproj" />
+  </ItemGroup>
 </Project>
