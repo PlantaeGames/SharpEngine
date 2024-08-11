@@ -6,16 +6,10 @@ using static TerraFX.Interop.Windows.Windows;
 
 using SharpEngineCore.Exceptions;
 
-namespace SharpEngineCore.Graphics;
+namespace SharpEngineEditor.ImGui.Backend;
 
 public class Window
 {
-    public static void Test()
-    {
-
-    }
-
-
     [UnmanagedCallersOnly]
     public static LRESULT WndProcStub(HWND hWnd, uint msg, WPARAM wParam, LPARAM lPraram)
     {
@@ -236,7 +230,7 @@ public class Window
         }
     }
 
-    public void Destroy()
+    public virtual void Destroy()
     {
         try
         {

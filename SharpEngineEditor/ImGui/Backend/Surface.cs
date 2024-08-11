@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 using SharpEngineCore.Utilities;
 
-namespace SharpEngineCore.Graphics;
+namespace SharpEngineEditor.ImGui.Backend;
 
 public abstract class Surface : IDisposable
 {
@@ -17,7 +17,7 @@ public abstract class Surface : IDisposable
 
     public void Set(byte value, int offset)
     {
-        Debug.Assert(Size.ToArea() * GetPeiceSize() <= offset,
+        Debug.Assert(Size.ToArea() * GetPeiceSize() >= offset,
             "Offset is beyound buffer size.");
 
         unsafe

@@ -1,4 +1,6 @@
-﻿namespace SharpEngineCore.Graphics;
+﻿using TerraFX.Interop.Windows;
+
+namespace SharpEngineEditor.ImGui.Backend;
 
 internal sealed class Rasterizer : IPipelineStage
 {
@@ -7,18 +9,21 @@ internal sealed class Rasterizer : IPipelineStage
     {
         None = 0,
         Viewports = 1 << 1,
-        RasterizerState = 1 << 2
+        RasterizerState = 1 << 2,
+        Scissors = 1 << 3
     }
 
     public RasterizerState RasterizerState { get; init; }
     public Viewport[] Viewports { get; init; }
+    public Scissors[] Scissors { get; init; }
     public BindFlags Flags { get; init; }
 
     public Rasterizer(
         RasterizerState rasterizerState,
-        Viewport[] viewports, BindFlags flags)
+        Viewport[] viewports, Scissors[] scissors, BindFlags flags)
     {
         RasterizerState = rasterizerState;
+        Scissors = scissors;
         Viewports = viewports;
         Flags = flags;
     }
@@ -38,6 +43,11 @@ internal sealed class Rasterizer : IPipelineStage
         {
             context.RSSetState(RasterizerState);
         }
+
+        if(Flags.HasFlag(BindFlags.Scissors))
+        {
+            context.RSSetScissors(Scissors);
+        }
     }
 
     public void Unbind(DeviceContext context)
@@ -50,6 +60,11 @@ internal sealed class Rasterizer : IPipelineStage
         if (Flags.HasFlag(BindFlags.RasterizerState))
         {
             context.RSSetState(RasterizerState, true);
+        }
+
+        if (Flags.HasFlag(BindFlags.Scissors))
+        {
+            context.RSSetScissors(Scissors, true);
         }
     }
 }

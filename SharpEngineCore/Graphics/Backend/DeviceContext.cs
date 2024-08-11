@@ -9,6 +9,38 @@ internal abstract class DeviceContext
 {
     protected readonly ComPtr<ID3D11DeviceContext> _pContext;
 
+    public void RSSetScissors(Scissors[] scissors, bool clear = false)
+    {
+        NativeRSSetScissors();
+
+        unsafe void NativeRSSetScissors()
+        {
+            var count = scissors.Length;
+            var pRects = stackalloc RECT[count];
+            for (var i = 0; i < count; i++)
+            {
+                if (clear)
+                {
+                    pRects[i] = new RECT();
+                    continue;
+                }
+                pRects[i].bottom = scissors[i].Info.Bottom;
+                pRects[i].top = scissors[i].Info.Top;
+                pRects[i].right = scissors[i].Info.Right;
+                pRects[i].left = scissors[i].Info.Left;
+            }
+
+            fixed (ID3D11DeviceContext** ppContext = _pContext)
+            {
+                GraphicsException.SetInfoQueue();
+
+                (*ppContext)->RSSetScissorRects((uint)count, pRects);
+
+                Debug.Assert(GraphicsException.CheckIfAny() == false);
+            }
+        }
+    }
+
     public void OMSetBlendState(BlendState state, bool clear = false)
     {
         const uint SAMPLE_MASK = 0xffffffff;
