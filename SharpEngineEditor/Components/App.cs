@@ -53,7 +53,7 @@ internal sealed class App
         var returnCode = 0;
 
         var window = new Components.MainWindow(
-            NAME, new Point(0, 0), new Size(1920, 1080), new HWND());
+            NAME, new Point(0, 0), new Size(800, 800), new HWND());
         try
         {
             window.Show();

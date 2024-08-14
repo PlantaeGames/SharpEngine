@@ -162,20 +162,15 @@ internal class GuiWindow : Window
         var io = Gui.GetIO();
         io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
         io.BackendFlags |= ImGuiBackendFlags.RendererHasViewports;
+        
+        io.ConfigFlags |= ImGuiConfigFlags.ViewportsEnable;
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable;
         io.ConfigFlags |= ImGuiConfigFlags.NavEnableKeyboard;
 
-/*        var cfg = new ImFontConfig();
-        cfg.FontDataOwnedByAtlas = byte.MinValue;
-        cfg.RasterizerMultiply = 1.5f;
-        cfg.SizePixels = 768.0f / 32.0f;
-        cfg.PixelSnapH = byte.MaxValue;
-        cfg.OversampleH = 4;
-        cfg.OversampleV = 4;*/
+        io.Fonts.ClearFonts();
+        io.Fonts.AddFontDefault();
 
-        io.DisplayFramebufferScale = Vector2.One;
         io.DisplaySize = new Vector2(_width, _height);
-        io.Framerate = 1 / 60f;
 
         CreateResources();
 
@@ -247,8 +242,9 @@ internal class GuiWindow : Window
 
             _fontTextureSampler = _device.CreateSampler(new SamplerInfo()
             {
-               AddressMode = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_CLAMP,
-                Filter = D3D11_FILTER.D3D11_FILTER_ANISOTROPIC
+               AddressMode = D3D11_TEXTURE_ADDRESS_MODE.D3D11_TEXTURE_ADDRESS_WRAP,
+               Filter = D3D11_FILTER.D3D11_FILTER_MIN_MAG_MIP_LINEAR,
+               ComparisionFunc = D3D11_COMPARISON_FUNC.D3D11_COMPARISON_ALWAYS 
 
             });
 
@@ -291,19 +287,20 @@ internal class GuiWindow : Window
 
             var blendInfo = new BlendStateInfo()
             {
-                BlendFactor = new(1,1,1,1)
+                BlendFactor = new()
             };
             blendInfo.RenderTargetBlendDescs[0] = new D3D11_RENDER_TARGET_BLEND_DESC()
             {
                 BlendEnable = true,
+               
                 RenderTargetWriteMask = (byte)D3D11_COLOR_WRITE_ENABLE.D3D11_COLOR_WRITE_ENABLE_ALL,
 
-                SrcBlend = D3D11_BLEND.D3D11_BLEND_SRC_COLOR,
-                DestBlend = D3D11_BLEND.D3D11_BLEND_DEST_COLOR,
+                SrcBlend = D3D11_BLEND.D3D11_BLEND_SRC_ALPHA,
+                DestBlend = D3D11_BLEND.D3D11_BLEND_INV_SRC_ALPHA,
                 BlendOp = D3D11_BLEND_OP.D3D11_BLEND_OP_ADD,
 
-                SrcBlendAlpha = D3D11_BLEND.D3D11_BLEND_SRC_ALPHA,
-                DestBlendAlpha = D3D11_BLEND.D3D11_BLEND_DEST_ALPHA,
+                SrcBlendAlpha = D3D11_BLEND.D3D11_BLEND_ONE,
+                DestBlendAlpha = D3D11_BLEND.D3D11_BLEND_INV_SRC_ALPHA,
                 BlendOpAlpha = D3D11_BLEND_OP.D3D11_BLEND_OP_ADD
             };
             _blendState = _device.CreateBlendState(blendInfo);
@@ -311,7 +308,8 @@ internal class GuiWindow : Window
             _rasterizerState = _device.CreateRasterizerState(new RasterizerStateInfo()
             {
                 CullMode = D3D11_CULL_MODE.D3D11_CULL_NONE,
-                ScissorsEnabled = false,
+                ScissorsEnabled = true,
+                DepthClippingEnabled = true,
                 FillMode = D3D11_FILL_MODE.D3D11_FILL_SOLID
             });
 
@@ -322,7 +320,7 @@ internal class GuiWindow : Window
                 MaxDepth = 1f
             });
 
-            _scissors = new Scissors(new(0, 0, 0, 0));
+            _scissors = new(new(0, 0, _width, _height));
 
             _inputAssemblerStage = new InputAssembler(
                 _inputLayout,
@@ -343,10 +341,9 @@ internal class GuiWindow : Window
             _rasterizerStage = new Rasterizer(
                 _rasterizerState,
                 [_viewport],
-                [_scissors],
+                [],
                 Rasterizer.BindFlags.RasterizerState |
-                Rasterizer.BindFlags.Viewports |
-                Rasterizer.BindFlags.Scissors);
+                Rasterizer.BindFlags.Viewports);
 
             _pixelStage = new PixelShaderStage(
                 _pixelShader,
@@ -389,7 +386,6 @@ internal class GuiWindow : Window
 
         Gui.Render();
 
-
         var io = Gui.GetIO();
         var data = Gui.GetDrawData();
 
@@ -405,6 +401,8 @@ internal class GuiWindow : Window
 
         unsafe void Pass()
         {
+            _context.ClearRenderTargetView(_renderTarget, new(0, 0, 0, 0));
+
             var cmds = data.CmdLists;
             SetContext();
 
@@ -467,8 +465,7 @@ internal class GuiWindow : Window
                 _vertexStage.Bind(_context);
                 _outputMergerStage.Bind(_context);
                 _pixelStage.Bind(_context);
-
-                _context.ClearRenderTargetView(_renderTarget, new(0, 0, 0, 0));
+                _rasterizerStage.Bind(_context);
 
                 for (var c = 0; c < cBuffer.Size; c++)
                 {
@@ -476,12 +473,15 @@ internal class GuiWindow : Window
 
                     _scissors = new Scissors(
                         new(
-                            (int)cmd.ClipRect.X,
-                            (int)(io.DisplaySize.Y - cmd.ClipRect.W),
-                            (int)(cmd.ClipRect.Z - cmd.ClipRect.X),
-                            (int)(cmd.ClipRect.W - cmd.ClipRect.Y)));
+                            Math.Abs((int)cmd.ClipRect.X - (int)data.DisplayPos.X),
+                            Math.Abs((int)cmd.ClipRect.Y - (int)data.DisplayPos.Y),
+                            Math.Abs((int)cmd.ClipRect.Z - (int)data.DisplayPos.X),
+                            Math.Abs((int)cmd.ClipRect.W - (int)data.DisplayPos.Y)));
+                    if (_scissors.Info.Z <= _scissors.Info.X ||
+                        _scissors.Info.W <= _scissors.Info.Y)
+                        continue;
 
-                    _rasterizerStage.Bind(_context);
+                    _context.RSSetScissors([_scissors]);
 
                     if (cmd.TextureId == (IntPtr)_fontTexture.GetNativePtr().Get())
                     {
@@ -500,20 +500,40 @@ internal class GuiWindow : Window
 
         void UpdateParams()
         {
-            var pos = GetPosition();
-            data.DisplayPos = new(pos.X, pos.Y);
+            io.Framerate = 1 / 60f;
 
-            var matrix = Matrix4x4.CreateOrthographicOffCenter(
-                data.DisplayPos.X,
-                io.DisplaySize.X + data.DisplayPos.X,
-                io.DisplaySize.Y + data.DisplayPos.Y,
-                data.DisplayPos.Y, -1, 1);
+            var size = GetSize();
+            io.DisplaySize = new Vector2(_width, _height);
+            var scaleX = size.Width / (float)_width;
+            var scaleY = size.Height / (float)_height;
+            var scale = scaleX < scaleY ? scaleX : scaleY;
+            var viewportWidth = _width * scaleX;
+            var viewportHeight = _height * scaleY;
+            var viewportX = (size.Width - viewportWidth) / 2;
+            var viewportY = (size.Height - viewportHeight) / 2;
+            io.DisplayFramebufferScale = new Vector2(scale, scale);
+
+            unsafe
+            {
+                var point = new POINT();
+                TerraFX.Interop.Windows.Windows.GetCursorPos(&point);
+                TerraFX.Interop.Windows.Windows.ScreenToClient(HWnd, &point);
+                Console.WriteLine(io.MousePos);
+                io.AddMousePosEvent((point.x - viewportX) / scaleX,
+                                    (point.y - viewportY) / scaleY);
+            }
+
+            float l = data.DisplayPos.X;
+            float r = data.DisplayPos.X + data.DisplaySize.X;
+            float t = data.DisplayPos.Y;
+            float b = data.DisplayPos.Y + data.DisplaySize.Y;
+
             var mvpData = new VertexMVPCBuffer
             {
-                Row0 = new(matrix.M11, matrix.M12, matrix.M13, matrix.M14),
-                Row1 = new(matrix.M21, matrix.M22, matrix.M23, matrix.M24),
-                Row2 = new(matrix.M31, matrix.M32, matrix.M33, matrix.M34),
-                Row3 = new(matrix.M41, matrix.M42, matrix.M43, matrix.M44)
+                Row0 = new(2.0f / (r-l), 0.0f,          0.0f,   0.0f),
+                Row1 = new(0.0f,         2.0f/(t-b),    0.0f,   0.0f),
+                Row2 = new(0.0f,         0.0f,          0.5f,   0.0f),
+                Row3 = new((r+l)/(l-r),  (t+b)/(b-t),   0.5f,   1.0f)
             };
 
             _vertexMvpCBuffer.Update(mvpData);
@@ -534,22 +554,12 @@ internal class GuiWindow : Window
 
     public override (bool availability, MSG msg) PeekAndDispatchMessage()
     {
-
         var result = base.PeekAndDispatchMessage();
 
         if (_initialized)
         {
-            Gui.SetCurrentContext(_guiContext);
             var io = Gui.GetIO();
             var msg = result.msg.message;
-
-            unsafe
-            {
-                var point = new POINT();
-                TerraFX.Interop.Windows.Windows.GetCursorPos(&point);
-                var pos = this.GetPosition();
-                io.AddMousePosEvent(point.x - pos.X, point.y - pos.Y);
-            }
 
             switch (msg)
             {

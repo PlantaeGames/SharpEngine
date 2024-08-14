@@ -1,12 +1,13 @@
-﻿using TerraFX.Interop.Windows;
+﻿using System.Numerics;
+using TerraFX.Interop.Windows;
 
 namespace SharpEngineCore.Graphics;
 
 internal sealed class Scissors
 {
-    public readonly Rectangle Info;
+    public readonly Vector4 Info;
 
-    public Scissors(Rectangle rectangle)
+    public Scissors(Vector4 rectangle)
     {
         Info = rectangle;
     }

@@ -17,26 +17,29 @@ internal abstract class DeviceContext
         {
             var count = scissors.Length;
             var pRects = stackalloc RECT[count];
-            for(var i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 if (clear)
                 {
                     pRects[i] = new RECT();
                     continue;
                 }
-                pRects[i].bottom = scissors[i].Info.Bottom;
-                pRects[i].top = scissors[i].Info.Top;
-                pRects[i].right = scissors[i].Info.Right;
-                pRects[i].left = scissors[i].Info.Left;
+                pRects[i].bottom = (int)scissors[i].Info.W;
+                pRects[i].top = (int)scissors[i].Info.Y;
+                pRects[i].right = (int)scissors[i].Info.Z;
+                pRects[i].left = (int)scissors[i].Info.X;
             }
 
-            fixed(ID3D11DeviceContext** ppContext = _pContext)
+            fixed (ID3D11DeviceContext** ppContext = _pContext)
             {
                 GraphicsException.SetInfoQueue();
 
                 (*ppContext)->RSSetScissorRects((uint)count, pRects);
 
-                Debug.Assert(GraphicsException.CheckIfAny() == false);
+                if (GraphicsException.CheckIfAny())
+                {
+                    GraphicsException.ThrowLastGraphicsException("");
+                }
             }
         }
     }
