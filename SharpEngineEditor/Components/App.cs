@@ -1,7 +1,5 @@
-﻿using SharpEngineCore.Components;
-using SharpEngineCore.Tests;
-using SharpEngineCore.Utilities;
-using SharpEngineEditor.Components;
+﻿using SharpEngineEditor.ImGui;
+using System.Diagnostics;
 using TerraFX.Interop.Windows;
 
 namespace SharpEngineEditor.Core;
@@ -53,7 +51,17 @@ internal sealed class App
         var returnCode = 0;
 
         var window = new Components.MainWindow(
-            NAME, new Point(0, 0), new Size(800, 800), new HWND());
+            NAME, new Point(0, 0), new Size(1024, 1024), new HWND());
+
+        var guiRenderer = new ImGuiRenderer(window, new(1024, 1024));
+        var guiPerFrameData = new ImGuiRenderer.PerFrameData();
+
+        window.MessageListners += guiRenderer.ScanMessage;
+
+        var counter = new Stopwatch();
+
+        var deltaTime = 0.0f;
+
         try
         {
             window.Show();
@@ -62,6 +70,11 @@ internal sealed class App
             // application loop
             while (true)
             {
+                counter.Reset();
+                counter.Start();
+
+                guiPerFrameData.frameRate = deltaTime;
+
                 bool stop = false;
                 // message loop
                 while (true)
@@ -81,9 +94,19 @@ internal sealed class App
                 if (stop)
                     break;
 
+                guiRenderer.NewFrame();
+
                 // other code here.
                 window.Update();
                 //          //
+
+                ImGuiNET.ImGui.ShowDemoWindow();
+
+                guiRenderer.EndFrame();
+                guiRenderer.Render(guiPerFrameData);
+
+                counter.Stop();
+                deltaTime = counter.Elapsed.Microseconds / 1000000;
             }
 
             window.Stop();
@@ -94,8 +117,14 @@ internal sealed class App
         }
         finally
         {
+            window.MessageListners -= guiRenderer.ScanMessage;
+            guiRenderer.Dispose();
             window.Destroy();
         }
+
+        window.MessageListners -= guiRenderer.ScanMessage;
+        guiRenderer.Dispose();
+        window.Destroy();
 
         return returnCode;
     }
